@@ -112,12 +112,12 @@ const InputSpmList = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Jenis</SelectItem>
-              <SelectItem value="up">UP</SelectItem>
-              <SelectItem value="gu">GU</SelectItem>
-              <SelectItem value="tu">TU</SelectItem>
-              <SelectItem value="ls_gaji">LS Gaji</SelectItem>
-              <SelectItem value="ls_barang_jasa">LS Barang & Jasa</SelectItem>
-              <SelectItem value="ls_belanja_modal">LS Belanja Modal</SelectItem>
+              <SelectItem value="UP">UP</SelectItem>
+              <SelectItem value="GU">GU</SelectItem>
+              <SelectItem value="TU">TU</SelectItem>
+              <SelectItem value="LS_Gaji">LS Gaji</SelectItem>
+              <SelectItem value="LS_Barang_Jasa">LS Barang & Jasa</SelectItem>
+              <SelectItem value="LS_Belanja_Modal">LS Belanja Modal</SelectItem>
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
