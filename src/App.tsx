@@ -24,10 +24,17 @@ import ApprovalKepalaBkad from "./pages/spm/ApprovalKepalaBkad";
 import UserList from "./pages/users/UserList";
 import UserForm from "./pages/users/UserForm";
 import UserDetail from "./pages/users/UserDetail";
+import MasterDataIndex from "./pages/masterdata/MasterDataIndex";
 import OpdList from "./pages/masterdata/OpdList";
 import OpdForm from "./pages/masterdata/OpdForm";
 import VendorList from "./pages/masterdata/VendorList";
-import MasterDataIndex from "./pages/masterdata/MasterDataIndex";
+import VendorForm from "./pages/masterdata/VendorForm";
+import ProgramList from "./pages/masterdata/ProgramList";
+import ProgramForm from "./pages/masterdata/ProgramForm";
+import KegiatanList from "./pages/masterdata/KegiatanList";
+import KegiatanForm from "./pages/masterdata/KegiatanForm";
+import SubkegiatanList from "./pages/masterdata/SubkegiatanList";
+import SubkegiatanForm from "./pages/masterdata/SubkegiatanForm";
 
 const queryClient = new QueryClient();
 
@@ -164,62 +171,22 @@ const App = () => (
             />
 
             {/* Master Data Routes */}
-            <Route
-              path="/masterdata"
-              element={
-                <RoleProtectedRoute allowedRoles={['administrator']}>
-                  <MasterDataIndex />
-                </RoleProtectedRoute>
-              }
-            />
-            <Route
-              path="/masterdata/opd"
-              element={
-                <RoleProtectedRoute allowedRoles={['administrator']}>
-                  <OpdList />
-                </RoleProtectedRoute>
-              }
-            />
-            <Route
-              path="/masterdata/opd/create"
-              element={
-                <RoleProtectedRoute allowedRoles={['administrator']}>
-                  <OpdForm />
-                </RoleProtectedRoute>
-              }
-            />
-            <Route
-              path="/masterdata/opd/:id/edit"
-              element={
-                <RoleProtectedRoute allowedRoles={['administrator']}>
-                  <OpdForm />
-                </RoleProtectedRoute>
-              }
-            />
-            <Route
-              path="/masterdata/vendor"
-              element={
-                <RoleProtectedRoute allowedRoles={['administrator']}>
-                  <VendorList />
-                </RoleProtectedRoute>
-              }
-            />
-            <Route
-              path="/masterdata/vendor/create"
-              element={
-                <RoleProtectedRoute allowedRoles={['administrator']}>
-                  <VendorList />
-                </RoleProtectedRoute>
-              }
-            />
-            <Route
-              path="/masterdata/vendor/:id/edit"
-              element={
-                <RoleProtectedRoute allowedRoles={['administrator']}>
-                  <VendorList />
-                </RoleProtectedRoute>
-              }
-            />
+            <Route path="/masterdata" element={<RoleProtectedRoute allowedRoles={['administrator']}><MasterDataIndex /></RoleProtectedRoute>} />
+            <Route path="/masterdata/opd" element={<RoleProtectedRoute allowedRoles={['administrator']}><OpdList /></RoleProtectedRoute>} />
+            <Route path="/masterdata/opd/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><OpdForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/opd/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><OpdForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/vendor" element={<RoleProtectedRoute allowedRoles={['administrator']}><VendorList /></RoleProtectedRoute>} />
+            <Route path="/masterdata/vendor/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><VendorForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/vendor/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><VendorForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/program" element={<RoleProtectedRoute allowedRoles={['administrator']}><ProgramList /></RoleProtectedRoute>} />
+            <Route path="/masterdata/program/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><ProgramForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/program/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><ProgramForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/kegiatan" element={<RoleProtectedRoute allowedRoles={['administrator']}><KegiatanList /></RoleProtectedRoute>} />
+            <Route path="/masterdata/kegiatan/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><KegiatanForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/kegiatan/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><KegiatanForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/subkegiatan" element={<RoleProtectedRoute allowedRoles={['administrator']}><SubkegiatanList /></RoleProtectedRoute>} />
+            <Route path="/masterdata/subkegiatan/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><SubkegiatanForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/subkegiatan/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><SubkegiatanForm /></RoleProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
