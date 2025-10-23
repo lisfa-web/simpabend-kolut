@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface VerificationDialogProps {
   open: boolean;
@@ -47,7 +48,32 @@ export const VerificationDialog = ({
   const [pin, setPin] = useState("");
 
   const handleSubmit = () => {
-    if (!action) return;
+    if (!action) {
+      toast.error("Pilih tindakan terlebih dahulu");
+      return;
+    }
+
+    // Validasi untuk action approve
+    if (action === "approve") {
+      if (showNomorAntrian && !nomorAntrian.trim()) {
+        toast.error("Nomor Antrian harus diisi");
+        return;
+      }
+      if (showNomorBerkas && !nomorBerkas.trim()) {
+        toast.error("Nomor Berkas harus diisi");
+        return;
+      }
+      if (showPin && !pin.trim()) {
+        toast.error("PIN harus diisi");
+        return;
+      }
+    }
+
+    // Validasi catatan wajib untuk reject dan revise
+    if ((action === "reject" || action === "revise") && !catatan.trim()) {
+      toast.error("Catatan wajib diisi untuk penolakan/revisi");
+      return;
+    }
 
     onSubmit({
       action,
@@ -63,6 +89,24 @@ export const VerificationDialog = ({
     setNomorAntrian("");
     setNomorBerkas("");
     setPin("");
+  };
+
+  // Check if submit button should be disabled
+  const isSubmitDisabled = () => {
+    if (!action) return true;
+    if (isLoading) return true;
+
+    if (action === "approve") {
+      if (showNomorAntrian && !nomorAntrian.trim()) return true;
+      if (showNomorBerkas && !nomorBerkas.trim()) return true;
+      if (showPin && !pin.trim()) return true;
+    }
+
+    if ((action === "reject" || action === "revise") && !catatan.trim()) {
+      return true;
+    }
+
+    return false;
   };
 
   return (
@@ -109,31 +153,39 @@ export const VerificationDialog = ({
             <>
               {showNomorAntrian && action === "approve" && (
                 <div className="space-y-2">
-                  <Label htmlFor="nomorAntrian">Nomor Antrian</Label>
+                  <Label htmlFor="nomorAntrian">
+                    Nomor Antrian <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="nomorAntrian"
                     placeholder="Contoh: A-001"
                     value={nomorAntrian}
                     onChange={(e) => setNomorAntrian(e.target.value)}
+                    required
                   />
                 </div>
               )}
 
               {showNomorBerkas && action === "approve" && (
                 <div className="space-y-2">
-                  <Label htmlFor="nomorBerkas">Nomor Berkas</Label>
+                  <Label htmlFor="nomorBerkas">
+                    Nomor Berkas <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="nomorBerkas"
                     placeholder="Contoh: 001/SPM/2025"
                     value={nomorBerkas}
                     onChange={(e) => setNomorBerkas(e.target.value)}
+                    required
                   />
                 </div>
               )}
 
               {showPin && action === "approve" && (
                 <div className="space-y-2">
-                  <Label htmlFor="pin">PIN Verifikasi</Label>
+                  <Label htmlFor="pin">
+                    PIN Verifikasi <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="pin"
                     type="password"
@@ -141,13 +193,17 @@ export const VerificationDialog = ({
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
                     maxLength={6}
+                    required
                   />
                 </div>
               )}
 
               <div className="space-y-2">
                 <Label htmlFor="catatan">
-                  Catatan {action === "approve" ? "(Opsional)" : "(Wajib)"}
+                  Catatan {action === "approve" ? "(Opsional)" : ""}
+                  {(action === "reject" || action === "revise") && (
+                    <span className="text-destructive"> *</span>
+                  )}
                 </Label>
                 <Textarea
                   id="catatan"
@@ -159,6 +215,7 @@ export const VerificationDialog = ({
                   value={catatan}
                   onChange={(e) => setCatatan(e.target.value)}
                   rows={4}
+                  required={action === "reject" || action === "revise"}
                 />
               </div>
             </>
@@ -180,7 +237,7 @@ export const VerificationDialog = ({
               >
                 Kembali
               </Button>
-              <Button onClick={handleSubmit} disabled={isLoading}>
+              <Button onClick={handleSubmit} disabled={isSubmitDisabled()}>
                 {isLoading ? "Memproses..." : "Submit"}
               </Button>
             </>
