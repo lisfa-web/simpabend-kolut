@@ -32,33 +32,33 @@ const menuItems: MenuItem[] = [
     roles: ["bendahara_opd", "administrator"]
   },
   { 
-    name: "Verifikasi", 
+    name: "Verifikasi Resepsionis", 
     icon: CheckSquare, 
-    path: "/verifikasi",
+    path: "/verifikasi-resepsionis",
     roles: ["resepsionis", "administrator"]
   },
   { 
-    name: "PBMD", 
+    name: "Verifikasi PBMD", 
     icon: Settings, 
-    path: "/pbmd",
+    path: "/verifikasi-pbmd",
     roles: ["pbmd", "administrator"]
   },
   { 
-    name: "Akuntansi", 
+    name: "Verifikasi Akuntansi", 
     icon: Calculator, 
-    path: "/akuntansi",
+    path: "/verifikasi-akuntansi",
     roles: ["akuntansi", "administrator"]
   },
   { 
-    name: "Perbendaharaan", 
+    name: "Verifikasi Perbendaharaan", 
     icon: Wallet, 
-    path: "/perbendaharaan",
+    path: "/verifikasi-perbendaharaan",
     roles: ["perbendaharaan", "administrator"]
   },
   { 
-    name: "Kepala BKAD", 
+    name: "Approval Kepala BKAD", 
     icon: UserCog, 
-    path: "/kepala-bkad",
+    path: "/approval-kepala-bkad",
     roles: ["kepala_bkad", "administrator"]
   },
   { 

@@ -39,14 +39,14 @@ import { Plus, Eye, Edit, Trash2, Send, Search, Loader2 } from "lucide-react";
 const InputSpmList = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const [jenisSpmFilter, setJenisSpmFilter] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [jenisSpmFilter, setJenisSpmFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: spmList, isLoading } = useSpmList({
     search,
-    jenis_spm: jenisSpmFilter || undefined,
-    status: statusFilter || undefined,
+    jenis_spm: jenisSpmFilter === "all" ? undefined : jenisSpmFilter,
+    status: statusFilter === "all" ? undefined : statusFilter,
   });
 
   const { deleteSpm, updateSpm } = useSpmMutation();
@@ -111,7 +111,7 @@ const InputSpmList = () => {
               <SelectValue placeholder="Semua Jenis SPM" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Semua Jenis</SelectItem>
+              <SelectItem value="all">Semua Jenis</SelectItem>
               <SelectItem value="up">UP</SelectItem>
               <SelectItem value="gu">GU</SelectItem>
               <SelectItem value="tu">TU</SelectItem>
@@ -125,7 +125,7 @@ const InputSpmList = () => {
               <SelectValue placeholder="Semua Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Semua Status</SelectItem>
+              <SelectItem value="all">Semua Status</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
               <SelectItem value="diajukan">Diajukan</SelectItem>
               <SelectItem value="resepsionis_verifikasi">Di Resepsionis</SelectItem>
