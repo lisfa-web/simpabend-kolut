@@ -30,7 +30,7 @@ const Sp2dList = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
 
-  const { data: sp2dList, isLoading } = useSp2dList({
+  const { data: sp2dList, isLoading, error } = useSp2dList({
     search,
     status: statusFilter,
   });
@@ -66,12 +66,15 @@ const Sp2dList = () => {
                   className="pl-9"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select 
+                value={statusFilter || "all"} 
+                onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Semua Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua Status</SelectItem>
+                  <SelectItem value="all">Semua Status</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="diproses">Diproses</SelectItem>
                   <SelectItem value="diterbitkan">Diterbitkan</SelectItem>
@@ -88,6 +91,13 @@ const Sp2dList = () => {
             {isLoading ? (
               <div className="flex justify-center items-center p-8">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : error ? (
+              <div className="flex flex-col justify-center items-center p-8 text-center">
+                <p className="text-destructive mb-4">Gagal memuat data SP2D</p>
+                <Button variant="outline" onClick={() => window.location.reload()}>
+                  Coba Lagi
+                </Button>
               </div>
             ) : (
               <Table>

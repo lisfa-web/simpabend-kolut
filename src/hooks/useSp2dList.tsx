@@ -17,40 +17,49 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
     queryFn: async () => {
       if (!user?.id) return [];
 
-      let query = supabase
-        .from("sp2d")
-        .select(`
-          *,
-          spm:spm_id(
-            nomor_spm,
-            opd:opd_id(nama_opd),
-            bendahara:bendahara_id(full_name)
-          ),
-          kuasa_bud:kuasa_bud_id(full_name)
-        `)
-        .order("created_at", { ascending: false });
+      try {
+        let query = supabase
+          .from("sp2d")
+          .select(`
+            *,
+            spm:spm_id(
+              nomor_spm,
+              opd:opd_id(nama_opd),
+              bendahara:bendahara_id(full_name)
+            ),
+            kuasa_bud:kuasa_bud_id(full_name)
+          `)
+          .order("created_at", { ascending: false });
 
-      // Apply filters
-      if (filters?.search) {
-        query = query.or(`nomor_sp2d.ilike.%${filters.search}%,spm.nomor_spm.ilike.%${filters.search}%`);
+        // Apply filters
+        if (filters?.search) {
+          query = query.or(`nomor_sp2d.ilike.%${filters.search}%,spm.nomor_spm.ilike.%${filters.search}%`);
+        }
+
+        if (filters?.status && filters.status !== "" && filters.status !== "all") {
+          query = query.eq("status", filters.status as any);
+        }
+
+        if (filters?.tanggal_dari) {
+          query = query.gte("tanggal_sp2d", filters.tanggal_dari);
+        }
+
+        if (filters?.tanggal_sampai) {
+          query = query.lte("tanggal_sp2d", filters.tanggal_sampai);
+        }
+
+        const { data, error } = await query;
+
+        if (error) {
+          console.error("Error fetching SP2D list:", error);
+          throw error;
+        }
+        
+        return data || [];
+      } catch (error) {
+        console.error("Error in useSp2dList:", error);
+        return [];
       }
-
-      if (filters?.status) {
-        query = query.eq("status", filters.status as any);
-      }
-
-      if (filters?.tanggal_dari) {
-        query = query.gte("tanggal_sp2d", filters.tanggal_dari);
-      }
-
-      if (filters?.tanggal_sampai) {
-        query = query.lte("tanggal_sp2d", filters.tanggal_sampai);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      return data;
     },
     enabled: !!user?.id,
   });
