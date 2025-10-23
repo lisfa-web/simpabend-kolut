@@ -11,6 +11,7 @@ import {
   BarChart3,
   Mail,
   Users,
+  Database as DatabaseIcon,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
@@ -83,6 +84,12 @@ const menuItems: MenuItem[] = [
     name: "Manajemen User", 
     icon: Users, 
     path: "/users",
+    roles: ["administrator"]
+  },
+  { 
+    name: "Master Data", 
+    icon: DatabaseIcon, 
+    path: "/masterdata",
     roles: ["administrator"]
   },
   { 

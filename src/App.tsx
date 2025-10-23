@@ -24,6 +24,10 @@ import ApprovalKepalaBkad from "./pages/spm/ApprovalKepalaBkad";
 import UserList from "./pages/users/UserList";
 import UserForm from "./pages/users/UserForm";
 import UserDetail from "./pages/users/UserDetail";
+import OpdList from "./pages/masterdata/OpdList";
+import OpdForm from "./pages/masterdata/OpdForm";
+import VendorList from "./pages/masterdata/VendorList";
+import MasterDataIndex from "./pages/masterdata/MasterDataIndex";
 
 const queryClient = new QueryClient();
 
@@ -155,6 +159,64 @@ const App = () => (
               element={
                 <RoleProtectedRoute allowedRoles={['administrator']}>
                   <UserForm />
+                </RoleProtectedRoute>
+              }
+            />
+
+            {/* Master Data Routes */}
+            <Route
+              path="/masterdata"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <MasterDataIndex />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/masterdata/opd"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <OpdList />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/masterdata/opd/create"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <OpdForm />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/masterdata/opd/:id/edit"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <OpdForm />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/masterdata/vendor"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <VendorList />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/masterdata/vendor/create"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <VendorList />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/masterdata/vendor/:id/edit"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <VendorList />
                 </RoleProtectedRoute>
               }
             />
