@@ -51,6 +51,12 @@ import TemplateSuratList from "./pages/surat/TemplateSuratList";
 import TemplateSuratForm from "./pages/surat/TemplateSuratForm";
 import TemplateSuratDetail from "./pages/surat/TemplateSuratDetail";
 import GenerateSurat from "./pages/surat/GenerateSurat";
+import PengaturanIndex from "./pages/pengaturan/PengaturanIndex";
+import ConfigList from "./pages/pengaturan/ConfigList";
+import FormatNomorList from "./pages/pengaturan/FormatNomorList";
+import FormatNomorForm from "./pages/pengaturan/FormatNomorForm";
+import WaGatewayConfig from "./pages/pengaturan/WaGatewayConfig";
+import PermissionsList from "./pages/pengaturan/PermissionsList";
 
 const queryClient = new QueryClient();
 
@@ -227,6 +233,14 @@ const App = () => (
           <Route path="/surat/template/:id" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><TemplateSuratDetail /></RoleProtectedRoute>} />
           <Route path="/surat/template/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator"]}><TemplateSuratForm /></RoleProtectedRoute>} />
           <Route path="/surat/generate" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><GenerateSurat /></RoleProtectedRoute>} />
+
+          {/* Pengaturan Routes - Administrator only */}
+          <Route path="/pengaturan" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PengaturanIndex /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/config" element={<RoleProtectedRoute allowedRoles={["administrator"]}><ConfigList /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/format-nomor" element={<RoleProtectedRoute allowedRoles={["administrator"]}><FormatNomorList /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/format-nomor/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator"]}><FormatNomorForm /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/wa-gateway" element={<RoleProtectedRoute allowedRoles={["administrator"]}><WaGatewayConfig /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/permissions" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PermissionsList /></RoleProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
