@@ -736,6 +736,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "spm_bendahara_id_fkey"
+            columns: ["bendahara_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "spm_kegiatan_id_fkey"
             columns: ["kegiatan_id"]
             isOneToOne: false
