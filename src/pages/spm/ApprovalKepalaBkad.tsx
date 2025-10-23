@@ -6,6 +6,7 @@ import { SpmVerificationCard } from "./components/SpmVerificationCard";
 import { VerificationDialog } from "./components/VerificationDialog";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 export default function ApprovalKepalaBkad() {
   const [search, setSearch] = useState("");
@@ -26,6 +27,16 @@ export default function ApprovalKepalaBkad() {
 
   const handleSubmitVerification = (data: any) => {
     if (!selectedSpmId) return;
+
+    // Validasi PIN khusus untuk approval
+    if (data.action === "approve" && data.pin !== "123456") {
+      toast({
+        title: "PIN Salah",
+        description: "PIN yang Anda masukkan tidak valid. PIN untuk testing: 123456",
+        variant: "destructive",
+      });
+      return;
+    }
 
     verifySpm.mutate(
       {

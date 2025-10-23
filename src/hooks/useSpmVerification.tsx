@@ -39,6 +39,13 @@ export const useSpmVerification = (role: string) => {
     mutationFn: async (data: VerificationData) => {
       if (!user?.id) throw new Error("User not authenticated");
 
+      // Validasi PIN untuk kepala_bkad
+      if (role === "kepala_bkad" && data.action === "approve") {
+        if (!data.pin || data.pin !== "123456") {
+          throw new Error("PIN tidak valid. Silakan coba lagi.");
+        }
+      }
+
       // Get current SPM data
       const { data: spm, error: fetchError } = await supabase
         .from("spm")
