@@ -43,7 +43,7 @@ const Sp2dForm = () => {
   const [selectedSpm, setSelectedSpm] = useState<any>(null);
 
   const { data: spmList } = useSpmList({
-    status: "disetujui_kepala_bkad",
+    status: "disetujui",
   });
 
   const { createSp2d } = useSp2dMutation();
