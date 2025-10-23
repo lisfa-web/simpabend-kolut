@@ -89,17 +89,48 @@ const InputSpmForm = () => {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold">{id ? "Edit" : "Buat"} SPM</h1>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold">{id ? "Edit" : "Buat"} SPM</h1>
+          <p className="text-muted-foreground">
+            Lengkapi 3 tahap berikut untuk membuat SPM baru
+          </p>
+        </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="data">Data Dasar</TabsTrigger>
-            <TabsTrigger value="lampiran" disabled={!formData}>
+        {/* Step Indicator */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === "data" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+              1
+            </div>
+            <span className={`text-sm font-medium ${activeTab === "data" ? "text-foreground" : "text-muted-foreground"}`}>
+              Data Dasar
+            </span>
+          </div>
+          <div className={`flex-1 h-0.5 mx-4 ${formData ? "bg-primary" : "bg-muted"}`} />
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === "lampiran" ? "bg-primary text-primary-foreground" : formData ? "bg-muted-foreground/20 text-muted-foreground" : "bg-muted text-muted-foreground"}`}>
+              2
+            </div>
+            <span className={`text-sm font-medium ${activeTab === "lampiran" ? "text-foreground" : formData ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
               Lampiran
-            </TabsTrigger>
-            <TabsTrigger value="review" disabled={!formData}>
+            </span>
+          </div>
+          <div className={`flex-1 h-0.5 mx-4 ${activeTab === "review" ? "bg-primary" : "bg-muted"}`} />
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === "review" ? "bg-primary text-primary-foreground" : formData ? "bg-muted-foreground/20 text-muted-foreground" : "bg-muted text-muted-foreground"}`}>
+              3
+            </div>
+            <span className={`text-sm font-medium ${activeTab === "review" ? "text-foreground" : formData ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
               Review & Submit
-            </TabsTrigger>
+            </span>
+          </div>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="hidden">
+            <TabsTrigger value="data">Data Dasar</TabsTrigger>
+            <TabsTrigger value="lampiran">Lampiran</TabsTrigger>
+            <TabsTrigger value="review">Review & Submit</TabsTrigger>
           </TabsList>
 
           <TabsContent value="data" className="mt-6">
