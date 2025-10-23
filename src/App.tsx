@@ -27,14 +27,17 @@ import UserDetail from "./pages/users/UserDetail";
 import MasterDataIndex from "./pages/masterdata/MasterDataIndex";
 import OpdList from "./pages/masterdata/OpdList";
 import OpdForm from "./pages/masterdata/OpdForm";
-import VendorList from "./pages/masterdata/VendorList";
 import VendorForm from "./pages/masterdata/VendorForm";
+import VendorList from "./pages/masterdata/VendorList";
 import ProgramList from "./pages/masterdata/ProgramList";
 import ProgramForm from "./pages/masterdata/ProgramForm";
 import KegiatanList from "./pages/masterdata/KegiatanList";
 import KegiatanForm from "./pages/masterdata/KegiatanForm";
 import SubkegiatanList from "./pages/masterdata/SubkegiatanList";
 import SubkegiatanForm from "./pages/masterdata/SubkegiatanForm";
+import Sp2dList from "./pages/spm/Sp2dList";
+import Sp2dForm from "./pages/spm/Sp2dForm";
+import Sp2dDetail from "./pages/spm/Sp2dDetail";
 
 const queryClient = new QueryClient();
 
@@ -187,6 +190,11 @@ const App = () => (
             <Route path="/masterdata/subkegiatan" element={<RoleProtectedRoute allowedRoles={['administrator']}><SubkegiatanList /></RoleProtectedRoute>} />
             <Route path="/masterdata/subkegiatan/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><SubkegiatanForm /></RoleProtectedRoute>} />
             <Route path="/masterdata/subkegiatan/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><SubkegiatanForm /></RoleProtectedRoute>} />
+            
+            {/* SP2D Routes */}
+            <Route path="/sp2d" element={<RoleProtectedRoute allowedRoles={['kuasa_bud', 'kepala_bkad', 'administrator']}><Sp2dList /></RoleProtectedRoute>} />
+            <Route path="/sp2d/buat" element={<RoleProtectedRoute allowedRoles={['kuasa_bud', 'administrator']}><Sp2dForm /></RoleProtectedRoute>} />
+            <Route path="/sp2d/:id" element={<RoleProtectedRoute allowedRoles={['kuasa_bud', 'kepala_bkad', 'administrator']}><Sp2dDetail /></RoleProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

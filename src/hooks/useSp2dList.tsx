@@ -2,42 +2,37 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
-interface SpmListFilters {
+interface Sp2dListFilters {
   search?: string;
-  jenis_spm?: string;
   status?: string;
   tanggal_dari?: string;
   tanggal_sampai?: string;
 }
 
-export const useSpmList = (filters?: SpmListFilters) => {
+export const useSp2dList = (filters?: Sp2dListFilters) => {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ["spm-list", user?.id, filters],
+    queryKey: ["sp2d-list", user?.id, filters],
     queryFn: async () => {
       if (!user?.id) return [];
 
       let query = supabase
-        .from("spm")
+        .from("sp2d")
         .select(`
           *,
-          opd:opd_id(nama_opd),
-          program:program_id(nama_program),
-          kegiatan:kegiatan_id(nama_kegiatan),
-          subkegiatan:subkegiatan_id(nama_subkegiatan),
-          vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening),
-          bendahara:bendahara_id(full_name)
+          spm:spm_id(
+            nomor_spm,
+            opd:opd_id(nama_opd),
+            bendahara:bendahara_id(full_name)
+          ),
+          kuasa_bud:kuasa_bud_id(full_name)
         `)
         .order("created_at", { ascending: false });
 
       // Apply filters
       if (filters?.search) {
-        query = query.or(`nomor_spm.ilike.%${filters.search}%,uraian.ilike.%${filters.search}%`);
-      }
-
-      if (filters?.jenis_spm) {
-        query = query.eq("jenis_spm", filters.jenis_spm as any);
+        query = query.or(`nomor_sp2d.ilike.%${filters.search}%,spm.nomor_spm.ilike.%${filters.search}%`);
       }
 
       if (filters?.status) {
@@ -45,11 +40,11 @@ export const useSpmList = (filters?: SpmListFilters) => {
       }
 
       if (filters?.tanggal_dari) {
-        query = query.gte("tanggal_ajuan", filters.tanggal_dari);
+        query = query.gte("tanggal_sp2d", filters.tanggal_dari);
       }
 
       if (filters?.tanggal_sampai) {
-        query = query.lte("tanggal_ajuan", filters.tanggal_sampai);
+        query = query.lte("tanggal_sp2d", filters.tanggal_sampai);
       }
 
       const { data, error } = await query;
