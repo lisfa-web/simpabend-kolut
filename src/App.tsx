@@ -21,6 +21,9 @@ import VerifikasiPbmd from "./pages/spm/VerifikasiPbmd";
 import VerifikasiAkuntansi from "./pages/spm/VerifikasiAkuntansi";
 import VerifikasiPerbendaharaan from "./pages/spm/VerifikasiPerbendaharaan";
 import ApprovalKepalaBkad from "./pages/spm/ApprovalKepalaBkad";
+import UserList from "./pages/users/UserList";
+import UserForm from "./pages/users/UserForm";
+import UserDetail from "./pages/users/UserDetail";
 
 const queryClient = new QueryClient();
 
@@ -118,6 +121,40 @@ const App = () => (
               element={
                 <RoleProtectedRoute allowedRoles={['kepala_bkad', 'administrator']}>
                   <ApprovalKepalaBkad />
+                </RoleProtectedRoute>
+              }
+            />
+
+            {/* User Management Routes */}
+            <Route
+              path="/users"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <UserList />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/users/create"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <UserForm />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/users/:id"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <UserDetail />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/users/:id/edit"
+              element={
+                <RoleProtectedRoute allowedRoles={['administrator']}>
+                  <UserForm />
                 </RoleProtectedRoute>
               }
             />

@@ -10,6 +10,7 @@ import {
   FileCheck,
   BarChart3,
   Mail,
+  Users,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
@@ -77,6 +78,12 @@ const menuItems: MenuItem[] = [
     icon: Mail, 
     path: "/surat",
     roles: ["administrator", "kepala_bkad"]
+  },
+  { 
+    name: "Manajemen User", 
+    icon: Users, 
+    path: "/users",
+    roles: ["administrator"]
   },
   { 
     name: "Pengaturan", 
