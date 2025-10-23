@@ -27,7 +27,7 @@ export const useSpmList = (filters?: SpmListFilters) => {
           kegiatan:kegiatan_id(nama_kegiatan),
           subkegiatan:subkegiatan_id(nama_subkegiatan),
           vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening),
-          bendahara:bendahara_id(full_name)
+          bendahara:profiles!spm_bendahara_id_fkey(full_name)
         `)
         .order("created_at", { ascending: false });
 
