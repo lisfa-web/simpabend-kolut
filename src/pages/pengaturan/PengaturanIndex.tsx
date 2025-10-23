@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Settings, FileText, MessageSquare, Shield } from "lucide-react";
+import { Settings, FileText, MessageSquare, Shield, Mail } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 
@@ -25,6 +25,13 @@ const PengaturanIndex = () => {
       icon: MessageSquare,
       href: "/pengaturan/wa-gateway",
       color: "text-green-600",
+    },
+    {
+      title: "Email Configuration",
+      description: "Konfigurasi Gmail SMTP untuk pengiriman email otomatis",
+      icon: Mail,
+      href: "/pengaturan/email",
+      color: "text-red-600",
     },
     {
       title: "Hak Akses",

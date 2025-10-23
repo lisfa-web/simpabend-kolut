@@ -1,5 +1,5 @@
 import { useForm } from "react-hook-form";
-import { Loader2, MessageSquare, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, MessageSquare, CheckCircle2, XCircle, Send } from "lucide-react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useWaGateway, useWaGatewayMutation } from "@/hooks/useWaGateway";
+import { useTestWaGateway } from "@/hooks/useTestWaGateway";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 
 interface FormData {
   api_key: string;
@@ -19,6 +21,8 @@ interface FormData {
 const WaGatewayConfig = () => {
   const { data: gateway, isLoading } = useWaGateway();
   const { upsertGateway } = useWaGatewayMutation();
+  const testWaGateway = useTestWaGateway();
+  const [testPhone, setTestPhone] = useState("");
 
   const { register, handleSubmit, watch } = useForm<FormData>({
     values: gateway
@@ -38,6 +42,13 @@ const WaGatewayConfig = () => {
 
   const onSubmit = (data: FormData) => {
     upsertGateway.mutate(data);
+  };
+
+  const handleTestConnection = () => {
+    if (!testPhone) {
+      return;
+    }
+    testWaGateway.mutate(testPhone);
   };
 
   if (isLoading) {
@@ -151,6 +162,37 @@ const WaGatewayConfig = () => {
                   {...register("is_active")}
                   checked={isActive}
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Test Koneksi</CardTitle>
+              <CardDescription>
+                Kirim pesan WhatsApp test untuk memastikan konfigurasi bekerja dengan baik
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  type="tel"
+                  placeholder="Nomor WhatsApp (contoh: 628123456789)"
+                  value={testPhone}
+                  onChange={(e) => setTestPhone(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleTestConnection}
+                  disabled={testWaGateway.isPending || !testPhone}
+                >
+                  {testWaGateway.isPending && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  <Send className="mr-2 h-4 w-4" />
+                  Test Koneksi
+                </Button>
               </div>
             </CardContent>
           </Card>

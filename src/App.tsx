@@ -56,6 +56,7 @@ import ConfigList from "./pages/pengaturan/ConfigList";
 import FormatNomorList from "./pages/pengaturan/FormatNomorList";
 import FormatNomorForm from "./pages/pengaturan/FormatNomorForm";
 import WaGatewayConfig from "./pages/pengaturan/WaGatewayConfig";
+import EmailConfig from "./pages/pengaturan/EmailConfig";
 import PermissionsList from "./pages/pengaturan/PermissionsList";
 
 const queryClient = new QueryClient();
@@ -240,6 +241,7 @@ const App = () => (
           <Route path="/pengaturan/format-nomor" element={<RoleProtectedRoute allowedRoles={["administrator"]}><FormatNomorList /></RoleProtectedRoute>} />
           <Route path="/pengaturan/format-nomor/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator"]}><FormatNomorForm /></RoleProtectedRoute>} />
           <Route path="/pengaturan/wa-gateway" element={<RoleProtectedRoute allowedRoles={["administrator"]}><WaGatewayConfig /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/email" element={<RoleProtectedRoute allowedRoles={["administrator"]}><EmailConfig /></RoleProtectedRoute>} />
           <Route path="/pengaturan/permissions" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PermissionsList /></RoleProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
