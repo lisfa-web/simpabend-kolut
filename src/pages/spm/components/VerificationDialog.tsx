@@ -55,14 +55,6 @@ export const VerificationDialog = ({
 
     // Validasi untuk action approve
     if (action === "approve") {
-      if (showNomorAntrian && !nomorAntrian.trim()) {
-        toast.error("Nomor Antrian harus diisi");
-        return;
-      }
-      if (showNomorBerkas && !nomorBerkas.trim()) {
-        toast.error("Nomor Berkas harus diisi");
-        return;
-      }
       if (showPin && !pin.trim()) {
         toast.error("PIN harus diisi");
         return;
@@ -97,8 +89,6 @@ export const VerificationDialog = ({
     if (isLoading) return true;
 
     if (action === "approve") {
-      if (showNomorAntrian && !nomorAntrian.trim()) return true;
-      if (showNomorBerkas && !nomorBerkas.trim()) return true;
       if (showPin && !pin.trim()) return true;
     }
 
@@ -151,33 +141,17 @@ export const VerificationDialog = ({
 
           {action && (
             <>
-              {showNomorAntrian && action === "approve" && (
-                <div className="space-y-2">
-                  <Label htmlFor="nomorAntrian">
-                    Nomor Antrian <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="nomorAntrian"
-                    placeholder="Contoh: A-001"
-                    value={nomorAntrian}
-                    onChange={(e) => setNomorAntrian(e.target.value)}
-                    required
-                  />
-                </div>
-              )}
-
-              {showNomorBerkas && action === "approve" && (
-                <div className="space-y-2">
-                  <Label htmlFor="nomorBerkas">
-                    Nomor Berkas <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="nomorBerkas"
-                    placeholder="Contoh: 001/SPM/2025"
-                    value={nomorBerkas}
-                    onChange={(e) => setNomorBerkas(e.target.value)}
-                    required
-                  />
+              {(showNomorAntrian || showNomorBerkas) && action === "approve" && (
+                <div className="rounded-lg border border-muted bg-muted/50 p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Nomor Otomatis</p>
+                      <p className="text-sm text-muted-foreground">
+                        Nomor Antrian dan Nomor Berkas akan digenerate secara otomatis oleh sistem setelah persetujuan.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
 
