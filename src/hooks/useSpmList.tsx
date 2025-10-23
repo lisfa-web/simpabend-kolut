@@ -1,0 +1,62 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./useAuth";
+
+interface SpmListFilters {
+  search?: string;
+  jenis_spm?: string;
+  status?: string;
+  tanggal_dari?: string;
+  tanggal_sampai?: string;
+}
+
+export const useSpmList = (filters?: SpmListFilters) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ["spm-list", user?.id, filters],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      let query = supabase
+        .from("spm")
+        .select(`
+          *,
+          opd:opd_id(nama_opd),
+          program:program_id(nama_program),
+          kegiatan:kegiatan_id(nama_kegiatan),
+          subkegiatan:subkegiatan_id(nama_subkegiatan),
+          vendor:vendor_id(nama_vendor),
+          bendahara:bendahara_id(full_name)
+        `)
+        .order("created_at", { ascending: false });
+
+      // Apply filters
+      if (filters?.search) {
+        query = query.or(`nomor_spm.ilike.%${filters.search}%,uraian.ilike.%${filters.search}%`);
+      }
+
+      if (filters?.jenis_spm) {
+        query = query.eq("jenis_spm", filters.jenis_spm as any);
+      }
+
+      if (filters?.status) {
+        query = query.eq("status", filters.status as any);
+      }
+
+      if (filters?.tanggal_dari) {
+        query = query.gte("tanggal_ajuan", filters.tanggal_dari);
+      }
+
+      if (filters?.tanggal_sampai) {
+        query = query.lte("tanggal_ajuan", filters.tanggal_sampai);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
+};
