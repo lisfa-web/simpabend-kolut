@@ -25,6 +25,8 @@ import { ArrowLeft } from "lucide-react";
 import { useSpmList } from "@/hooks/useSpmList";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { useAuth } from "@/hooks/useAuth";
+import { useGenerateSp2dNumber } from "@/hooks/useGenerateSp2dNumber";
+import { formatCurrency } from "@/lib/currency";
 
 interface Sp2dFormData {
   spm_id: string;
@@ -47,6 +49,7 @@ const Sp2dForm = () => {
   });
 
   const { createSp2d } = useSp2dMutation();
+  const { data: generatedNumber, isLoading: isGeneratingNumber } = useGenerateSp2dNumber();
 
   const form = useForm<Sp2dFormData>({
     defaultValues: {
@@ -62,6 +65,13 @@ const Sp2dForm = () => {
   });
 
   const watchSpmId = form.watch("spm_id");
+
+  // Auto-fill nomor SP2D when generated
+  useEffect(() => {
+    if (generatedNumber) {
+      form.setValue("nomor_sp2d", generatedNumber);
+    }
+  }, [generatedNumber, form]);
 
   useEffect(() => {
     if (watchSpmId && spmList) {
@@ -186,8 +196,16 @@ const Sp2dForm = () => {
                       <FormItem>
                         <FormLabel>Nomor SP2D</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Nomor SP2D" />
+                          <Input 
+                            {...field} 
+                            placeholder={isGeneratingNumber ? "Generating..." : "Nomor SP2D"}
+                            readOnly
+                            className="bg-muted"
+                          />
                         </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Nomor otomatis dibuat oleh sistem
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -216,13 +234,15 @@ const Sp2dForm = () => {
                       <FormLabel>Nilai SP2D</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(Number(e.target.value))
-                          }
+                          readOnly
+                          className="bg-muted"
+                          value={formatCurrency(field.value)}
                         />
                       </FormControl>
+                      <p className="text-xs text-muted-foreground">
+                        Nilai diambil otomatis dari SPM yang dipilih
+                      </p>
                       <FormMessage />
                     </FormItem>
                   )}
