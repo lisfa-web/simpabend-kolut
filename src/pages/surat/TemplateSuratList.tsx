@@ -93,12 +93,15 @@ export default function TemplateSuratList() {
                   className="pl-9"
                 />
               </div>
-              <Select value={jenisFilter} onValueChange={setJenisFilter}>
+              <Select 
+                value={jenisFilter || "all"} 
+                onValueChange={(value) => setJenisFilter(value === "all" ? "" : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Semua Jenis" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua Jenis</SelectItem>
+                  <SelectItem value="all">Semua Jenis</SelectItem>
                   {jenisSuratOptions.map((jenis) => (
                     <SelectItem key={jenis} value={jenis}>
                       {jenis}
@@ -106,12 +109,15 @@ export default function TemplateSuratList() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select 
+                value={statusFilter || "all"} 
+                onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Semua Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua Status</SelectItem>
+                  <SelectItem value="all">Semua Status</SelectItem>
                   <SelectItem value="active">Aktif</SelectItem>
                   <SelectItem value="inactive">Tidak Aktif</SelectItem>
                 </SelectContent>

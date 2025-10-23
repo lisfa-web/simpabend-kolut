@@ -88,12 +88,15 @@ export default function PejabatList() {
                   className="pl-9"
                 />
               </div>
-              <Select value={opdFilter} onValueChange={setOpdFilter}>
+              <Select 
+                value={opdFilter || "all"} 
+                onValueChange={(value) => setOpdFilter(value === "all" ? "" : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Semua OPD" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua OPD</SelectItem>
+                  <SelectItem value="all">Semua OPD</SelectItem>
                   {opdList.map((opd) => (
                     <SelectItem key={opd.id} value={opd.id}>
                       {opd.nama_opd}
@@ -101,12 +104,15 @@ export default function PejabatList() {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <Select 
+                value={statusFilter || "all"} 
+                onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Semua Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Semua Status</SelectItem>
+                  <SelectItem value="all">Semua Status</SelectItem>
                   <SelectItem value="active">Aktif</SelectItem>
                   <SelectItem value="inactive">Tidak Aktif</SelectItem>
                 </SelectContent>

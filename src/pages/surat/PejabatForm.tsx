@@ -207,14 +207,17 @@ export default function PejabatForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>OPD (Opsional)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select 
+                        onValueChange={(value) => field.onChange(value === "none" ? "" : value)} 
+                        value={field.value || "none"}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Pilih OPD" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">Tidak ada</SelectItem>
+                          <SelectItem value="none">Tidak ada</SelectItem>
                           {opdList.map((opd) => (
                             <SelectItem key={opd.id} value={opd.id}>
                               {opd.nama_opd}
