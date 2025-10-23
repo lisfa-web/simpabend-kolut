@@ -1,0 +1,170 @@
+import { useState } from "react";
+import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useLaporanVerifikasi } from "@/hooks/useLaporanVerifikasi";
+import { FilterPeriode } from "./components/FilterPeriode";
+import { SummaryCard } from "./components/SummaryCard";
+import { ExportButton } from "./components/ExportButton";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { formatCurrency } from "@/lib/currency";
+import { format, parseISO } from "date-fns";
+import { id } from "date-fns/locale";
+import { Badge } from "@/components/ui/badge";
+
+const LaporanVerifikasi = () => {
+  const navigate = useNavigate();
+  const [tanggalDari, setTanggalDari] = useState("");
+  const [tanggalSampai, setTanggalSampai] = useState("");
+
+  const { data: spmList, isLoading, error } = useLaporanVerifikasi({
+    tanggal_dari: tanggalDari,
+    tanggal_sampai: tanggalSampai,
+  });
+
+  // Count by status
+  const statusCounts = spmList?.reduce((acc: any, item: any) => {
+    acc[item.status] = (acc[item.status] || 0) + 1;
+    return acc;
+  }, {}) || {};
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+      draft: { label: "Draft", variant: "secondary" },
+      diajukan: { label: "Diajukan", variant: "default" },
+      verifikasi_resepsionis: { label: "Resepsionis", variant: "outline" },
+      verifikasi_pbmd: { label: "PBMD", variant: "outline" },
+      verifikasi_akuntansi: { label: "Akuntansi", variant: "outline" },
+      verifikasi_perbendaharaan: { label: "Perbendaharaan", variant: "outline" },
+      approval_kepala_bkad: { label: "Kepala BKAD", variant: "outline" },
+      disetujui: { label: "Disetujui", variant: "default" },
+      ditolak: { label: "Ditolak", variant: "destructive" },
+    };
+
+    const config = statusConfig[status] || { label: status, variant: "outline" };
+    return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/laporan")}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Laporan Verifikasi</h1>
+              <p className="text-muted-foreground">
+                Progress verifikasi SPM per tahap
+              </p>
+            </div>
+          </div>
+          <ExportButton data={spmList || []} filename="laporan-verifikasi" />
+        </div>
+
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filter Laporan</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <FilterPeriode
+              tanggalDari={tanggalDari}
+              tanggalSampai={tanggalSampai}
+              onTanggalDariChange={setTanggalDari}
+              onTanggalSampaiChange={setTanggalSampai}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Summary by Status */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <SummaryCard
+            title="Resepsionis"
+            value={statusCounts.verifikasi_resepsionis || 0}
+            icon={CheckCircle2}
+          />
+          <SummaryCard
+            title="PBMD"
+            value={statusCounts.verifikasi_pbmd || 0}
+            icon={CheckCircle2}
+          />
+          <SummaryCard
+            title="Akuntansi"
+            value={statusCounts.verifikasi_akuntansi || 0}
+            icon={CheckCircle2}
+          />
+          <SummaryCard
+            title="Perbendaharaan"
+            value={statusCounts.verifikasi_perbendaharaan || 0}
+            icon={CheckCircle2}
+          />
+        </div>
+
+        {/* Data Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Data Verifikasi SPM</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex justify-center items-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : error ? (
+              <div className="text-center p-8 text-destructive">
+                Gagal memuat data laporan
+              </div>
+            ) : spmList && spmList.length > 0 ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nomor SPM</TableHead>
+                      <TableHead>Tanggal Ajuan</TableHead>
+                      <TableHead>OPD</TableHead>
+                      <TableHead>Bendahara</TableHead>
+                      <TableHead className="text-right">Nilai</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {spmList.map((spm: any) => (
+                      <TableRow key={spm.id}>
+                        <TableCell className="font-medium">
+                          {spm.nomor_spm || "-"}
+                        </TableCell>
+                        <TableCell>
+                          {spm.tanggal_ajuan
+                            ? format(parseISO(spm.tanggal_ajuan), "dd MMM yyyy", {
+                                locale: id,
+                              })
+                            : "-"}
+                        </TableCell>
+                        <TableCell>{spm.opd?.nama_opd || "-"}</TableCell>
+                        <TableCell>{spm.bendahara?.full_name || "-"}</TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(spm.nilai_spm)}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(spm.status)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <div className="text-center p-8 text-muted-foreground">
+                Tidak ada data yang sesuai dengan filter
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default LaporanVerifikasi;

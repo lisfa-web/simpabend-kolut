@@ -38,6 +38,11 @@ import SubkegiatanForm from "./pages/masterdata/SubkegiatanForm";
 import Sp2dList from "./pages/spm/Sp2dList";
 import Sp2dForm from "./pages/spm/Sp2dForm";
 import Sp2dDetail from "./pages/spm/Sp2dDetail";
+import LaporanIndex from "./pages/laporan/LaporanIndex";
+import LaporanSpm from "./pages/laporan/LaporanSpm";
+import LaporanSp2d from "./pages/laporan/LaporanSp2d";
+import LaporanVerifikasi from "./pages/laporan/LaporanVerifikasi";
+import LaporanKeuangan from "./pages/laporan/LaporanKeuangan";
 
 const queryClient = new QueryClient();
 
@@ -195,6 +200,13 @@ const App = () => (
             <Route path="/sp2d" element={<RoleProtectedRoute allowedRoles={['kuasa_bud', 'kepala_bkad', 'administrator']}><Sp2dList /></RoleProtectedRoute>} />
             <Route path="/sp2d/buat" element={<RoleProtectedRoute allowedRoles={['kuasa_bud', 'administrator']}><Sp2dForm /></RoleProtectedRoute>} />
             <Route path="/sp2d/:id" element={<RoleProtectedRoute allowedRoles={['kuasa_bud', 'kepala_bkad', 'administrator']}><Sp2dDetail /></RoleProtectedRoute>} />
+            
+            {/* Laporan Routes - Accessible by all authenticated users */}
+            <Route path="/laporan" element={<ProtectedRoute><LaporanIndex /></ProtectedRoute>} />
+            <Route path="/laporan/spm" element={<ProtectedRoute><LaporanSpm /></ProtectedRoute>} />
+            <Route path="/laporan/sp2d" element={<ProtectedRoute><LaporanSp2d /></ProtectedRoute>} />
+            <Route path="/laporan/verifikasi" element={<ProtectedRoute><LaporanVerifikasi /></ProtectedRoute>} />
+            <Route path="/laporan/keuangan" element={<ProtectedRoute><LaporanKeuangan /></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
