@@ -13,6 +13,7 @@ import { useProgramList } from "@/hooks/useProgramList";
 import { useKegiatanList } from "@/hooks/useKegiatanList";
 import { useSubkegiatanList } from "@/hooks/useSubkegiatanList";
 import { useVendorList } from "@/hooks/useVendorList";
+import { toast } from "@/hooks/use-toast";
 
 const InputSpmForm = () => {
   const { id } = useParams();
@@ -34,6 +35,18 @@ const InputSpmForm = () => {
   const { data: subkegiatanList } = useSubkegiatanList(formData?.kegiatan_id);
   const { data: vendorList } = useVendorList();
 
+  const convertJenisSpmToDbFormat = (jenis: string): string => {
+    const mapping: Record<string, string> = {
+      'up': 'UP',
+      'gu': 'GU',
+      'tu': 'TU',
+      'ls_gaji': 'LS_Gaji',
+      'ls_barang_jasa': 'LS_Barang_Jasa',
+      'ls_belanja_modal': 'LS_Belanja_Modal'
+    };
+    return mapping[jenis] || jenis;
+  };
+
   const handleDataSubmit = (data: SpmDataFormValues) => {
     setFormData(data);
     setActiveTab("lampiran");
@@ -48,7 +61,7 @@ const InputSpmForm = () => {
         program_id: formData.program_id,
         kegiatan_id: formData.kegiatan_id,
         subkegiatan_id: formData.subkegiatan_id,
-        jenis_spm: formData.jenis_spm,
+        jenis_spm: convertJenisSpmToDbFormat(formData.jenis_spm),
         nilai_spm: formData.nilai_spm,
         uraian: formData.uraian,
         vendor_id: formData.vendor_id,
@@ -71,12 +84,31 @@ const InputSpmForm = () => {
       ];
 
       for (const { file, jenis } of allFiles) {
-        await uploadFile(file, spmId, jenis);
+        try {
+          await uploadFile(file, spmId, jenis);
+        } catch (uploadError: any) {
+          console.error(`Gagal upload file ${file.name}:`, uploadError);
+          toast({
+            title: "Peringatan",
+            description: `File ${file.name} gagal diupload: ${uploadError.message}`,
+            variant: "destructive",
+          });
+        }
       }
 
+      toast({
+        title: "Berhasil",
+        description: isDraft ? "SPM berhasil disimpan sebagai draft" : "SPM berhasil diajukan untuk verifikasi",
+      });
+
       navigate("/input-spm");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting SPM:", error);
+      toast({
+        title: "Gagal Menyimpan SPM",
+        description: error.message || "Terjadi kesalahan saat menyimpan SPM",
+        variant: "destructive",
+      });
     }
   };
 
