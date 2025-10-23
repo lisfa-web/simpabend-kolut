@@ -16,6 +16,11 @@ import InitialSetup from "./pages/auth/InitialSetup";
 import InputSpmList from "./pages/spm/InputSpmList";
 import InputSpmForm from "./pages/spm/InputSpmForm";
 import InputSpmDetail from "./pages/spm/InputSpmDetail";
+import VerifikasiResepsionis from "./pages/spm/VerifikasiResepsionis";
+import VerifikasiPbmd from "./pages/spm/VerifikasiPbmd";
+import VerifikasiAkuntansi from "./pages/spm/VerifikasiAkuntansi";
+import VerifikasiPerbendaharaan from "./pages/spm/VerifikasiPerbendaharaan";
+import ApprovalKepalaBkad from "./pages/spm/ApprovalKepalaBkad";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +78,46 @@ const App = () => (
               element={
                 <RoleProtectedRoute allowedRoles={['bendahara_opd', 'administrator']}>
                   <InputSpmDetail />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/verifikasi-resepsionis"
+              element={
+                <RoleProtectedRoute allowedRoles={['resepsionis', 'administrator']}>
+                  <VerifikasiResepsionis />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/verifikasi-pbmd"
+              element={
+                <RoleProtectedRoute allowedRoles={['pbmd', 'administrator']}>
+                  <VerifikasiPbmd />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/verifikasi-akuntansi"
+              element={
+                <RoleProtectedRoute allowedRoles={['akuntansi', 'administrator']}>
+                  <VerifikasiAkuntansi />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/verifikasi-perbendaharaan"
+              element={
+                <RoleProtectedRoute allowedRoles={['perbendaharaan', 'administrator']}>
+                  <VerifikasiPerbendaharaan />
+                </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/approval-kepala-bkad"
+              element={
+                <RoleProtectedRoute allowedRoles={['kepala_bkad', 'administrator']}>
+                  <ApprovalKepalaBkad />
                 </RoleProtectedRoute>
               }
             />
