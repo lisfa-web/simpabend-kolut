@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   return (
@@ -14,8 +15,8 @@ const Header = () => {
             <span className="text-xs text-muted-foreground">BKAD Kolaka Utara</span>
           </div>
         </div>
-        <Button variant="default" className="font-semibold">
-          Masuk Sistem
+        <Button variant="default" className="font-semibold" asChild>
+          <Link to="/dashboard">Masuk Sistem</Link>
         </Button>
       </div>
     </header>

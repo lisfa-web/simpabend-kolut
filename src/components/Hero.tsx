@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   return (
@@ -16,12 +17,14 @@ const Hero = () => {
           pertanggungjawaban Bendahara di BKAD Kolaka Utara
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" className="font-semibold">
-            Akses Dashboard
-            <ArrowRight className="ml-2 h-5 w-5" />
+          <Button size="lg" className="font-semibold" asChild>
+            <Link to="/dashboard">
+              Akses Dashboard
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
           </Button>
-          <Button size="lg" variant="outline" className="font-semibold">
-            Pelajari Lebih Lanjut
+          <Button size="lg" variant="outline" className="font-semibold" asChild>
+            <Link to="/tentang">Pelajari Lebih Lanjut</Link>
           </Button>
         </div>
       </div>
