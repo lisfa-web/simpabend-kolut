@@ -1,15 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useOpdList = () => {
+interface OpdFilters {
+  is_active?: boolean;
+}
+
+export const useOpdList = (filters?: OpdFilters) => {
   return useQuery({
-    queryKey: ["opd-list"],
+    queryKey: ["opd-list", filters],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("opd")
         .select("*")
-        .eq("is_active", true)
         .order("nama_opd");
+
+      if (filters?.is_active !== undefined) {
+        query = query.eq("is_active", filters.is_active);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data;

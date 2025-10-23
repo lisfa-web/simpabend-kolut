@@ -201,12 +201,24 @@ const App = () => (
             <Route path="/sp2d/buat" element={<RoleProtectedRoute allowedRoles={['kuasa_bud', 'administrator']}><Sp2dForm /></RoleProtectedRoute>} />
             <Route path="/sp2d/:id" element={<RoleProtectedRoute allowedRoles={['kuasa_bud', 'kepala_bkad', 'administrator']}><Sp2dDetail /></RoleProtectedRoute>} />
             
-            {/* Laporan Routes - Accessible by all authenticated users */}
-            <Route path="/laporan" element={<ProtectedRoute><LaporanIndex /></ProtectedRoute>} />
-            <Route path="/laporan/spm" element={<ProtectedRoute><LaporanSpm /></ProtectedRoute>} />
-            <Route path="/laporan/sp2d" element={<ProtectedRoute><LaporanSp2d /></ProtectedRoute>} />
-            <Route path="/laporan/verifikasi" element={<ProtectedRoute><LaporanVerifikasi /></ProtectedRoute>} />
-            <Route path="/laporan/keuangan" element={<ProtectedRoute><LaporanKeuangan /></ProtectedRoute>} />
+          {/* Laporan Routes - Accessible by all authenticated users */}
+          <Route path="/laporan" element={<ProtectedRoute><LaporanIndex /></ProtectedRoute>} />
+          <Route path="/laporan/spm" element={<ProtectedRoute><LaporanSpm /></ProtectedRoute>} />
+          <Route path="/laporan/sp2d" element={<ProtectedRoute><LaporanSp2d /></ProtectedRoute>} />
+          <Route path="/laporan/verifikasi" element={<ProtectedRoute><LaporanVerifikasi /></ProtectedRoute>} />
+          <Route path="/laporan/keuangan" element={<ProtectedRoute><LaporanKeuangan /></ProtectedRoute>} />
+
+          {/* Surat Routes - Admin only */}
+          <Route path="/surat" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><SuratIndex /></RoleProtectedRoute>} />
+          <Route path="/surat/pejabat" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><PejabatList /></RoleProtectedRoute>} />
+          <Route path="/surat/pejabat/buat" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PejabatForm /></RoleProtectedRoute>} />
+          <Route path="/surat/pejabat/:id" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><PejabatDetail /></RoleProtectedRoute>} />
+          <Route path="/surat/pejabat/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PejabatForm /></RoleProtectedRoute>} />
+          <Route path="/surat/template" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><TemplateSuratList /></RoleProtectedRoute>} />
+          <Route path="/surat/template/buat" element={<RoleProtectedRoute allowedRoles={["administrator"]}><TemplateSuratForm /></RoleProtectedRoute>} />
+          <Route path="/surat/template/:id" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><TemplateSuratDetail /></RoleProtectedRoute>} />
+          <Route path="/surat/template/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator"]}><TemplateSuratForm /></RoleProtectedRoute>} />
+          <Route path="/surat/generate" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><GenerateSurat /></RoleProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
