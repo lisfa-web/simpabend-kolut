@@ -9,10 +9,6 @@ import {
   Layers,
   ListTree,
   UserCog,
-  FileText,
-  Hash,
-  Settings,
-  MessageSquare,
 } from "lucide-react";
 
 interface MasterDataCard {
@@ -59,30 +55,6 @@ const masterDataList: MasterDataCard[] = [
     description: "Data Pejabat",
     icon: UserCog,
     path: "/masterdata/pejabat",
-  },
-  {
-    title: "Template Surat",
-    description: "Template Surat Resmi",
-    icon: FileText,
-    path: "/masterdata/template",
-  },
-  {
-    title: "Format Nomor",
-    description: "Format Penomoran Dokumen",
-    icon: Hash,
-    path: "/masterdata/format-nomor",
-  },
-  {
-    title: "Konfigurasi Sistem",
-    description: "Pengaturan Sistem",
-    icon: Settings,
-    path: "/masterdata/config",
-  },
-  {
-    title: "WhatsApp Gateway",
-    description: "Konfigurasi WhatsApp",
-    icon: MessageSquare,
-    path: "/masterdata/wa-gateway",
   },
 ];
 
