@@ -43,6 +43,14 @@ import LaporanSpm from "./pages/laporan/LaporanSpm";
 import LaporanSp2d from "./pages/laporan/LaporanSp2d";
 import LaporanVerifikasi from "./pages/laporan/LaporanVerifikasi";
 import LaporanKeuangan from "./pages/laporan/LaporanKeuangan";
+import SuratIndex from "./pages/surat/SuratIndex";
+import PejabatList from "./pages/surat/PejabatList";
+import PejabatForm from "./pages/surat/PejabatForm";
+import PejabatDetail from "./pages/surat/PejabatDetail";
+import TemplateSuratList from "./pages/surat/TemplateSuratList";
+import TemplateSuratForm from "./pages/surat/TemplateSuratForm";
+import TemplateSuratDetail from "./pages/surat/TemplateSuratDetail";
+import GenerateSurat from "./pages/surat/GenerateSurat";
 
 const queryClient = new QueryClient();
 

@@ -120,9 +120,12 @@ export default function PejabatForm() {
       }
 
       const submitData = {
-        ...data,
-        opd_id: data.opd_id || null,
-        ttd_url: ttdUrl || null,
+        nip: data.nip,
+        nama_lengkap: data.nama_lengkap,
+        jabatan: data.jabatan,
+        is_active: data.is_active,
+        opd_id: data.opd_id || undefined,
+        ttd_url: ttdUrl || undefined,
       };
 
       if (isEdit && id) {
