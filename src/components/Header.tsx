@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Header = () => {
+  const { user } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container flex h-16 items-center justify-between">
@@ -16,7 +19,9 @@ const Header = () => {
           </div>
         </div>
         <Button variant="default" className="font-semibold" asChild>
-          <Link to="/dashboard">Masuk Sistem</Link>
+          <Link to={user ? "/dashboard" : "/login"}>
+            {user ? "Dashboard" : "Masuk Sistem"}
+          </Link>
         </Button>
       </div>
     </header>
