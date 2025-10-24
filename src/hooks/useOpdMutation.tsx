@@ -44,17 +44,44 @@ export const useOpdMutation = () => {
 
   const deleteOpd = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("opd").delete().eq("id", id);
+      // Check dependencies first
+      const { data: dependencies } = await supabase.rpc('check_opd_dependencies', { opd_id_param: id });
+      const deps = dependencies as any;
+      
+      if (deps && !deps.can_deactivate) {
+        const messages = [];
+        if (deps.user_count > 0) messages.push(`${deps.user_count} user`);
+        if (deps.spm_count > 0) messages.push(`${deps.spm_count} SPM`);
+        if (deps.pejabat_count > 0) messages.push(`${deps.pejabat_count} pejabat`);
+        throw new Error(`Tidak dapat menonaktifkan OPD. Masih digunakan oleh: ${messages.join(', ')}`);
+      }
+      
+      // Soft delete: set is_active to false
+      const { error } = await supabase.from("opd").update({ is_active: false }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["opd-list"] });
-      toast.success("OPD berhasil dihapus");
+      toast.success("OPD berhasil dinonaktifkan");
     },
     onError: (error: any) => {
-      toast.error(error.message || "Gagal menghapus OPD");
+      toast.error(error.message || "Gagal menonaktifkan OPD");
     },
   });
 
-  return { createOpd, updateOpd, deleteOpd };
+  const activateOpd = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("opd").update({ is_active: true }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["opd-list"] });
+      toast.success("OPD berhasil diaktifkan");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Gagal mengaktifkan OPD");
+    },
+  });
+
+  return { createOpd, updateOpd, deleteOpd, activateOpd };
 };

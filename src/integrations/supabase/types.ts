@@ -1097,6 +1097,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_kegiatan_dependencies: {
+        Args: { kegiatan_id_param: string }
+        Returns: Json
+      }
+      check_opd_dependencies: { Args: { opd_id_param: string }; Returns: Json }
+      check_program_dependencies: {
+        Args: { program_id_param: string }
+        Returns: Json
+      }
+      check_subkegiatan_dependencies: {
+        Args: { subkegiatan_id_param: string }
+        Returns: Json
+      }
+      check_vendor_dependencies: {
+        Args: { vendor_id_param: string }
+        Returns: Json
+      }
       generate_document_number: {
         Args: { _jenis_dokumen: string; _tanggal?: string }
         Returns: string

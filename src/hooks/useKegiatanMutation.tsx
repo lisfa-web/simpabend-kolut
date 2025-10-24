@@ -42,17 +42,43 @@ export const useKegiatanMutation = () => {
 
   const deleteKegiatan = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("kegiatan").delete().eq("id", id);
+      // Check dependencies first
+      const { data: dependencies } = await supabase.rpc('check_kegiatan_dependencies', { kegiatan_id_param: id });
+      const deps = dependencies as any;
+      
+      if (deps && !deps.can_deactivate) {
+        const messages = [];
+        if (deps.subkegiatan_count > 0) messages.push(`${deps.subkegiatan_count} sub kegiatan`);
+        if (deps.spm_count > 0) messages.push(`${deps.spm_count} SPM`);
+        throw new Error(`Tidak dapat menonaktifkan Kegiatan. Masih digunakan oleh: ${messages.join(', ')}`);
+      }
+      
+      // Soft delete: set is_active to false
+      const { error } = await supabase.from("kegiatan").update({ is_active: false }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["kegiatan-list"] });
-      toast.success("Kegiatan berhasil dihapus");
+      toast.success("Kegiatan berhasil dinonaktifkan");
     },
     onError: (error: any) => {
-      toast.error(error.message || "Gagal menghapus kegiatan");
+      toast.error(error.message || "Gagal menonaktifkan kegiatan");
     },
   });
 
-  return { createKegiatan, updateKegiatan, deleteKegiatan };
+  const activateKegiatan = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("kegiatan").update({ is_active: true }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["kegiatan-list"] });
+      toast.success("Kegiatan berhasil diaktifkan");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Gagal mengaktifkan kegiatan");
+    },
+  });
+
+  return { createKegiatan, updateKegiatan, deleteKegiatan, activateKegiatan };
 };

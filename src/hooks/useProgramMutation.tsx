@@ -42,17 +42,43 @@ export const useProgramMutation = () => {
 
   const deleteProgram = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("program").delete().eq("id", id);
+      // Check dependencies first
+      const { data: dependencies } = await supabase.rpc('check_program_dependencies', { program_id_param: id });
+      const deps = dependencies as any;
+      
+      if (deps && !deps.can_deactivate) {
+        const messages = [];
+        if (deps.kegiatan_count > 0) messages.push(`${deps.kegiatan_count} kegiatan`);
+        if (deps.spm_count > 0) messages.push(`${deps.spm_count} SPM`);
+        throw new Error(`Tidak dapat menonaktifkan Program. Masih digunakan oleh: ${messages.join(', ')}`);
+      }
+      
+      // Soft delete: set is_active to false
+      const { error } = await supabase.from("program").update({ is_active: false }).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["program-list"] });
-      toast.success("Program berhasil dihapus");
+      toast.success("Program berhasil dinonaktifkan");
     },
     onError: (error: any) => {
-      toast.error(error.message || "Gagal menghapus program");
+      toast.error(error.message || "Gagal menonaktifkan program");
     },
   });
 
-  return { createProgram, updateProgram, deleteProgram };
+  const activateProgram = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("program").update({ is_active: true }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["program-list"] });
+      toast.success("Program berhasil diaktifkan");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Gagal mengaktifkan program");
+    },
+  });
+
+  return { createProgram, updateProgram, deleteProgram, activateProgram };
 };
