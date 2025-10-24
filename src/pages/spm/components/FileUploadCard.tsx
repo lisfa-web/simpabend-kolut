@@ -86,7 +86,13 @@ export const FileUploadCard = ({
             {required && <span className="text-destructive ml-1">*</span>}
           </label>
           <span className="text-xs text-muted-foreground">
-            Max {(rule.maxSize / 1024 / 1024).toFixed(0)}MB
+            Max {(() => {
+              const mb = rule.maxSize / 1024 / 1024;
+              if (mb < 1) {
+                return `${(rule.maxSize / 1024).toFixed(0)}KB`;
+              }
+              return `${mb.toFixed(mb >= 10 ? 0 : 1)}MB`;
+            })()}
           </span>
         </div>
 
