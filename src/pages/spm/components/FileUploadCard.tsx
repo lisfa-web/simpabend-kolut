@@ -3,16 +3,17 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { X, Upload, FileIcon } from "lucide-react";
-import { validateFile, FILE_VALIDATION_RULES, formatFileSize, getFileIcon } from "@/lib/fileValidation";
+import { validateFile, getFileValidationRule, formatFileSize, getFileIcon } from "@/lib/fileValidation";
 import { toast } from "@/hooks/use-toast";
 
 interface FileUploadCardProps {
-  jenisLampiran: keyof typeof FILE_VALIDATION_RULES;
+  jenisLampiran: string;
   label: string;
   required?: boolean;
   files: File[];
   onFilesChange: (files: File[]) => void;
   multiple?: boolean;
+  maxSizeMB?: number;
 }
 
 export const FileUploadCard = ({
@@ -22,10 +23,11 @@ export const FileUploadCard = ({
   files,
   onFilesChange,
   multiple = true,
+  maxSizeMB,
 }: FileUploadCardProps) => {
   const [dragActive, setDragActive] = useState(false);
 
-  const rule = FILE_VALIDATION_RULES[jenisLampiran];
+  const rule = getFileValidationRule(jenisLampiran, maxSizeMB);
 
   const handleFiles = (newFiles: FileList | null) => {
     if (!newFiles) return;

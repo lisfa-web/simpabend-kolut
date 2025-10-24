@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUploadCard } from "./FileUploadCard";
+import { useConfigSistem } from "@/hooks/useConfigSistem";
 
 interface SpmLampiranFormProps {
   jenisSpm?: string;
@@ -28,6 +29,18 @@ export const SpmLampiranForm = ({
   onBack,
 }: SpmLampiranFormProps) => {
   const isLsType = jenisSpm?.startsWith("ls_");
+  const { data: configs } = useConfigSistem();
+
+  // Get max file sizes from config
+  const getMaxSize = (key: string, defaultValue: number) => {
+    const config = configs?.find((c) => c.key === key);
+    return config ? parseFloat(config.value) : defaultValue;
+  };
+
+  const maxSizeDokumen = getMaxSize('max_file_size_dokumen_spm', 5);
+  const maxSizeTbk = getMaxSize('max_file_size_tbk', 5);
+  const maxSizeSpj = getMaxSize('max_file_size_spj', 5);
+  const maxSizeLainnya = getMaxSize('max_file_size_lainnya', 10);
 
   const handleNext = () => {
     // Validasi: dokumen_spm wajib
@@ -55,6 +68,7 @@ export const SpmLampiranForm = ({
         onFilesChange={(newFiles) =>
           onFilesChange({ ...files, dokumen_spm: newFiles })
         }
+        maxSizeMB={maxSizeDokumen}
       />
 
       {isLsType && (
@@ -66,6 +80,7 @@ export const SpmLampiranForm = ({
           onFilesChange={(newFiles) =>
             onFilesChange({ ...files, tbk: newFiles })
           }
+          maxSizeMB={maxSizeTbk}
         />
       )}
 
@@ -76,6 +91,7 @@ export const SpmLampiranForm = ({
         onFilesChange={(newFiles) =>
           onFilesChange({ ...files, spj: newFiles })
         }
+        maxSizeMB={maxSizeSpj}
       />
 
       <FileUploadCard
@@ -85,6 +101,7 @@ export const SpmLampiranForm = ({
         onFilesChange={(newFiles) =>
           onFilesChange({ ...files, lainnya: newFiles })
         }
+        maxSizeMB={maxSizeLainnya}
       />
 
       <div className="flex justify-between">

@@ -3,21 +3,21 @@ export interface FileValidationRule {
   allowedTypes: string[];
 }
 
-export const FILE_VALIDATION_RULES = {
+export const FILE_VALIDATION_RULES: Record<string, FileValidationRule> = {
   dokumen_spm: {
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxSize: 5 * 1024 * 1024, // 5MB default
     allowedTypes: ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'],
   },
   tbk: {
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxSize: 5 * 1024 * 1024, // 5MB default
     allowedTypes: ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'],
   },
   spj: {
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxSize: 5 * 1024 * 1024, // 5MB default
     allowedTypes: ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'],
   },
   lainnya: {
-    maxSize: 10 * 1024 * 1024, // 10MB
+    maxSize: 10 * 1024 * 1024, // 10MB default
     allowedTypes: [
       'application/pdf',
       'image/jpeg',
@@ -29,6 +29,25 @@ export const FILE_VALIDATION_RULES = {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     ],
   },
+};
+
+export const getFileValidationRule = (
+  jenisLampiran: string,
+  maxSizeMB?: number
+): FileValidationRule => {
+  const baseRule = FILE_VALIDATION_RULES[jenisLampiran];
+  if (!baseRule) {
+    return FILE_VALIDATION_RULES.lainnya;
+  }
+  
+  if (maxSizeMB !== undefined) {
+    return {
+      ...baseRule,
+      maxSize: maxSizeMB * 1024 * 1024,
+    };
+  }
+  
+  return baseRule;
 };
 
 export const validateFile = (
