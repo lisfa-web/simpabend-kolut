@@ -45,7 +45,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const jenisSpm = form.watch("jenis_spm");
   const programId = form.watch("program_id");
   const kegiatanId = form.watch("kegiatan_id");
-  const isLsType = jenisSpm?.startsWith("ls_");
+  const requiresVendor = jenisSpm === 'ls_barang_jasa' || jenisSpm === 'ls_belanja_modal';
 
   const { data: opdList, isLoading: opdLoading } = useOpdList();
   const { data: programList, isLoading: programLoading } = useProgramList(new Date().getFullYear());
@@ -247,13 +247,29 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
           )}
         />
 
-        {isLsType && (
+        {jenisSpm && (
+          <div className="p-4 bg-muted rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              {requiresVendor ? (
+                <span className="font-medium text-primary">
+                  ℹ️ Jenis SPM ini memerlukan vendor. Informasi bank akan diambil dari data vendor.
+                </span>
+              ) : (
+                <span>
+                  ℹ️ Jenis SPM ini tidak memerlukan vendor. Input informasi rekening penerima akan dilakukan saat pembuatan SP2D.
+                </span>
+              )}
+            </p>
+          </div>
+        )}
+
+        {requiresVendor && (
           <FormField
             control={form.control}
             name="vendor_id"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Vendor/Pihak Ketiga</FormLabel>
+                <FormLabel>Vendor/Pihak Ketiga *</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>

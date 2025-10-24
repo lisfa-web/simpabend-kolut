@@ -121,6 +121,11 @@ const Sp2dForm = () => {
           form.setValue("nama_bank", vendor.nama_bank || "");
           form.setValue("nomor_rekening", vendor.nomor_rekening || "");
           form.setValue("nama_rekening", vendor.nama_rekening || "");
+        } else {
+          // Clear bank fields if no vendor
+          form.setValue("nama_bank", "");
+          form.setValue("nomor_rekening", "");
+          form.setValue("nama_rekening", "");
         }
       }
     }
@@ -202,19 +207,32 @@ const Sp2dForm = () => {
                 />
 
                 {selectedSpm && (
-                  <div className="p-4 bg-muted rounded-lg space-y-2">
-                    <p className="text-sm">
-                      <span className="font-semibold">OPD:</span>{" "}
-                      {selectedSpm.opd?.nama_opd}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-semibold">Program:</span>{" "}
-                      {selectedSpm.program?.nama_program || "-"}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-semibold">Vendor:</span>{" "}
-                      {selectedSpm.vendor?.nama_vendor || "-"}
-                    </p>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-muted rounded-lg space-y-2">
+                      <p className="text-sm">
+                        <span className="font-semibold">Jenis SPM:</span>{" "}
+                        {selectedSpm.jenis_spm?.toUpperCase().replace(/_/g, ' ')}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-semibold">OPD:</span>{" "}
+                        {selectedSpm.opd?.nama_opd}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-semibold">Program:</span>{" "}
+                        {selectedSpm.program?.nama_program || "-"}
+                      </p>
+                      <p className="text-sm">
+                        <span className="font-semibold">Vendor:</span>{" "}
+                        {selectedSpm.vendor?.nama_vendor || "-"}
+                      </p>
+                    </div>
+                    {!selectedSpm.vendor && (
+                      <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                        <p className="text-sm text-amber-800 dark:text-amber-200">
+                          ⚠️ SPM ini tidak terkait dengan vendor. Silakan input informasi bank penerima secara manual di bawah.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -290,6 +308,11 @@ const Sp2dForm = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Informasi Bank</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {selectedSpm?.vendor 
+                    ? "Informasi bank diambil dari data vendor (dapat diedit jika diperlukan)"
+                    : "Masukkan informasi bank penerima secara manual"}
+                </p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
@@ -297,9 +320,9 @@ const Sp2dForm = () => {
                   name="nama_bank"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nama Bank</FormLabel>
+                      <FormLabel>Nama Bank *</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="Nama Bank" />
+                        <Input {...field} placeholder="Contoh: BRI, BNI, Mandiri" required />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -312,9 +335,9 @@ const Sp2dForm = () => {
                     name="nomor_rekening"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nomor Rekening</FormLabel>
+                        <FormLabel>Nomor Rekening *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Nomor Rekening" />
+                          <Input {...field} placeholder="Masukkan nomor rekening" required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -326,9 +349,9 @@ const Sp2dForm = () => {
                     name="nama_rekening"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nama Rekening</FormLabel>
+                        <FormLabel>Nama Rekening *</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Nama Rekening" />
+                          <Input {...field} placeholder="Nama pemilik rekening" required />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

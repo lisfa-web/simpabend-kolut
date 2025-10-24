@@ -16,13 +16,13 @@ export const spmDataSchema = z.object({
   nomor_rekening: z.string().optional(),
   nama_rekening: z.string().optional(),
 }).refine((data) => {
-  // Jika jenis SPM adalah LS, vendor wajib diisi
-  if (data.jenis_spm.startsWith('ls_')) {
+  // Vendor wajib diisi HANYA untuk LS Barang & Jasa dan LS Belanja Modal
+  if (data.jenis_spm === 'ls_barang_jasa' || data.jenis_spm === 'ls_belanja_modal') {
     return !!data.vendor_id;
   }
   return true;
 }, {
-  message: 'Vendor wajib diisi untuk SPM LS',
+  message: 'Vendor wajib diisi untuk SPM LS Barang & Jasa dan LS Belanja Modal',
   path: ['vendor_id'],
 });
 
