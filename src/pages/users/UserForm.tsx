@@ -114,7 +114,10 @@ const UserForm = () => {
           roles,
         },
         {
-          onSuccess: () => navigate("/users"),
+          onSuccess: () => {
+            // Wait for toast to show before navigating
+            setTimeout(() => navigate("/users"), 1500);
+          },
         }
       );
     } else {
@@ -130,7 +133,10 @@ const UserForm = () => {
           roles,
         },
         {
-          onSuccess: () => navigate("/users"),
+          onSuccess: () => {
+            // Wait for toast to show before navigating
+            setTimeout(() => navigate("/users"), 1500);
+          },
         }
       );
     }
