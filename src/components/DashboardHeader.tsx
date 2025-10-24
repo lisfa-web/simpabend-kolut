@@ -1,7 +1,6 @@
-import { Moon, Sun, Bell, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { getRoleDisplayName, getRoleBadgeColor } from "@/lib/auth";
@@ -15,9 +14,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { NotificationPanel } from "@/components/NotificationPanel";
 
 const DashboardHeader = () => {
-  const [darkMode, setDarkMode] = useState(false);
   const { user, roles, logout } = useAuth();
   const { data: profile } = useUserProfile();
   const navigate = useNavigate();
@@ -46,18 +45,7 @@ const DashboardHeader = () => {
         </Badge>
 
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDarkMode(!darkMode)}
-          >
-            {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 h-2 w-2 bg-destructive rounded-full"></span>
-          </Button>
+          <NotificationPanel />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
