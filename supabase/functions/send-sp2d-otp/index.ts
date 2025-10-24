@@ -83,7 +83,9 @@ serve(async (req) => {
       .from('wa_gateway')
       .select('*')
       .eq('is_active', true)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (waError || !waConfig) {
       console.error('Error fetching WA Gateway config:', waError);
