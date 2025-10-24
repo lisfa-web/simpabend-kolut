@@ -32,7 +32,10 @@ serve(async (req) => {
     const { data: gateway, error: configError } = await supabase
       .from("wa_gateway")
       .select("*")
-      .single();
+      .order("updated_at", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     console.log("Gateway config:", gateway);
     console.log("Config error:", configError);
@@ -71,11 +74,13 @@ serve(async (req) => {
 
     // Call Fonnte API
     const fonnte_url = "https://api.fonnte.com/send";
-    const requestBody = {
+    const requestBody: Record<string, any> = {
       target: cleanPhone,
       message: `🔔 *Test Koneksi WhatsApp Gateway*\n\nIni adalah pesan test dari Sistem Manajemen SPM BKAD.\n\nWaktu: ${new Date().toLocaleString("id-ID")}\n\n✅ Koneksi berhasil!`,
-      countryCode: "62",
     };
+    if (!cleanPhone.startsWith("62") && !cleanPhone.startsWith("+62")) {
+      requestBody.countryCode = "62";
+    }
 
     console.log("Request body:", requestBody);
 
