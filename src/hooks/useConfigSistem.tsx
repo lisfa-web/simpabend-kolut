@@ -17,6 +17,32 @@ export const useConfigSistem = () => {
   });
 };
 
+// Helper untuk parse file size config (e.g., "1024" atau "5")
+export const parseFileSizeConfig = (value: string, unit: string = "MB"): { angka: number; satuan: string } => {
+  const angka = parseFloat(value) || 0;
+  return { angka, satuan: unit };
+};
+
+// Helper untuk konversi file size ke MB
+export const getFileSizeInMB = (configs: any[] | undefined): number => {
+  if (!configs) return 5; // default 5MB
+  
+  const sizeConfig = configs.find(c => c.key === 'max_file_size');
+  const unitConfig = configs.find(c => c.key === 'max_file_size_unit');
+  
+  if (!sizeConfig) return 5;
+  
+  const value = parseFloat(sizeConfig.value) || 5;
+  const unit = unitConfig?.value || 'MB';
+  
+  // Konversi ke MB
+  if (unit === 'KB') {
+    return value / 1024;
+  }
+  
+  return value;
+};
+
 export const useConfigMutation = () => {
   const queryClient = useQueryClient();
 

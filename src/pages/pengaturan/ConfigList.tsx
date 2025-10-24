@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useConfigSistem, useConfigMutation } from "@/hooks/useConfigSistem";
 import { Database } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,7 @@ const ConfigList = () => {
     open: false,
   });
   const [editValue, setEditValue] = useState("");
+  const [fileUnit, setFileUnit] = useState("MB");
   const [uploading, setUploading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string>("");
 
@@ -33,6 +35,13 @@ const ConfigList = () => {
   const handleEdit = (config: ConfigRow) => {
     setEditDialog({ open: true, config });
     setEditValue(config.value);
+    
+    // Set unit untuk max_file_size
+    if (config.key === 'max_file_size') {
+      const unitConfig = configs?.find(c => c.key === 'max_file_size_unit');
+      setFileUnit(unitConfig?.value || 'MB');
+    }
+    
     if (config.key === 'logo_bkad_url' && config.value) {
       setLogoPreview(config.value);
     }
@@ -94,18 +103,44 @@ const ConfigList = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (editDialog.config) {
-      updateConfig.mutate(
-        { key: editDialog.config.key, value: editValue },
-        {
-          onSuccess: () => {
-            setEditDialog({ open: false });
-            setEditValue("");
-            setLogoPreview("");
-          },
+      // Jika max_file_size, update juga unit-nya
+      if (editDialog.config.key === 'max_file_size') {
+        try {
+          // Update unit terlebih dahulu
+          await supabase
+            .from('config_sistem')
+            .upsert({ key: 'max_file_size_unit', value: fileUnit }, { onConflict: 'key' });
+          
+          // Kemudian update value-nya (trigger akan sync otomatis)
+          updateConfig.mutate(
+            { key: editDialog.config.key, value: editValue },
+            {
+              onSuccess: () => {
+                setEditDialog({ open: false });
+                setEditValue("");
+                setFileUnit("MB");
+                setLogoPreview("");
+              },
+            }
+          );
+        } catch (error: any) {
+          toast.error(error.message || "Gagal menyimpan konfigurasi");
         }
-      );
+      } else {
+        updateConfig.mutate(
+          { key: editDialog.config.key, value: editValue },
+          {
+            onSuccess: () => {
+              setEditDialog({ open: false });
+              setEditValue("");
+              setFileUnit("MB");
+              setLogoPreview("");
+            },
+          }
+        );
+      }
     }
   };
 
@@ -236,6 +271,45 @@ const ConfigList = () => {
                     placeholder="URL logo (otomatis terisi setelah upload)"
                     disabled
                   />
+                </div>
+              ) : editDialog.config?.key === 'max_file_size' ? (
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      placeholder="Masukkan nilai"
+                      className="flex-1"
+                      min="1"
+                    />
+                    <Select value={fileUnit} onValueChange={setFileUnit}>
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="KB">KB</SelectItem>
+                        <SelectItem value="MB">MB</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {editValue && (
+                    <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md">
+                      <div className="font-medium mb-1">Konversi:</div>
+                      {fileUnit === 'KB' ? (
+                        <div>
+                          {editValue} KB = {(parseFloat(editValue) / 1024).toFixed(2)} MB
+                        </div>
+                      ) : (
+                        <div>
+                          {editValue} MB = {(parseFloat(editValue) * 1024).toFixed(0)} KB
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="text-xs text-muted-foreground">
+                    Ukuran ini akan berlaku untuk semua jenis lampiran SPM
+                  </div>
                 </div>
               ) : (
                 <Input

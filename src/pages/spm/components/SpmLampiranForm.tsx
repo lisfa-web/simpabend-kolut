@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUploadCard } from "./FileUploadCard";
-import { useConfigSistem } from "@/hooks/useConfigSistem";
+import { useConfigSistem, getFileSizeInMB } from "@/hooks/useConfigSistem";
 
 interface SpmLampiranFormProps {
   jenisSpm?: string;
@@ -31,16 +31,8 @@ export const SpmLampiranForm = ({
   const isLsType = jenisSpm?.startsWith("ls_");
   const { data: configs } = useConfigSistem();
 
-  // Get max file sizes from config
-  const getMaxSize = (key: string, defaultValue: number) => {
-    const config = configs?.find((c) => c.key === key);
-    return config ? parseFloat(config.value) : defaultValue;
-  };
-
-  const maxSizeDokumen = getMaxSize('max_file_size_dokumen_spm', 5);
-  const maxSizeTbk = getMaxSize('max_file_size_tbk', 5);
-  const maxSizeSpj = getMaxSize('max_file_size_spj', 5);
-  const maxSizeLainnya = getMaxSize('max_file_size_lainnya', 10);
+  // Gunakan getFileSizeInMB untuk mendapatkan ukuran file dalam MB (auto-sync dari max_file_size)
+  const maxSizeInMB = getFileSizeInMB(configs);
 
   const handleNext = () => {
     // Validasi: dokumen_spm wajib
@@ -68,7 +60,7 @@ export const SpmLampiranForm = ({
         onFilesChange={(newFiles) =>
           onFilesChange({ ...files, dokumen_spm: newFiles })
         }
-        maxSizeMB={maxSizeDokumen}
+        maxSizeMB={maxSizeInMB}
       />
 
       {isLsType && (
@@ -80,7 +72,7 @@ export const SpmLampiranForm = ({
           onFilesChange={(newFiles) =>
             onFilesChange({ ...files, tbk: newFiles })
           }
-          maxSizeMB={maxSizeTbk}
+          maxSizeMB={maxSizeInMB}
         />
       )}
 
@@ -91,7 +83,7 @@ export const SpmLampiranForm = ({
         onFilesChange={(newFiles) =>
           onFilesChange({ ...files, spj: newFiles })
         }
-        maxSizeMB={maxSizeSpj}
+        maxSizeMB={maxSizeInMB}
       />
 
       <FileUploadCard
@@ -101,7 +93,7 @@ export const SpmLampiranForm = ({
         onFilesChange={(newFiles) =>
           onFilesChange({ ...files, lainnya: newFiles })
         }
-        maxSizeMB={maxSizeLainnya}
+        maxSizeMB={maxSizeInMB}
       />
 
       <div className="flex justify-between">
