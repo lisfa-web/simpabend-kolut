@@ -129,6 +129,21 @@ export const useSpmVerification = (role: string) => {
           judul: `Status SPM Updated`,
           pesan: notifMessage,
         });
+
+        // Send Email & WhatsApp notification (async, no await)
+        supabase.functions.invoke("send-approval-notification", {
+          body: {
+            spmId: data.spmId,
+            action: data.action,
+            role: role,
+          },
+        }).then(({ data: notifData, error: notifError }) => {
+          if (notifError) {
+            console.error("Notification error:", notifError);
+          } else {
+            console.log("Notification sent:", notifData);
+          }
+        });
       }
 
       return { success: true };
