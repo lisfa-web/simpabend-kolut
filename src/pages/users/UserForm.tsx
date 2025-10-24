@@ -26,7 +26,7 @@ const userSchema = z.object({
   is_active: z.boolean().optional(),
   roles: z.array(z.object({
     role: z.string(),
-    opd_id: z.string().optional(),
+    opd_id: z.string().optional().nullable(),
   })).min(1, "Minimal 1 role harus dipilih"),
 });
 
@@ -97,7 +97,7 @@ const UserForm = () => {
     if (userData) {
       const userRoles = userData.user_roles?.map((ur: any) => ({
         role: ur.role,
-        opd_id: ur.opd_id,
+        opd_id: ur.opd_id ?? undefined, // Convert null to undefined for Zod validation
       })) || [];
       setRoles(userRoles);
 
@@ -181,7 +181,9 @@ const UserForm = () => {
             <CardTitle>Informasi User</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit, (validationErrors) => {
+              console.log("Form validation errors:", validationErrors);
+            })} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="full_name">
