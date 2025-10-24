@@ -194,6 +194,14 @@ serve(async (req) => {
       // Send WhatsApp notification
       if (waConfig && recipient.phone) {
         try {
+          // Normalize phone number - remove leading 62 if exists, keep 08xxx format
+          let normalizedPhone = recipient.phone;
+          if (normalizedPhone.startsWith("62")) {
+            normalizedPhone = "0" + normalizedPhone.substring(2);
+          }
+          
+          console.log(`Attempting to send WA to ${recipient.full_name} (${normalizedPhone})`);
+          
           const waResponse = await fetch("https://api.fonnte.com/send", {
             method: "POST",
             headers: {
@@ -201,18 +209,26 @@ serve(async (req) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              target: recipient.phone,
+              target: normalizedPhone,
               message: messageTemplate,
               countryCode: "62",
             }),
           });
 
           const waResult = await waResponse.json();
-          console.log(`WA sent to ${recipient.phone}:`, waResult);
-          waSuccess = true;
+          console.log(`WA response for ${normalizedPhone}:`, waResult);
+          
+          if (waResult.status === true || waResult.status === "success") {
+            waSuccess = true;
+            console.log(`WA successfully sent to ${recipient.full_name}`);
+          } else {
+            console.error(`WA failed for ${recipient.full_name}:`, waResult);
+          }
         } catch (error: any) {
-          console.error(`Failed to send WA to ${recipient.phone}:`, error);
+          console.error(`Exception sending WA to ${recipient.phone}:`, error.message);
         }
+      } else {
+        console.log(`Skipping WA for ${recipient.full_name}: waConfig=${!!waConfig}, phone=${recipient.phone}`);
       }
 
       // Send Email notification
