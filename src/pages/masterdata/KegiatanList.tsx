@@ -138,7 +138,10 @@ export default function KegiatanList() {
                   </TableRow>
                 ) : filteredKegiatan && filteredKegiatan.length > 0 ? (
                   filteredKegiatan.map((item) => (
-                    <TableRow key={item.id}>
+                    <TableRow 
+                      key={item.id}
+                      className={!item.is_active ? "opacity-60 bg-muted/30" : ""}
+                    >
                       <TableCell className="font-medium">
                         {item.kode_kegiatan}
                       </TableCell>

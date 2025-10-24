@@ -1,15 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useVendorList = () => {
+interface VendorFilters {
+  is_active?: boolean;
+}
+
+export const useVendorList = (filters?: VendorFilters) => {
   return useQuery({
-    queryKey: ["vendor-list"],
+    queryKey: ["vendor-list", filters],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("vendor")
         .select("*")
-        .eq("is_active", true)
         .order("nama_vendor");
+
+      if (filters?.is_active !== undefined) {
+        query = query.eq("is_active", filters.is_active);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data;

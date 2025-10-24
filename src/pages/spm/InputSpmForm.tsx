@@ -30,11 +30,11 @@ const InputSpmForm = () => {
 
   const { createSpm, updateSpm, uploadFile } = useSpmMutation();
   const { data: spmDetail, isLoading: isLoadingSpm } = useSpmDetail(id);
-  const { data: opdList } = useOpdList();
-  const { data: programList } = useProgramList();
-  const { data: kegiatanList } = useKegiatanList(formData?.program_id);
-  const { data: subkegiatanList } = useSubkegiatanList(formData?.kegiatan_id);
-  const { data: vendorList } = useVendorList();
+  const { data: opdList } = useOpdList({ is_active: true });
+  const { data: programList } = useProgramList({ is_active: true });
+  const { data: kegiatanList } = useKegiatanList({ program_id: formData?.program_id, is_active: true });
+  const { data: subkegiatanList } = useSubkegiatanList({ kegiatan_id: formData?.kegiatan_id, is_active: true });
+  const { data: vendorList } = useVendorList({ is_active: true });
 
   // Block access if SPM status is "ditolak"
   useEffect(() => {

@@ -116,7 +116,10 @@ const VendorList = () => {
                 </TableRow>
               ) : filteredData && filteredData.length > 0 ? (
                 filteredData.map((vendor) => (
-                  <TableRow key={vendor.id}>
+                  <TableRow 
+                    key={vendor.id}
+                    className={!vendor.is_active ? "opacity-60 bg-muted/30" : ""}
+                  >
                     <TableCell className="font-medium">
                       {vendor.nama_vendor}
                     </TableCell>

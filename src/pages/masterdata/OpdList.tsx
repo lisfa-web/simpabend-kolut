@@ -120,7 +120,10 @@ const OpdList = () => {
                 </TableRow>
               ) : filteredData && filteredData.length > 0 ? (
                 filteredData.map((opd) => (
-                  <TableRow key={opd.id}>
+                  <TableRow 
+                    key={opd.id}
+                    className={!opd.is_active ? "opacity-60 bg-muted/30" : ""}
+                  >
                     <TableCell className="font-medium">{opd.kode_opd}</TableCell>
                     <TableCell>{opd.nama_opd}</TableCell>
                     <TableCell>{opd.alamat || "-"}</TableCell>

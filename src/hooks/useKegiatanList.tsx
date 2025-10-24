@@ -1,22 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useKegiatanList = (programId?: string) => {
-  return useQuery({
-    queryKey: ["kegiatan-list", programId],
-    queryFn: async () => {
-      if (!programId) return [];
+interface KegiatanFilters {
+  program_id?: string;
+  is_active?: boolean;
+}
 
-      const { data, error } = await supabase
+export const useKegiatanList = (filters?: KegiatanFilters) => {
+  return useQuery({
+    queryKey: ["kegiatan-list", filters],
+    queryFn: async () => {
+      if (!filters?.program_id) return [];
+
+      let query = supabase
         .from("kegiatan")
         .select("*")
-        .eq("program_id", programId)
-        .eq("is_active", true)
+        .eq("program_id", filters.program_id)
         .order("nama_kegiatan");
+
+      if (filters?.is_active !== undefined) {
+        query = query.eq("is_active", filters.is_active);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data;
     },
-    enabled: !!programId,
+    enabled: !!filters?.program_id,
   });
 };

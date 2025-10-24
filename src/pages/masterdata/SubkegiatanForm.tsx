@@ -44,8 +44,8 @@ export default function SubkegiatanForm() {
   const isEdit = !!id;
   const [selectedProgramId, setSelectedProgramId] = useState<string>("");
   const { createSubkegiatan, updateSubkegiatan } = useSubkegiatanMutation();
-  const { data: programs } = useProgramList();
-  const { data: kegiatanList } = useKegiatanList(selectedProgramId);
+  const { data: programs } = useProgramList({ is_active: true });
+  const { data: kegiatanList } = useKegiatanList({ program_id: selectedProgramId, is_active: true });
 
   const { data: subkegiatan } = useQuery({
     queryKey: ["subkegiatan", id],

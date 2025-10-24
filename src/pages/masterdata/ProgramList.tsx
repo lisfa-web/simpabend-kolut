@@ -119,7 +119,10 @@ export default function ProgramList() {
                   </TableRow>
                 ) : filteredPrograms && filteredPrograms.length > 0 ? (
                   filteredPrograms.map((program) => (
-                    <TableRow key={program.id}>
+                    <TableRow 
+                      key={program.id}
+                      className={!program.is_active ? "opacity-60 bg-muted/30" : ""}
+                    >
                       <TableCell className="font-medium">
                         {program.kode_program}
                       </TableCell>

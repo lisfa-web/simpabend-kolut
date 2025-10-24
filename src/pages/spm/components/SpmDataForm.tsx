@@ -48,11 +48,11 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const kegiatanId = form.watch("kegiatan_id");
   const requiresVendor = jenisSpm === 'ls_barang_jasa' || jenisSpm === 'ls_belanja_modal';
 
-  const { data: opdList, isLoading: opdLoading } = useOpdList();
-  const { data: programList, isLoading: programLoading } = useProgramList(new Date().getFullYear());
-  const { data: kegiatanList } = useKegiatanList(programId);
-  const { data: subkegiatanList } = useSubkegiatanList(kegiatanId);
-  const { data: vendorList } = useVendorList();
+  const { data: opdList, isLoading: opdLoading } = useOpdList({ is_active: true });
+  const { data: programList, isLoading: programLoading } = useProgramList({ tahun_anggaran: new Date().getFullYear(), is_active: true });
+  const { data: kegiatanList } = useKegiatanList({ program_id: programId, is_active: true });
+  const { data: subkegiatanList } = useSubkegiatanList({ kegiatan_id: kegiatanId, is_active: true });
+  const { data: vendorList } = useVendorList({ is_active: true });
 
   // Reset form dengan defaultValues saat mode edit
   useEffect(() => {
