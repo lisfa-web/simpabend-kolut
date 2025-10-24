@@ -28,6 +28,18 @@ export const useWaGatewayMutation = () => {
       sender_id: string;
       is_active: boolean;
     }) => {
+      // If setting this config as active, deactivate all others first
+      if (data.is_active) {
+        const { error: deactivateError } = await supabase
+          .from("wa_gateway")
+          .update({ is_active: false })
+          .eq("is_active", true);
+        
+        if (deactivateError) {
+          console.error("Failed to deactivate other configs:", deactivateError);
+        }
+      }
+
       // Check if config already exists
       const { data: existing } = await supabase
         .from("wa_gateway")

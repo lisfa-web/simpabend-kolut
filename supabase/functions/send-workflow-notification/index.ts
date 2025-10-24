@@ -157,12 +157,32 @@ serve(async (req) => {
       );
     }
 
-    // Get WA Gateway config
-    const { data: waConfig } = await supabase
+    // Fetch WA Gateway configuration - prioritize active, fallback to latest
+    const { data: waConfigActive, error: waErr } = await supabase
       .from("wa_gateway")
       .select("*")
       .eq("is_active", true)
-      .single();
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let waConfig = waConfigActive;
+    if (!waConfig) {
+      console.log("No active WA config found, using latest configuration as fallback");
+      const { data: waConfigLatest } = await supabase
+        .from("wa_gateway")
+        .select("*")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      waConfig = waConfigLatest;
+    }
+    
+    if (waConfig) {
+      console.log(`Using WA config: id=${waConfig.id}, sender=${waConfig.sender_id}, active=${waConfig.is_active}`);
+    } else {
+      console.log("No WA gateway configuration found");
+    }
 
     // Get Email config
     const { data: emailConfig } = await supabase
@@ -194,38 +214,36 @@ serve(async (req) => {
       // Send WhatsApp notification
       if (waConfig && recipient.phone) {
         try {
-          // Normalize phone number - remove leading 62 if exists, keep 08xxx format
-          let normalizedPhone = recipient.phone;
-          if (normalizedPhone.startsWith("62")) {
-            normalizedPhone = "0" + normalizedPhone.substring(2);
+          const target = recipient.phone.trim();
+          const payload: any = { target, message: messageTemplate };
+          
+          // Add country code only if number doesn't already have it
+          if (!target.startsWith('62') && !target.startsWith('+62')) {
+            payload.countryCode = '62';
           }
           
-          console.log(`Attempting to send WA to ${recipient.full_name} (${normalizedPhone})`);
+          console.log(`Attempting to send WA to ${recipient.full_name} (${target})`);
           
           const waResponse = await fetch("https://api.fonnte.com/send", {
             method: "POST",
             headers: {
-              "Authorization": waConfig.api_key,
+              Authorization: waConfig.api_key,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              target: normalizedPhone,
-              message: messageTemplate,
-              countryCode: "62",
-            }),
+            body: JSON.stringify(payload),
           });
 
           const waResult = await waResponse.json();
-          console.log(`WA response for ${normalizedPhone}:`, waResult);
+          console.log(`WA response for ${target}:`, waResult);
           
           if (waResult.status === true || waResult.status === "success") {
             waSuccess = true;
-            console.log(`WA successfully sent to ${recipient.full_name}`);
+            console.log(`✓ WA successfully sent to ${recipient.full_name}`);
           } else {
-            console.error(`WA failed for ${recipient.full_name}:`, waResult);
+            console.error(`✗ WA failed for ${recipient.full_name}:`, waResult);
           }
         } catch (error: any) {
-          console.error(`Exception sending WA to ${recipient.phone}:`, error.message);
+          console.error(`Exception sending WA to ${recipient.full_name}:`, error.message);
         }
       } else {
         console.log(`Skipping WA for ${recipient.full_name}: waConfig=${!!waConfig}, phone=${recipient.phone}`);
