@@ -67,3 +67,26 @@ export const formatFileSize = (bytes: number): string => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 };
+
+export const isImageFile = (fileName: string): boolean => {
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+  return imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+};
+
+export const isPdfFile = (fileName: string): boolean => {
+  return fileName.toLowerCase().endsWith('.pdf');
+};
+
+export const getFileMimeType = (fileName: string): string => {
+  const extension = fileName.toLowerCase().split('.').pop();
+  const mimeTypes: Record<string, string> = {
+    pdf: 'application/pdf',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    bmp: 'image/bmp',
+  };
+  return mimeTypes[extension || ''] || 'application/octet-stream';
+};
