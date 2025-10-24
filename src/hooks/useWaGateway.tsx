@@ -26,14 +26,41 @@ export const useWaGatewayMutation = () => {
       sender_id: string;
       is_active: boolean;
     }) => {
-      const { error } = await supabase.from("wa_gateway").upsert(data);
-      if (error) throw error;
+      // Check if config already exists
+      const { data: existing } = await supabase
+        .from("wa_gateway")
+        .select("id")
+        .limit(1)
+        .single();
+
+      if (existing?.id) {
+        // Update existing config
+        const { error } = await supabase
+          .from("wa_gateway")
+          .update({
+            api_key: data.api_key,
+            sender_id: data.sender_id,
+            is_active: data.is_active,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
+        
+        if (error) throw error;
+      } else {
+        // Insert new config
+        const { error } = await supabase
+          .from("wa_gateway")
+          .insert(data);
+        
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wa-gateway"] });
       toast.success("Konfigurasi WhatsApp Gateway berhasil disimpan");
     },
     onError: (error: any) => {
+      console.error("Save WA Gateway error:", error);
       toast.error(error.message || "Gagal menyimpan konfigurasi");
     },
   });
