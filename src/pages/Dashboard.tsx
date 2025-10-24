@@ -98,6 +98,31 @@ const Dashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Perlu Revisi</CardTitle>
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-3 w-32" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-amber-600">{stats?.revisionSpm || 0}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(stats?.revisionSpmValue || 0)}
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Additional Stats Row */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Ditolak</CardTitle>
               <AlertCircle className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
@@ -108,9 +133,31 @@ const Dashboard = () => {
                 </>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-red-600">{stats?.revisionSpm || 0}</div>
+                  <div className="text-2xl font-bold text-red-600">{stats?.rejectedSpm || 0}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {formatCurrency(stats?.revisionSpmValue || 0)}
+                    {formatCurrency(stats?.rejectedSpmValue || 0)}
+                  </p>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Disetujui Kepala BKAD</CardTitle>
+              <CheckCircle className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-3 w-32" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-emerald-600">{stats?.approvedByKepalaBkad || 0}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(stats?.approvedByKepalaBkadValue || 0)}
                   </p>
                 </>
               )}
@@ -193,7 +240,10 @@ const Dashboard = () => {
         <Sp2dStatsSection
           totalSp2d={stats?.totalSp2d || 0}
           totalValue={stats?.totalSp2dValue || 0}
+          issuedSp2d={stats?.issuedSp2d || 0}
+          issuedValue={stats?.issuedSp2dValue || 0}
           pendingSp2d={stats?.pendingSp2d || 0}
+          failedSp2d={stats?.failedSp2d || 0}
           isLoading={isLoading}
         />
 

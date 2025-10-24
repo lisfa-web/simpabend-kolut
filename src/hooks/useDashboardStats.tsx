@@ -8,13 +8,20 @@ interface DashboardStats {
   totalSpmValue: number;
   approvedSpm: number;
   approvedSpmValue: number;
+  approvedByKepalaBkad: number;
+  approvedByKepalaBkadValue: number;
   inProgressSpm: number;
   inProgressSpmValue: number;
   revisionSpm: number;
   revisionSpmValue: number;
+  rejectedSpm: number;
+  rejectedSpmValue: number;
   totalSp2d: number;
   totalSp2dValue: number;
+  issuedSp2d: number;
+  issuedSp2dValue: number;
   pendingSp2d: number;
+  failedSp2d: number;
   avgProcessDays: number;
   monthlyTrend: Array<{
     month: string;
@@ -68,6 +75,13 @@ export const useDashboardStats = () => {
         ?.filter((s) => s.status === "disetujui")
         .reduce((sum, spm) => sum + Number(spm.nilai_spm || 0), 0) || 0;
 
+      const approvedByKepalaBkad = allSpm?.filter((s) => 
+        s.status === "disetujui" && s.verified_by_kepala_bkad
+      ).length || 0;
+      const approvedByKepalaBkadValue = allSpm
+        ?.filter((s) => s.status === "disetujui" && s.verified_by_kepala_bkad)
+        .reduce((sum, spm) => sum + Number(spm.nilai_spm || 0), 0) || 0;
+
       const inProgressStatuses = [
         "resepsionis_verifikasi",
         "pbmd_verifikasi",
@@ -83,6 +97,11 @@ export const useDashboardStats = () => {
       const revisionSpm = allSpm?.filter((s) => s.status === "perlu_revisi").length || 0;
       const revisionSpmValue = allSpm
         ?.filter((s) => s.status === "perlu_revisi")
+        .reduce((sum, spm) => sum + Number(spm.nilai_spm || 0), 0) || 0;
+
+      const rejectedSpm = allSpm?.filter((s) => s.status === "ditolak").length || 0;
+      const rejectedSpmValue = allSpm
+        ?.filter((s) => s.status === "ditolak")
         .reduce((sum, spm) => sum + Number(spm.nilai_spm || 0), 0) || 0;
 
       // Average process time
@@ -129,7 +148,12 @@ export const useDashboardStats = () => {
 
       const totalSp2d = sp2dData?.length || 0;
       const totalSp2dValue = sp2dData?.reduce((sum, sp2d) => sum + Number(sp2d.nilai_sp2d || 0), 0) || 0;
+      const issuedSp2d = sp2dData?.filter((s) => s.status === "diterbitkan").length || 0;
+      const issuedSp2dValue = sp2dData
+        ?.filter((s) => s.status === "diterbitkan")
+        .reduce((sum, sp2d) => sum + Number(sp2d.nilai_sp2d || 0), 0) || 0;
       const pendingSp2d = sp2dData?.filter((s) => s.status === "pending").length || 0;
+      const failedSp2d = sp2dData?.filter((s) => s.status === "gagal").length || 0;
 
       // OPD Breakdown
       const { data: opdData, error: opdError } = await supabase
@@ -160,13 +184,20 @@ export const useDashboardStats = () => {
         totalSpmValue,
         approvedSpm,
         approvedSpmValue,
+        approvedByKepalaBkad,
+        approvedByKepalaBkadValue,
         inProgressSpm,
         inProgressSpmValue,
         revisionSpm,
         revisionSpmValue,
+        rejectedSpm,
+        rejectedSpmValue,
         totalSp2d,
         totalSp2dValue,
+        issuedSp2d,
+        issuedSp2dValue,
         pendingSp2d,
+        failedSp2d,
         avgProcessDays,
         monthlyTrend,
         opdBreakdown,
