@@ -24,7 +24,7 @@ const WaGatewayConfig = () => {
   const testWaGateway = useTestWaGateway();
   const [testPhone, setTestPhone] = useState("");
 
-  const { register, handleSubmit, watch } = useForm<FormData>({
+  const { register, handleSubmit, watch, setValue } = useForm<FormData>({
     values: gateway
       ? {
           api_key: gateway.api_key,
@@ -159,8 +159,8 @@ const WaGatewayConfig = () => {
                 </div>
                 <Switch
                   id="is_active"
-                  {...register("is_active")}
                   checked={isActive}
+                  onCheckedChange={(checked) => setValue("is_active", checked)}
                 />
               </div>
             </CardContent>
