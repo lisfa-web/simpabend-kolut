@@ -69,7 +69,21 @@ serve(async (req) => {
     console.log("SMTP Port:", config.smtp_port);
     console.log("SMTP User:", config.smtp_user);
 
-    // Create SMTP client
+    // Validate Gmail App Password format (should be 16 characters)
+    if (config.smtp_host === "smtp.gmail.com") {
+      const cleanPassword = config.smtp_password.replace(/\s/g, '');
+      if (cleanPassword.length !== 16) {
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: "Gmail App Password harus 16 karakter. Pastikan Anda menggunakan App Password dari Google Account, bukan password Gmail biasa. Generate di: https://myaccount.google.com/apppasswords"
+          }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Create SMTP client with better configuration
     const client = new SMTPClient({
       connection: {
         hostname: config.smtp_host,
@@ -187,9 +201,23 @@ serve(async (req) => {
       console.error("Error updating test status:", updateError);
     }
 
-    const errorMessage = error.message || "Gagal mengirim email test. Periksa konfigurasi SMTP Anda.";
+    let errorMessage = error.message || "Gagal mengirim email test. Periksa konfigurasi SMTP Anda.";
+    
+    // Provide more specific error messages
+    if (errorMessage.includes("InvalidContentType") || errorMessage.includes("InvalidData")) {
+      errorMessage = "Koneksi SMTP gagal. Pastikan Anda menggunakan Gmail App Password yang valid (16 karakter), bukan password Gmail biasa. Generate App Password di: https://myaccount.google.com/apppasswords";
+    } else if (errorMessage.includes("authentication")) {
+      errorMessage = "Autentikasi gagal. Pastikan email dan App Password sudah benar.";
+    } else if (errorMessage.includes("connection")) {
+      errorMessage = "Gagal terhubung ke server SMTP. Periksa host dan port.";
+    }
+    
     return new Response(
-      JSON.stringify({ success: false, message: errorMessage }),
+      JSON.stringify({ 
+        success: false, 
+        message: errorMessage,
+        hint: "Gunakan Gmail App Password (16 karakter) dari https://myaccount.google.com/apppasswords"
+      }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

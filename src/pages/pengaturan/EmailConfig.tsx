@@ -112,7 +112,8 @@ const EmailConfig = () => {
                   Google App Passwords
                 </a>
               </li>
-              <li>Gunakan App Password sebagai password SMTP</li>
+              <li>Gunakan App Password (16 karakter tanpa spasi) sebagai password SMTP</li>
+              <li><strong>Jangan gunakan password Gmail biasa!</strong></li>
             </ol>
           </AlertDescription>
         </Alert>
@@ -199,10 +200,18 @@ const EmailConfig = () => {
                   id="smtp_password"
                   type="password"
                   {...register("smtp_password", { required: true })}
-                  placeholder="Masukkan App Password (bukan password Gmail biasa)"
+                  placeholder="Masukkan 16 karakter App Password (tanpa spasi)"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Gunakan App Password yang di-generate dari Google Account
+                  <strong className="text-destructive">PENTING:</strong> Gunakan Gmail App Password (16 karakter), bukan password Gmail biasa. Generate di{" "}
+                  <a
+                    href="https://myaccount.google.com/apppasswords"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    Google Account
+                  </a>
                 </p>
               </div>
 
