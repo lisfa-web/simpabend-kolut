@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -74,6 +74,7 @@ const UserForm = () => {
     setValue,
     reset,
     clearErrors,
+    control,
   } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -238,10 +239,16 @@ const UserForm = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="is_active">Status Aktif</Label>
-                      <Switch
-                        id="is_active"
-                        onCheckedChange={(checked) => setValue("is_active", checked, { shouldDirty: true, shouldValidate: true })}
-                        defaultChecked={userData?.is_active}
+                      <Controller
+                        name="is_active"
+                        control={control}
+                        render={({ field }) => (
+                          <Switch
+                            id="is_active"
+                            checked={!!field.value}
+                            onCheckedChange={(checked) => field.onChange(checked)}
+                          />
+                        )}
                       />
                     </div>
                   </div>
