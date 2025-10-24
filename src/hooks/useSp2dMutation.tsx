@@ -217,6 +217,27 @@ export const useSp2dMutation = () => {
         .single();
 
       if (error) throw error;
+
+      // Send WhatsApp notification to vendor
+      try {
+        console.log('Sending disbursement notification for SP2D:', id);
+        const { data: notifResult, error: notifError } = await supabase.functions.invoke(
+          'send-disbursement-notification',
+          {
+            body: { sp2dId: id },
+          }
+        );
+
+        if (notifError) {
+          console.error('Failed to send disbursement notification:', notifError);
+        } else {
+          console.log('Disbursement notification sent:', notifResult);
+        }
+      } catch (notifError) {
+        console.error('Error sending disbursement notification:', notifError);
+        // Don't throw error - notification failure shouldn't block disbursement
+      }
+
       return result;
     },
     onSuccess: () => {
@@ -224,7 +245,7 @@ export const useSp2dMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["sp2d-list"] });
       toast({
         title: "Berhasil",
-        description: "Dana SP2D berhasil dicairkan",
+        description: "Dana SP2D berhasil dicairkan dan notifikasi telah dikirim ke vendor",
       });
     },
     onError: (error: any) => {
