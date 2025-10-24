@@ -1,29 +1,30 @@
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { FileText, CheckCircle, Clock, AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
+import { FileText, CheckCircle, Clock, AlertCircle, TrendingUp } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-
-const chartData = [
-  { month: "Okt", diajukan: 12, disetujui: 10, ditolak: 2 },
-  { month: "Sep", diajukan: 15, disetujui: 12, ditolak: 3 },
-  { month: "Agu", diajukan: 10, disetujui: 8, ditolak: 2 },
-  { month: "Jul", diajukan: 18, disetujui: 15, ditolak: 3 },
-];
+import { useDashboardStats } from "@/hooks/useDashboardStats";
+import { useUserProfile } from "@/hooks/useUserProfile";
+import { formatCurrency } from "@/lib/currency";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ActionItemsWidget } from "./Dashboard/components/ActionItemsWidget";
+import { OpdBreakdownChart } from "./Dashboard/components/OpdBreakdownChart";
+import { Sp2dStatsSection } from "./Dashboard/components/Sp2dStatsSection";
 
 const Dashboard = () => {
+  const { data: profile } = useUserProfile();
+  const { data: stats, isLoading } = useDashboardStats();
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Dashboard Monitoring SPM</h1>
-            <p className="text-gray-600">Selamat datang, Demo Bendahara</p>
+            <h1 className="text-3xl font-bold">Dashboard Monitoring SPM</h1>
+            <p className="text-muted-foreground">
+              Selamat datang, {profile?.full_name || "User"}
+            </p>
           </div>
-          <Badge variant="outline" className="border-orange-500 text-orange-600">
-            DEMO MODE
-          </Badge>
         </div>
 
         {/* Stats Cards */}
@@ -34,11 +35,19 @@ const Dashboard = () => {
               <FileText className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">30</div>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                +12% dari bulan lalu
-              </p>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-3 w-32" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold">{stats?.totalSpm || 0}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(stats?.totalSpmValue || 0)}
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -48,11 +57,19 @@ const Dashboard = () => {
               <CheckCircle className="h-4 w-4 text-green-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">5</div>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <TrendingUp className="h-3 w-3" />
-                +8% dari bulan lalu
-              </p>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-3 w-32" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-green-600">{stats?.approvedSpm || 0}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(stats?.approvedSpmValue || 0)}
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -62,11 +79,19 @@ const Dashboard = () => {
               <Clock className="h-4 w-4 text-orange-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">9</div>
-              <p className="text-xs text-red-600 flex items-center gap-1">
-                <TrendingDown className="h-3 w-3" />
-                -3% dari bulan lalu
-              </p>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-3 w-32" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-orange-600">{stats?.inProgressSpm || 0}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(stats?.inProgressSpmValue || 0)}
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -76,11 +101,25 @@ const Dashboard = () => {
               <AlertCircle className="h-4 w-4 text-red-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">4</div>
-              <p className="text-xs text-gray-600">0% dari bulan lalu</p>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-8 w-16 mb-2" />
+                  <Skeleton className="h-3 w-32" />
+                </>
+              ) : (
+                <>
+                  <div className="text-2xl font-bold text-red-600">{stats?.revisionSpm || 0}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {formatCurrency(stats?.revisionSpmValue || 0)}
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
+
+        {/* Action Items Widget */}
+        <ActionItemsWidget />
 
         {/* Charts Section */}
         <div className="grid gap-6 md:grid-cols-3">
@@ -89,18 +128,22 @@ const Dashboard = () => {
               <CardTitle>Statistik SPM (5 Bulan Terakhir)</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="diajukan" fill="#3b82f6" name="Diajukan" />
-                  <Bar dataKey="disetujui" fill="#22c55e" name="Disetujui" />
-                  <Bar dataKey="ditolak" fill="#ef4444" name="Ditolak" />
-                </BarChart>
-              </ResponsiveContainer>
+              {isLoading ? (
+                <Skeleton className="h-[300px] w-full" />
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={stats?.monthlyTrend || []}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="diajukan" fill="#3b82f6" name="Diajukan" />
+                    <Bar dataKey="disetujui" fill="#22c55e" name="Disetujui" />
+                    <Bar dataKey="ditolak" fill="#ef4444" name="Ditolak/Revisi" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
             </CardContent>
           </Card>
 
@@ -109,27 +152,53 @@ const Dashboard = () => {
               <CardTitle>Status SPM Terkini</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Total SPM Diajukan</span>
-                </div>
-                <div className="text-3xl font-bold text-yellow-600">47</div>
-                <p className="text-xs text-gray-500">Periode bulan ini</p>
-              </div>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-20 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Total SPM Bulan Ini</span>
+                    </div>
+                    <div className="text-3xl font-bold text-primary">{stats?.totalSpm || 0}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {formatCurrency(stats?.totalSpmValue || 0)}
+                    </p>
+                  </div>
 
-              <div className="border-t pt-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Rata-rata Waktu Proses</span>
-                </div>
-                <div className="text-3xl font-bold text-orange-600">3.2 hari</div>
-                <p className="text-xs text-green-600 flex items-center gap-1">
-                  <TrendingUp className="h-3 w-3" />
-                  15% lebih cepat dari target
-                </p>
-              </div>
+                  <div className="border-t pt-4 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">Rata-rata Waktu Proses</span>
+                    </div>
+                    <div className="text-3xl font-bold text-orange-600">
+                      {stats?.avgProcessDays ? stats.avgProcessDays.toFixed(1) : "0"} hari
+                    </div>
+                    <p className="text-xs text-green-600 flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      {stats?.avgProcessDays && stats.avgProcessDays <= 4 
+                        ? "Sesuai target" 
+                        : "Perlu dipercepat"}
+                    </p>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
+
+        {/* SP2D Statistics Section */}
+        <Sp2dStatsSection
+          totalSp2d={stats?.totalSp2d || 0}
+          totalValue={stats?.totalSp2dValue || 0}
+          pendingSp2d={stats?.pendingSp2d || 0}
+          isLoading={isLoading}
+        />
+
+        {/* OPD Breakdown */}
+        <OpdBreakdownChart data={stats?.opdBreakdown || []} isLoading={isLoading} />
       </div>
     </DashboardLayout>
   );
