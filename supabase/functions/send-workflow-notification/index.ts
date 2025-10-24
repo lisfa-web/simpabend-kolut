@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.1";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -157,10 +158,17 @@ serve(async (req) => {
       .eq("is_active", true)
       .single();
 
-    if (!waConfig) {
-      console.log("WA Gateway not configured");
+    // Get Email config
+    const { data: emailConfig } = await supabase
+      .from("email_config")
+      .select("*")
+      .eq("is_active", true)
+      .single();
+
+    if (!waConfig && !emailConfig) {
+      console.log("No notification channels configured");
       return new Response(
-        JSON.stringify({ success: false, message: "WA Gateway not configured" }),
+        JSON.stringify({ success: false, message: "No notification channels configured" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );
     }
@@ -174,62 +182,163 @@ serve(async (req) => {
     const notifications = [];
 
     for (const recipient of recipients || []) {
-      if (!recipient.phone) {
-        console.log(`No phone for user ${recipient.id}, skipping`);
-        continue;
-      }
+      let waSuccess = false;
+      let emailSuccess = false;
 
       // Send WhatsApp notification
-      try {
-        const waResponse = await fetch("https://api.fonnte.com/send", {
-          method: "POST",
-          headers: {
-            "Authorization": waConfig.api_key,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            target: recipient.phone,
-            message: messageTemplate,
-            countryCode: "62",
-          }),
-        });
+      if (waConfig && recipient.phone) {
+        try {
+          const waResponse = await fetch("https://api.fonnte.com/send", {
+            method: "POST",
+            headers: {
+              "Authorization": waConfig.api_key,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              target: recipient.phone,
+              message: messageTemplate,
+              countryCode: "62",
+            }),
+          });
 
-        const waResult = await waResponse.json();
-        console.log(`WA sent to ${recipient.phone}:`, waResult);
-
-        // Save notification to database
-        await supabase.from("notifikasi").insert({
-          user_id: recipient.id,
-          jenis: type === 'spm' ? 'spm_status' : 'sp2d_status',
-          judul: `Notifikasi ${type.toUpperCase()}`,
-          pesan: messageTemplate,
-          spm_id: type === 'spm' ? documentId : null,
-          sent_via_wa: true,
-          wa_sent_at: new Date().toISOString(),
-        });
-
-        notifications.push({
-          recipient: recipient.full_name,
-          phone: recipient.phone,
-          status: "sent",
-        });
-
-      } catch (error: any) {
-        console.error(`Failed to send WA to ${recipient.phone}:`, error);
-        notifications.push({
-          recipient: recipient.full_name,
-          phone: recipient.phone,
-          status: "failed",
-          error: error.message,
-        });
+          const waResult = await waResponse.json();
+          console.log(`WA sent to ${recipient.phone}:`, waResult);
+          waSuccess = true;
+        } catch (error: any) {
+          console.error(`Failed to send WA to ${recipient.phone}:`, error);
+        }
       }
+
+      // Send Email notification
+      if (emailConfig && recipient.email) {
+        try {
+          const buildClient = (port: number, implicitTLS: boolean) =>
+            new SMTPClient({
+              connection: {
+                hostname: emailConfig.smtp_host,
+                port,
+                tls: implicitTLS,
+                auth: {
+                  username: emailConfig.smtp_user,
+                  password: emailConfig.smtp_password,
+                },
+              },
+              debug: {
+                log: false,
+                allowUnsecure: false,
+                noStartTLS: !implicitTLS ? false : true,
+              },
+            });
+
+          const fromHeader = emailConfig.smtp_host === "smtp.gmail.com"
+            ? `${emailConfig.from_name} <${emailConfig.smtp_user}>`
+            : `${emailConfig.from_name} <${emailConfig.from_email}>`;
+
+          // Convert message template to HTML
+          const emailHtml = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; white-space: pre-line; }
+                .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #6b7280; }
+              </style>
+            </head>
+            <body>
+              <div class="container">
+                <div class="header">
+                  <h1>🔔 Notifikasi ${type.toUpperCase()}</h1>
+                </div>
+                <div class="content">
+                  ${messageTemplate.replace(/\n/g, '<br>')}
+                  <hr style="margin: 20px 0; border: none; border-top: 1px solid #e5e7eb;">
+                  <p style="font-size: 12px; color: #6b7280;">
+                    Waktu: ${new Date().toLocaleString("id-ID")}<br>
+                    Untuk: ${recipient.full_name}
+                  </p>
+                </div>
+                <div class="footer">
+                  <p>Sistem Manajemen SPM BKAD</p>
+                  <p>Email ini dikirim secara otomatis, mohon tidak membalas.</p>
+                </div>
+              </div>
+            </body>
+            </html>
+          `;
+
+          let client = buildClient(Number(emailConfig.smtp_port), emailConfig.smtp_port === 465);
+
+          try {
+            await client.send({
+              from: fromHeader,
+              to: recipient.email,
+              subject: `🔔 Notifikasi ${type.toUpperCase()} - Sistem BKAD`,
+              content: "auto",
+              html: emailHtml,
+            });
+            console.log(`Email sent to ${recipient.email}`);
+            emailSuccess = true;
+            try { await client.close(); } catch (_) {}
+          } catch (primaryErr: any) {
+            console.error("Primary email send failed:", primaryErr?.message);
+            const msg = String(primaryErr?.message || "");
+            const shouldFallback = msg.includes("startTls") || msg.includes("BadResource");
+            
+            if (shouldFallback) {
+              try { await client.close(); } catch (_) {}
+              client = buildClient(465, true);
+              await client.send({
+                from: fromHeader,
+                to: recipient.email,
+                subject: `🔔 Notifikasi ${type.toUpperCase()} - Sistem BKAD`,
+                content: "auto",
+                html: emailHtml,
+              });
+              console.log(`Email sent to ${recipient.email} (fallback 465)`);
+              emailSuccess = true;
+              try { await client.close(); } catch (_) {}
+            } else {
+              throw primaryErr;
+            }
+          }
+        } catch (error: any) {
+          console.error(`Failed to send email to ${recipient.email}:`, error);
+        }
+      }
+
+      // Save notification to database
+      await supabase.from("notifikasi").insert({
+        user_id: recipient.id,
+        jenis: type === 'spm' ? 'spm_status' : 'sp2d_status',
+        judul: `Notifikasi ${type.toUpperCase()}`,
+        pesan: messageTemplate,
+        spm_id: type === 'spm' ? documentId : null,
+        sent_via_wa: waSuccess,
+        wa_sent_at: waSuccess ? new Date().toISOString() : null,
+      });
+
+      notifications.push({
+        recipient: recipient.full_name,
+        phone: recipient.phone || '-',
+        email: recipient.email,
+        wa_status: waSuccess ? "sent" : waConfig ? "failed" : "not_configured",
+        email_status: emailSuccess ? "sent" : emailConfig ? "failed" : "not_configured",
+      });
     }
 
     return new Response(
       JSON.stringify({
         success: true,
         notifications,
-        message: `Sent ${notifications.filter(n => n.status === 'sent').length} notifications`,
+        summary: {
+          total: notifications.length,
+          wa_sent: notifications.filter(n => n.wa_status === 'sent').length,
+          email_sent: notifications.filter(n => n.email_status === 'sent').length,
+        },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
