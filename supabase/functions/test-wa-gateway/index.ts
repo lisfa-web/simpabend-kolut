@@ -13,6 +13,7 @@ serve(async (req) => {
 
   try {
     const { phone } = await req.json();
+    console.log("Test WA Gateway - Phone:", phone);
 
     if (!phone) {
       return new Response(
@@ -27,38 +28,72 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get WA Gateway config
+    console.log("Fetching WA Gateway config...");
     const { data: gateway, error: configError } = await supabase
       .from("wa_gateway")
       .select("*")
       .single();
 
+    console.log("Gateway config:", gateway);
+    console.log("Config error:", configError);
+
     if (configError || !gateway) {
+      console.error("Gateway config not found:", configError);
       return new Response(
-        JSON.stringify({ success: false, message: "Konfigurasi WhatsApp Gateway tidak ditemukan" }),
+        JSON.stringify({ 
+          success: false, 
+          message: "Konfigurasi WhatsApp Gateway tidak ditemukan. Silakan simpan konfigurasi terlebih dahulu.",
+          error: configError?.message 
+        }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
+    if (!gateway.api_key || !gateway.sender_id) {
+      console.error("Gateway config incomplete:", gateway);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: "Konfigurasi tidak lengkap. API Key dan Sender ID wajib diisi." 
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Clean sender_id and phone (remove spaces)
+    const cleanSenderId = gateway.sender_id.trim();
+    const cleanPhone = phone.trim();
+
+    console.log("Calling Fonnte API...");
+    console.log("API Key (first 10 chars):", gateway.api_key.substring(0, 10) + "...");
+    console.log("Sender ID:", cleanSenderId);
+    console.log("Target Phone:", cleanPhone);
+
     // Call Fonnte API
     const fonnte_url = "https://api.fonnte.com/send";
+    const requestBody = {
+      target: cleanPhone,
+      message: `🔔 *Test Koneksi WhatsApp Gateway*\n\nIni adalah pesan test dari Sistem Manajemen SPM BKAD.\n\nWaktu: ${new Date().toLocaleString("id-ID")}\n\n✅ Koneksi berhasil!`,
+      countryCode: "62",
+    };
+
+    console.log("Request body:", requestBody);
+
     const response = await fetch(fonnte_url, {
       method: "POST",
       headers: {
         "Authorization": gateway.api_key,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        target: phone,
-        message: `🔔 *Test Koneksi WhatsApp Gateway*\n\nIni adalah pesan test dari Sistem Manajemen SPM BKAD.\n\nWaktu: ${new Date().toLocaleString("id-ID")}\n\n✅ Koneksi berhasil!`,
-        countryCode: "62",
-      }),
+      body: JSON.stringify(requestBody),
     });
 
+    console.log("Fonnte response status:", response.status);
     const result = await response.json();
-    
     console.log("Fonnte API Response:", result);
 
     const isSuccess = result.status === true || response.ok;
+    console.log("Is success:", isSuccess);
 
     // Update test status in database
     await supabase
@@ -73,16 +108,18 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: "Test koneksi berhasil! Pesan telah dikirim.",
+          message: "Test koneksi berhasil! Pesan telah dikirim ke " + cleanPhone,
           data: result 
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {
+      const errorMessage = result.reason || result.message || "Test koneksi gagal. Periksa API Key dan Sender ID Anda.";
+      console.error("Fonnte API Error:", errorMessage);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          message: result.reason || "Test koneksi gagal",
+          message: errorMessage,
           data: result 
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
