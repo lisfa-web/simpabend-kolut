@@ -10,6 +10,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useConfigSistem } from "@/hooks/useConfigSistem";
 
 interface Sp2dVerificationDialogProps {
   open: boolean;
@@ -25,6 +27,10 @@ export const Sp2dVerificationDialog = ({
   loading = false,
 }: Sp2dVerificationDialogProps) => {
   const [otp, setOtp] = useState("");
+  const { data: configData } = useConfigSistem();
+  
+  const isTestMode = configData?.find(c => c.key === "otp_test_mode")?.value === "true";
+  const testOtpCode = configData?.find(c => c.key === "otp_test_code")?.value || "123456";
 
   const handleSubmit = () => {
     if (otp.length === 6) {
@@ -42,6 +48,14 @@ export const Sp2dVerificationDialog = ({
             Masukkan kode OTP 6 digit yang telah dikirimkan untuk memverifikasi SP2D
           </DialogDescription>
         </DialogHeader>
+
+        {isTestMode && (
+          <Alert className="mt-4">
+            <AlertDescription>
+              🧪 <strong>Mode Testing:</strong> Gunakan OTP <strong>{testOtpCode}</strong>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">

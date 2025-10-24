@@ -6,6 +6,7 @@ import { Database } from "@/integrations/supabase/types";
 
 type Sp2dInsert = Database["public"]["Tables"]["sp2d"]["Insert"];
 type Sp2dUpdate = Database["public"]["Tables"]["sp2d"]["Update"];
+type StatusSp2d = Database["public"]["Enums"]["status_sp2d"];
 
 export const useSp2dMutation = () => {
   const queryClient = useQueryClient();
@@ -76,13 +77,62 @@ export const useSp2dMutation = () => {
 
   const verifyOtp = useMutation({
     mutationFn: async ({ id, otp }: { id: string; otp: string }) => {
-      // Here you would typically validate the OTP against pin_otp table
-      // For now, we'll just update the otp_verified_at timestamp
+      // Check if in test mode
+      const { data: testModeConfig } = await supabase
+        .from("config_sistem")
+        .select("value")
+        .eq("key", "otp_test_mode")
+        .single();
+
+      const isTestMode = testModeConfig?.value === "true";
+      let isValidOtp = false;
+      let validOtpCode = "123456";
+
+      if (isTestMode) {
+        // Get static OTP from config
+        const { data: testOtpConfig } = await supabase
+          .from("config_sistem")
+          .select("value")
+          .eq("key", "otp_test_code")
+          .single();
+        
+        validOtpCode = testOtpConfig?.value || "123456";
+        isValidOtp = otp === validOtpCode;
+      } else {
+        // Production: validate against pin_otp table
+        const { data: otpRecord } = await supabase
+          .from("pin_otp")
+          .select("*")
+          .eq("kode_hash", otp)
+          .eq("sp2d_id", id)
+          .eq("is_used", false)
+          .gte("expires_at", new Date().toISOString())
+          .single();
+        
+        isValidOtp = !!otpRecord;
+        
+        if (isValidOtp && otpRecord) {
+          // Mark OTP as used
+          await supabase
+            .from("pin_otp")
+            .update({ is_used: true })
+            .eq("id", otpRecord.id);
+        }
+      }
+
+      if (!isValidOtp) {
+        throw new Error(
+          isTestMode 
+            ? `Kode OTP tidak valid. Untuk testing, gunakan: ${validOtpCode}` 
+            : "Kode OTP tidak valid atau sudah kadaluarsa"
+        );
+      }
+
       const { data: result, error } = await supabase
         .from("sp2d")
         .update({ 
           otp_verified_at: new Date().toISOString(),
-          status: "diterbitkan" as any,
+          status: "diterbitkan" as StatusSp2d,
           verified_by: user?.id,
         })
         .eq("id", id)
@@ -114,7 +164,7 @@ export const useSp2dMutation = () => {
       const { data: result, error } = await supabase
         .from("sp2d")
         .update({ 
-          status: "cair" as any,
+          status: "cair" as StatusSp2d,
           tanggal_cair: new Date().toISOString()
         })
         .eq("id", id)
