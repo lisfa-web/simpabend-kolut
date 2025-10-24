@@ -40,43 +40,83 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    let mounted = true;
+
+    // Safety timeout - force loading to false after 5 seconds
+    const safetyTimeout = setTimeout(() => {
+      console.warn("Auth loading timeout - forcing loading to false");
+      if (mounted) {
+        setLoading(false);
+      }
+    }, 5000);
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        if (!mounted) return;
+
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
         if (currentSession?.user) {
           // Defer role fetching with setTimeout to prevent deadlock
           setTimeout(async () => {
-            const userRoles = await fetchUserRoles(currentSession.user.id);
-            setRoles(userRoles);
-            setLoading(false);
+            try {
+              const userRoles = await fetchUserRoles(currentSession.user.id);
+              if (mounted) {
+                setRoles(userRoles);
+                setLoading(false);
+              }
+            } catch (error) {
+              console.error("Error fetching roles in auth state change:", error);
+              if (mounted) {
+                setRoles([]);
+                setLoading(false);
+              }
+            }
           }, 0);
         } else {
-          setRoles([]);
-          setLoading(false);
+          if (mounted) {
+            setRoles([]);
+            setLoading(false);
+          }
         }
       }
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
+    supabase.auth.getSession()
+      .then(({ data: { session: currentSession } }) => {
+        if (!mounted) return;
 
-      if (currentSession?.user) {
-        setTimeout(async () => {
-          const userRoles = await fetchUserRoles(currentSession.user.id);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+
+        if (currentSession?.user) {
+          return fetchUserRoles(currentSession.user.id);
+        } else {
+          return [];
+        }
+      })
+      .then((userRoles) => {
+        if (mounted) {
           setRoles(userRoles);
           setLoading(false);
-        }, 0);
-      } else {
-        setLoading(false);
-      }
-    });
+        }
+      })
+      .catch((error) => {
+        console.error("Error initializing auth:", error);
+        if (mounted) {
+          setRoles([]);
+          setLoading(false);
+        }
+      });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
