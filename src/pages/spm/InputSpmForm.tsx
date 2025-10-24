@@ -36,6 +36,18 @@ const InputSpmForm = () => {
   const { data: subkegiatanList } = useSubkegiatanList(formData?.kegiatan_id);
   const { data: vendorList } = useVendorList();
 
+  // Block access if SPM status is "ditolak"
+  useEffect(() => {
+    if (id && spmDetail && spmDetail.status === "ditolak") {
+      toast({
+        title: "Tidak Dapat Diedit",
+        description: "SPM yang ditolak tidak dapat diedit. Silakan buat pengajuan SPM baru.",
+        variant: "destructive",
+      });
+      navigate(`/input-spm/detail/${id}`);
+    }
+  }, [id, spmDetail, navigate]);
+
   // Pre-fill form data saat mode edit
   useEffect(() => {
     if (id && spmDetail && !formData) {
@@ -84,6 +96,16 @@ const InputSpmForm = () => {
 
   const handleFinalSubmit = async (isDraft: boolean) => {
     if (!formData) return;
+
+    // Defensive check: prevent saving/submitting if status is "ditolak"
+    if (id && spmDetail && spmDetail.status === "ditolak") {
+      toast({
+        title: "Tidak Dapat Disimpan",
+        description: "SPM yang ditolak tidak dapat diedit atau diajukan ulang.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const spmData = {

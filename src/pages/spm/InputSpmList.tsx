@@ -66,10 +66,10 @@ const InputSpmList = () => {
   };
 
   const canEdit = (status: string) => 
-    status === "draft" || status === "perlu_revisi" || status === "ditolak";
+    status === "draft" || status === "perlu_revisi";
   const canDelete = (status: string) => status === "draft";
   const canSubmit = (status: string) => 
-    status === "draft" || status === "perlu_revisi" || status === "ditolak";
+    status === "draft" || status === "perlu_revisi";
 
   if (isLoading) {
     return (
