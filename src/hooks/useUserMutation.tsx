@@ -132,6 +132,18 @@ export const useUserMutation = () => {
       });
 
       if (error) throw error;
+
+      // Send WhatsApp notification
+      try {
+        await supabase.functions.invoke("send-password-reset-notification", {
+          body: { userId },
+        });
+      } catch (notifError) {
+        console.error("Error sending notification:", notifError);
+        // Don't fail the whole operation if notification fails
+      }
+
+      return userId;
     },
     onSuccess: () => {
       toast.success("Password berhasil direset");

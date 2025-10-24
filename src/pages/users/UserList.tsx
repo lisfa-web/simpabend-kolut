@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -55,6 +56,48 @@ const UserList = () => {
     userName: string;
   }>({ open: false, userId: "", userName: "" });
   const [newPassword, setNewPassword] = useState("");
+
+  // Calculate password strength
+  const passwordStrength = useMemo(() => {
+    if (!newPassword) return { score: 0, label: "", color: "" };
+    
+    let score = 0;
+    
+    // Length check
+    if (newPassword.length >= 8) score += 25;
+    if (newPassword.length >= 12) score += 15;
+    
+    // Has lowercase
+    if (/[a-z]/.test(newPassword)) score += 15;
+    
+    // Has uppercase
+    if (/[A-Z]/.test(newPassword)) score += 15;
+    
+    // Has numbers
+    if (/\d/.test(newPassword)) score += 15;
+    
+    // Has special characters
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(newPassword)) score += 15;
+    
+    let label = "";
+    let color = "";
+    
+    if (score < 30) {
+      label = "Lemah";
+      color = "text-red-600";
+    } else if (score < 60) {
+      label = "Sedang";
+      color = "text-yellow-600";
+    } else if (score < 80) {
+      label = "Kuat";
+      color = "text-blue-600";
+    } else {
+      label = "Sangat Kuat";
+      color = "text-green-600";
+    }
+    
+    return { score, label, color };
+  }, [newPassword]);
 
   const { data: users, isLoading } = useUserList({
     search,
@@ -277,15 +320,49 @@ const UserList = () => {
             <AlertDialogTitle>Reset Password</AlertDialogTitle>
             <AlertDialogDescription>
               Reset password untuk user: <strong>{resetPasswordDialog.userName}</strong>
+              <br />
+              <span className="text-xs text-muted-foreground">
+                Notifikasi akan dikirim via WhatsApp jika nomor telepon tersedia.
+              </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4">
-            <Input
-              type="password"
-              placeholder="Password baru (min. 6 karakter)"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
+          <div className="py-4 space-y-4">
+            <div>
+              <Input
+                type="password"
+                placeholder="Password baru (min. 6 karakter)"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            {newPassword && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Kekuatan Password:</span>
+                  <span className={`font-medium ${passwordStrength.color}`}>
+                    {passwordStrength.label}
+                  </span>
+                </div>
+                <Progress value={passwordStrength.score} className="h-2" />
+                <ul className="text-xs text-muted-foreground space-y-1 mt-2">
+                  <li className={newPassword.length >= 8 ? "text-green-600" : ""}>
+                    ✓ Minimal 8 karakter
+                  </li>
+                  <li className={/[A-Z]/.test(newPassword) ? "text-green-600" : ""}>
+                    ✓ Huruf besar (A-Z)
+                  </li>
+                  <li className={/[a-z]/.test(newPassword) ? "text-green-600" : ""}>
+                    ✓ Huruf kecil (a-z)
+                  </li>
+                  <li className={/\d/.test(newPassword) ? "text-green-600" : ""}>
+                    ✓ Angka (0-9)
+                  </li>
+                  <li className={/[!@#$%^&*(),.?":{}|<>]/.test(newPassword) ? "text-green-600" : ""}>
+                    ✓ Karakter spesial (!@#$%...)
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
