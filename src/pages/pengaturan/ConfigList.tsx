@@ -26,10 +26,20 @@ const ConfigList = () => {
   const [uploading, setUploading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string>("");
 
+  // Filter out internal configs yang tidak perlu ditampilkan
+  const hiddenKeys = [
+    'max_file_size_unit', // Managed internally oleh max_file_size
+    'max_file_size_dokumen_spm', // Auto-sync dari max_file_size
+    'max_file_size_tbk', // Auto-sync dari max_file_size
+    'max_file_size_spj', // Auto-sync dari max_file_size
+    'max_file_size_lainnya' // Auto-sync dari max_file_size
+  ];
+
   const filteredConfigs = configs?.filter(
     (c) =>
-      c.key.toLowerCase().includes(search.toLowerCase()) ||
-      c.description?.toLowerCase().includes(search.toLowerCase())
+      !hiddenKeys.includes(c.key) &&
+      (c.key.toLowerCase().includes(search.toLowerCase()) ||
+      c.description?.toLowerCase().includes(search.toLowerCase()))
   );
 
   const handleEdit = (config: ConfigRow) => {
