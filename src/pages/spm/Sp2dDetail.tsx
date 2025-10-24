@@ -46,6 +46,10 @@ const Sp2dDetail = () => {
     }
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -73,7 +77,7 @@ const Sp2dDetail = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between print:hidden">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -93,15 +97,24 @@ const Sp2dDetail = () => {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handlePrint}>
               <Printer className="h-4 w-4 mr-2" />
               Cetak
             </Button>
           </div>
         </div>
 
-        <Tabs defaultValue="informasi" className="space-y-4">
-          <TabsList>
+        {/* Print Header - Only visible when printing */}
+        <div className="hidden print:block text-center mb-8">
+          <h1 className="text-2xl font-bold mb-2">SURAT PERINTAH PENCAIRAN DANA (SP2D)</h1>
+          <p className="text-lg font-semibold">{sp2d.nomor_sp2d}</p>
+          <div className="mt-2">
+            <Sp2dStatusBadge status={sp2d.status || "pending"} />
+          </div>
+        </div>
+
+        <Tabs defaultValue="informasi" className="space-y-4 print:block">
+          <TabsList className="print:hidden">
             <TabsTrigger value="informasi">Informasi</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
             {sp2d.status === "pending" && canVerify && (
@@ -109,7 +122,7 @@ const Sp2dDetail = () => {
             )}
           </TabsList>
 
-          <TabsContent value="informasi" className="space-y-4">
+          <TabsContent value="informasi" className="space-y-4 print:block print:space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Informasi SP2D</CardTitle>
@@ -221,7 +234,7 @@ const Sp2dDetail = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="timeline">
+          <TabsContent value="timeline" className="print:hidden">
             <Card>
               <CardHeader>
                 <CardTitle>Timeline SP2D</CardTitle>
@@ -238,7 +251,7 @@ const Sp2dDetail = () => {
           </TabsContent>
 
           {sp2d.status === "pending" && canVerify && (
-            <TabsContent value="verifikasi">
+            <TabsContent value="verifikasi" className="print:hidden">
               <Card>
                 <CardHeader>
                   <CardTitle>Verifikasi OTP</CardTitle>
@@ -259,7 +272,7 @@ const Sp2dDetail = () => {
         </Tabs>
 
         {sp2d.status === "diterbitkan" && canVerify && (
-          <Card className="border-success">
+          <Card className="border-success print:hidden">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -278,7 +291,7 @@ const Sp2dDetail = () => {
         )}
 
         {sp2d.status === "cair" && (
-          <Card className="border-success bg-success/5">
+          <Card className="border-success bg-success/5 print:hidden">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-8 w-8 text-success" />
@@ -307,6 +320,34 @@ const Sp2dDetail = () => {
         sp2dId={id || ""}
         userId={user?.id || ""}
       />
+
+      {/* Print styles */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          
+          .print\\:block, 
+          .print\\:block * {
+            visibility: visible;
+          }
+          
+          .print\\:hidden {
+            display: none !important;
+          }
+          
+          @page {
+            size: A4;
+            margin: 2cm;
+          }
+          
+          body {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+        }
+      `}</style>
     </DashboardLayout>
   );
 };
