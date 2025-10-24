@@ -202,8 +202,8 @@ const App = () => (
             <Route path="/masterdata/opd/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><OpdForm /></RoleProtectedRoute>} />
             <Route path="/masterdata/opd/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><OpdForm /></RoleProtectedRoute>} />
             <Route path="/masterdata/vendor" element={<RoleProtectedRoute allowedRoles={['administrator']}><VendorList /></RoleProtectedRoute>} />
-            <Route path="/masterdata/vendor/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><VendorForm /></RoleProtectedRoute>} />
-            <Route path="/masterdata/vendor/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><VendorForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/vendor/create" element={<RoleProtectedRoute allowedRoles={['administrator']}><VendorForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/vendor/:id/edit" element={<RoleProtectedRoute allowedRoles={['administrator']}><VendorForm /></RoleProtectedRoute>} />
             <Route path="/masterdata/program" element={<RoleProtectedRoute allowedRoles={['administrator']}><ProgramList /></RoleProtectedRoute>} />
             <Route path="/masterdata/program/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><ProgramForm /></RoleProtectedRoute>} />
             <Route path="/masterdata/program/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><ProgramForm /></RoleProtectedRoute>} />
