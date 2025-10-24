@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { spmDataSchema, SpmDataFormValues } from "@/schemas/spmSchema";
+import { useEffect } from "react";
 import {
   Form,
   FormControl,
@@ -52,6 +53,16 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const { data: kegiatanList } = useKegiatanList(programId);
   const { data: subkegiatanList } = useSubkegiatanList(kegiatanId);
   const { data: vendorList } = useVendorList();
+
+  // Reset form dengan defaultValues saat mode edit
+  useEffect(() => {
+    if (defaultValues) {
+      form.reset({
+        tanggal_ajuan: new Date(),
+        ...defaultValues,
+      });
+    }
+  }, [defaultValues, form]);
 
   if (opdLoading || programLoading) {
     return (

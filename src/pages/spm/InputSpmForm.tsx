@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,6 +14,7 @@ import { useKegiatanList } from "@/hooks/useKegiatanList";
 import { useSubkegiatanList } from "@/hooks/useSubkegiatanList";
 import { useVendorList } from "@/hooks/useVendorList";
 import { toast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const InputSpmForm = () => {
   const { id } = useParams();
@@ -28,12 +29,41 @@ const InputSpmForm = () => {
   });
 
   const { createSpm, updateSpm, uploadFile } = useSpmMutation();
-  const { data: spmDetail } = useSpmDetail(id);
+  const { data: spmDetail, isLoading: isLoadingSpm } = useSpmDetail(id);
   const { data: opdList } = useOpdList();
   const { data: programList } = useProgramList();
   const { data: kegiatanList } = useKegiatanList(formData?.program_id);
   const { data: subkegiatanList } = useSubkegiatanList(formData?.kegiatan_id);
   const { data: vendorList } = useVendorList();
+
+  // Pre-fill form data saat mode edit
+  useEffect(() => {
+    if (id && spmDetail && !formData) {
+      const convertDbJenisSpmToFormFormat = (jenis: string): 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang_jasa' | 'ls_belanja_modal' => {
+        const mapping: Record<string, 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang_jasa' | 'ls_belanja_modal'> = {
+          'UP': 'up',
+          'GU': 'gu',
+          'TU': 'tu',
+          'LS_Gaji': 'ls_gaji',
+          'LS_Barang_Jasa': 'ls_barang_jasa',
+          'LS_Belanja_Modal': 'ls_belanja_modal'
+        };
+        return mapping[jenis] || 'up';
+      };
+
+      setFormData({
+        opd_id: spmDetail.opd_id,
+        program_id: spmDetail.program_id,
+        kegiatan_id: spmDetail.kegiatan_id,
+        subkegiatan_id: spmDetail.subkegiatan_id,
+        jenis_spm: convertDbJenisSpmToFormFormat(spmDetail.jenis_spm),
+        nilai_spm: spmDetail.nilai_spm,
+        uraian: spmDetail.uraian || '',
+        vendor_id: spmDetail.vendor_id || undefined,
+        tanggal_ajuan: new Date(spmDetail.tanggal_ajuan || new Date()),
+      });
+    }
+  }, [id, spmDetail, formData]);
 
   const convertJenisSpmToDbFormat = (jenis: string): string => {
     const mapping: Record<string, string> = {
@@ -117,6 +147,17 @@ const InputSpmForm = () => {
   const kegiatanName = kegiatanList?.find((k) => k.id === formData?.kegiatan_id)?.nama_kegiatan;
   const subkegiatanName = subkegiatanList?.find((s) => s.id === formData?.subkegiatan_id)?.nama_subkegiatan;
   const vendorName = vendorList?.find((v) => v.id === formData?.vendor_id)?.nama_vendor;
+
+  // Tampilkan loading saat fetch data SPM untuk mode edit
+  if (id && isLoadingSpm) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center min-h-96">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
