@@ -22,11 +22,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft } from "lucide-react";
-import { useSpmList } from "@/hooks/useSpmList";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { useAuth } from "@/hooks/useAuth";
 import { useGenerateSp2dNumber } from "@/hooks/useGenerateSp2dNumber";
 import { formatCurrency } from "@/lib/currency";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Sp2dFormData {
   spm_id: string;
@@ -44,8 +45,44 @@ const Sp2dForm = () => {
   const { user } = useAuth();
   const [selectedSpm, setSelectedSpm] = useState<any>(null);
 
-  const { data: spmList } = useSpmList({
-    status: "disetujui",
+  // Fetch approved SPM that don't have SP2D yet
+  const { data: spmList } = useQuery({
+    queryKey: ["spm-without-sp2d"],
+    queryFn: async () => {
+      // First, get all SPM IDs that already have SP2D
+      const { data: sp2dList, error: sp2dError } = await supabase
+        .from("sp2d")
+        .select("spm_id");
+
+      if (sp2dError) throw sp2dError;
+
+      const usedSpmIds = sp2dList?.map((sp2d) => sp2d.spm_id) || [];
+
+      // Then, fetch approved SPM excluding those with SP2D
+      let query = supabase
+        .from("spm")
+        .select(`
+          *,
+          opd:opd_id(nama_opd),
+          program:program_id(nama_program),
+          kegiatan:kegiatan_id(nama_kegiatan),
+          subkegiatan:subkegiatan_id(nama_subkegiatan),
+          vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening)
+        `)
+        .eq("status", "disetujui")
+        .order("created_at", { ascending: false });
+
+      // Exclude SPM that already have SP2D
+      if (usedSpmIds.length > 0) {
+        query = query.not("id", "in", `(${usedSpmIds.join(",")})`);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
   });
 
   const { createSp2d } = useSp2dMutation();
