@@ -165,9 +165,6 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Action Items Widget */}
-        <ActionItemsWidget />
-
         {/* Charts Section */}
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="md:col-span-2">
@@ -249,6 +246,9 @@ const Dashboard = () => {
 
         {/* OPD Breakdown */}
         <OpdBreakdownChart data={stats?.opdBreakdown || []} isLoading={isLoading} />
+
+        {/* Action Items Widget */}
+        <ActionItemsWidget />
       </div>
     </DashboardLayout>
   );
