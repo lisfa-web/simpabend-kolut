@@ -12,6 +12,7 @@ import {
   Mail,
   Users,
   Database as DatabaseIcon,
+  ScrollText,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
@@ -97,6 +98,12 @@ const menuItems: MenuItem[] = [
     icon: Settings, 
     path: "/pengaturan",
     roles: ["administrator"]
+  },
+  { 
+    name: "Audit Trail", 
+    icon: ScrollText, 
+    path: "/pengaturan/audit-trail",
+    roles: ["administrator", "kepala_bkad"]
   },
 ];
 
