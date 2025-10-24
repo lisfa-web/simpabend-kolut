@@ -25,9 +25,8 @@ export const useLaporanSp2d = (filters?: LaporanSp2dFilters) => {
             spm:spm_id(
               nomor_spm,
               opd:opd_id(nama_opd, kode_opd, id),
-              bendahara:bendahara_id(full_name)
-            ),
-            kuasa_bud:kuasa_bud_id(full_name)
+              bendahara:profiles!spm_bendahara_id_fkey(full_name)
+            )
           `)
           .order("tanggal_sp2d", { ascending: false });
 
