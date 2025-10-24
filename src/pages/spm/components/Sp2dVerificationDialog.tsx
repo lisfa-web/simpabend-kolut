@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,14 +10,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useConfigSistem } from "@/hooks/useConfigSistem";
+import { RefreshCw } from "lucide-react";
+import { useRequestSp2dOtp } from "@/hooks/useRequestSp2dOtp";
 
 interface Sp2dVerificationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onVerify: (otp: string) => void;
   loading?: boolean;
+  sp2dId: string;
+  userId: string;
 }
 
 export const Sp2dVerificationDialog = ({
@@ -25,12 +27,35 @@ export const Sp2dVerificationDialog = ({
   onOpenChange,
   onVerify,
   loading = false,
+  sp2dId,
+  userId,
 }: Sp2dVerificationDialogProps) => {
   const [otp, setOtp] = useState("");
-  const { data: configData } = useConfigSistem();
+  const [countdown, setCountdown] = useState(60);
+  const [canResend, setCanResend] = useState(false);
   
-  const isTestMode = configData?.find(c => c.key === "otp_test_mode")?.value === "true";
-  const testOtpCode = configData?.find(c => c.key === "otp_test_code")?.value || "123456";
+  const requestOtp = useRequestSp2dOtp();
+
+  // Countdown timer
+  useEffect(() => {
+    if (!open) return;
+    
+    setCountdown(60);
+    setCanResend(false);
+    
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          setCanResend(true);
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [open]);
 
   const handleSubmit = () => {
     if (otp.length === 6) {
@@ -39,38 +64,57 @@ export const Sp2dVerificationDialog = ({
     }
   };
 
+  const handleRequestOtp = () => {
+    requestOtp.mutate(
+      { sp2dId, userId },
+      {
+        onSuccess: () => {
+          setCountdown(60);
+          setCanResend(false);
+        },
+      }
+    );
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Verifikasi OTP</DialogTitle>
-          <DialogDescription>
-            Masukkan kode OTP 6 digit yang telah dikirimkan untuk memverifikasi SP2D
-          </DialogDescription>
-        </DialogHeader>
+      <DialogHeader>
+        <DialogTitle>Verifikasi OTP</DialogTitle>
+        <DialogDescription>
+          Masukkan kode OTP 6 digit yang telah dikirimkan ke WhatsApp Anda
+        </DialogDescription>
+      </DialogHeader>
 
-        {isTestMode && (
-          <Alert className="mt-4">
-            <AlertDescription>
-              🧪 <strong>Mode Testing:</strong> Gunakan OTP <strong>{testOtpCode}</strong>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="otp">Kode OTP</Label>
-            <Input
-              id="otp"
-              type="text"
-              maxLength={6}
-              placeholder="000000"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-              className="text-center text-2xl tracking-widest"
-            />
-          </div>
+      <div className="space-y-4 py-4">
+        <div className="space-y-2">
+          <Label htmlFor="otp">Kode OTP</Label>
+          <Input
+            id="otp"
+            type="text"
+            maxLength={6}
+            placeholder="000000"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+            className="text-center text-2xl tracking-widest"
+          />
         </div>
+        
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full"
+          onClick={handleRequestOtp}
+          disabled={!canResend || requestOtp.isPending || loading}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${requestOtp.isPending ? 'animate-spin' : ''}`} />
+          {requestOtp.isPending 
+            ? "Mengirim..." 
+            : canResend 
+            ? "Minta OTP" 
+            : `Minta OTP (${countdown}s)`}
+        </Button>
+      </div>
 
         <DialogFooter>
           <Button

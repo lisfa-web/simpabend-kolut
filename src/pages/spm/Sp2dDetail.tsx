@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 const Sp2dDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { roles } = useAuth();
+  const { roles, user } = useAuth();
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
 
   const { data: sp2d, isLoading } = useSp2dDetail(id);
@@ -304,6 +304,8 @@ const Sp2dDetail = () => {
         onOpenChange={setShowVerifyDialog}
         onVerify={handleVerify}
         loading={verifyOtp.isPending}
+        sp2dId={id || ""}
+        userId={user?.id || ""}
       />
     </DashboardLayout>
   );

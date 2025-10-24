@@ -41,9 +41,11 @@ import { id as localeId } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/currency";
+import { useAuth } from "@/hooks/useAuth";
 
 const Sp2dList = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [selectedSp2dId, setSelectedSp2dId] = useState<string | null>(null);
@@ -410,12 +412,14 @@ const Sp2dList = () => {
         </Tabs>
 
         {/* Verification Dialog */}
-        <Sp2dVerificationDialog
-          open={showVerifyDialog}
-          onOpenChange={setShowVerifyDialog}
-          onVerify={handleVerifyOtp}
-          loading={verifyOtp.isPending}
-        />
+      <Sp2dVerificationDialog
+        open={showVerifyDialog}
+        onOpenChange={setShowVerifyDialog}
+        onVerify={handleVerifyOtp}
+        loading={verifyOtp.isPending}
+        sp2dId={selectedSp2dId || ""}
+        userId={user?.id || ""}
+      />
 
         {/* Disbursement Confirmation Dialog */}
         <AlertDialog open={showDisburseDialog} onOpenChange={setShowDisburseDialog}>
