@@ -14,10 +14,25 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [captchaNum1, setCaptchaNum1] = useState(0);
+  const [captchaNum2, setCaptchaNum2] = useState(0);
+  const [captchaAnswer, setCaptchaAnswer] = useState("");
   
   const { login, user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const generateCaptcha = () => {
+    const num1 = Math.floor(Math.random() * 10) + 1;
+    const num2 = Math.floor(Math.random() * 10) + 1;
+    setCaptchaNum1(num1);
+    setCaptchaNum2(num2);
+    setCaptchaAnswer("");
+  };
+
+  useEffect(() => {
+    generateCaptcha();
+  }, []);
 
   useEffect(() => {
     if (user) {
@@ -36,6 +51,14 @@ const Login = () => {
       return;
     }
 
+    const correctAnswer = captchaNum1 + captchaNum2;
+    if (parseInt(captchaAnswer) !== correctAnswer) {
+      setError("Jawaban captcha salah");
+      setLoading(false);
+      generateCaptcha();
+      return;
+    }
+
     const { error: loginError } = await login(email, password);
 
     if (loginError) {
@@ -43,6 +66,7 @@ const Login = () => {
         ? "Email atau password salah" 
         : "Terjadi kesalahan saat login");
       setLoading(false);
+      generateCaptcha();
       return;
     }
 
@@ -102,6 +126,19 @@ const Login = () => {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="captcha">Captcha: {captchaNum1} + {captchaNum2} = ?</Label>
+                <Input
+                  id="captcha"
+                  type="number"
+                  placeholder="Jawaban"
+                  value={captchaAnswer}
+                  onChange={(e) => setCaptchaAnswer(e.target.value)}
                   disabled={loading}
                   required
                 />
