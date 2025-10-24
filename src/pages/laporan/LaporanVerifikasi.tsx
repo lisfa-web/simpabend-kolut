@@ -24,20 +24,23 @@ const LaporanVerifikasi = () => {
     tanggal_sampai: tanggalSampai,
   });
 
-  // Count by status
-  const statusCounts = spmList?.reduce((acc: any, item: any) => {
-    acc[item.status] = (acc[item.status] || 0) + 1;
-    return acc;
-  }, {}) || {};
-
+  // Count per tahap berdasarkan timestamp verifikasi
+  const resepsionisCount = spmList?.filter((i: any) => i.tanggal_resepsionis)?.length || 0;
+  const pbmdCount = spmList?.filter((i: any) => i.tanggal_pbmd)?.length || 0;
+  const akuntansiCount = spmList?.filter((i: any) => i.tanggal_akuntansi)?.length || 0;
+  const perbendaharaanCount = spmList?.filter((i: any) => i.tanggal_perbendaharaan)?.length || 0;
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
       draft: { label: "Draft", variant: "secondary" },
       diajukan: { label: "Diajukan", variant: "default" },
       verifikasi_resepsionis: { label: "Resepsionis", variant: "outline" },
+      resepsionis_verifikasi: { label: "Resepsionis", variant: "outline" },
       verifikasi_pbmd: { label: "PBMD", variant: "outline" },
+      pbmd_verifikasi: { label: "PBMD", variant: "outline" },
       verifikasi_akuntansi: { label: "Akuntansi", variant: "outline" },
+      akuntansi_verifikasi: { label: "Akuntansi", variant: "outline" },
       verifikasi_perbendaharaan: { label: "Perbendaharaan", variant: "outline" },
+      perbendaharaan_verifikasi: { label: "Perbendaharaan", variant: "outline" },
       approval_kepala_bkad: { label: "Kepala BKAD", variant: "outline" },
       disetujui: { label: "Disetujui", variant: "default" },
       ditolak: { label: "Ditolak", variant: "destructive" },
@@ -84,22 +87,22 @@ const LaporanVerifikasi = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <SummaryCard
             title="Resepsionis"
-            value={statusCounts.verifikasi_resepsionis || 0}
+            value={resepsionisCount}
             icon={CheckCircle2}
           />
           <SummaryCard
             title="PBMD"
-            value={statusCounts.verifikasi_pbmd || 0}
+            value={pbmdCount}
             icon={CheckCircle2}
           />
           <SummaryCard
             title="Akuntansi"
-            value={statusCounts.verifikasi_akuntansi || 0}
+            value={akuntansiCount}
             icon={CheckCircle2}
           />
           <SummaryCard
             title="Perbendaharaan"
-            value={statusCounts.verifikasi_perbendaharaan || 0}
+            value={perbendaharaanCount}
             icon={CheckCircle2}
           />
         </div>
