@@ -1102,6 +1102,10 @@ export type Database = {
         Returns: Json
       }
       check_opd_dependencies: { Args: { opd_id_param: string }; Returns: Json }
+      check_pejabat_dependencies: {
+        Args: { pejabat_id_param: string }
+        Returns: Json
+      }
       check_program_dependencies: {
         Args: { program_id_param: string }
         Returns: Json

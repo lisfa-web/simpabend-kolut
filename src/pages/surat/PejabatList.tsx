@@ -11,11 +11,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Eye, Trash2 } from "lucide-react";
+import { Plus, Search, Edit, Eye, Trash2, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { usePejabatList } from "@/hooks/usePejabatList";
 import { usePejabatMutation } from "@/hooks/usePejabatMutation";
 import { useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,21 +41,29 @@ export default function PejabatList() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [opdFilter, setOpdFilter] = useState<string>("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [showInactive, setShowInactive] = useState(false);
+  const [deactivateId, setDeactivateId] = useState<string | null>(null);
+  const [activateId, setActivateId] = useState<string | null>(null);
 
   const { data: opdList = [] } = useOpdList({ is_active: true });
   const { data: pejabatList = [], isLoading } = usePejabatList({
     search,
     opd_id: opdFilter || undefined,
-    is_active: statusFilter ? statusFilter === "active" : undefined,
+    is_active: showInactive ? undefined : true,
   });
-  const { deletePejabat } = usePejabatMutation();
+  const { deletePejabat, activatePejabat } = usePejabatMutation();
 
-  const handleDelete = () => {
-    if (deleteId) {
-      deletePejabat.mutate(deleteId);
-      setDeleteId(null);
+  const handleDeactivate = () => {
+    if (deactivateId) {
+      deletePejabat.mutate(deactivateId);
+      setDeactivateId(null);
+    }
+  };
+
+  const handleActivate = () => {
+    if (activateId) {
+      activatePejabat.mutate(activateId);
+      setActivateId(null);
     }
   };
 
@@ -78,45 +88,42 @@ export default function PejabatList() {
             <CardTitle>Filter & Pencarian</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-4 md:grid-cols-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Cari nama atau NIP..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                />
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Cari nama atau NIP..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <Select 
+                  value={opdFilter || "all"} 
+                  onValueChange={(value) => setOpdFilter(value === "all" ? "" : value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Semua OPD" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Semua OPD</SelectItem>
+                    {opdList.map((opd) => (
+                      <SelectItem key={opd.id} value={opd.id}>
+                        {opd.nama_opd}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <Select 
-                value={opdFilter || "all"} 
-                onValueChange={(value) => setOpdFilter(value === "all" ? "" : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Semua OPD" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua OPD</SelectItem>
-                  {opdList.map((opd) => (
-                    <SelectItem key={opd.id} value={opd.id}>
-                      {opd.nama_opd}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select 
-                value={statusFilter || "all"} 
-                onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Semua Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="active">Aktif</SelectItem>
-                  <SelectItem value="inactive">Tidak Aktif</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id="show-inactive"
+                  checked={showInactive}
+                  onCheckedChange={setShowInactive}
+                />
+                <Label htmlFor="show-inactive">Tampilkan data nonaktif</Label>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -172,16 +179,27 @@ export default function PejabatList() {
                             variant="ghost"
                             size="sm"
                             onClick={() => navigate(`/surat/pejabat/${pejabat.id}/edit`)}
+                            disabled={!pejabat.is_active}
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDeleteId(pejabat.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {pejabat.is_active ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setDeactivateId(pejabat.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setActivateId(pejabat.id)}
+                            >
+                              <RotateCcw className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
@@ -193,18 +211,32 @@ export default function PejabatList() {
         </Card>
       </div>
 
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+      <AlertDialog open={!!deactivateId} onOpenChange={() => setDeactivateId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
+            <AlertDialogTitle>Konfirmasi Nonaktifkan</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus data pejabat ini? Tindakan ini tidak dapat
-              dibatalkan.
+              Apakah Anda yakin ingin menonaktifkan data pejabat ini? Data yang dinonaktifkan tidak dapat digunakan untuk penandatanganan surat.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Hapus</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeactivate}>Nonaktifkan</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!activateId} onOpenChange={() => setActivateId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Aktifkan</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin mengaktifkan kembali data pejabat ini?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleActivate}>Aktifkan</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

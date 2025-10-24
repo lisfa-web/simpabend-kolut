@@ -88,22 +88,21 @@ export default function PejabatDetail() {
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">
+                <Button variant="destructive" disabled={!pejabat.is_active}>
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Hapus
+                  Nonaktifkan
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Konfirmasi Hapus</AlertDialogTitle>
+                  <AlertDialogTitle>Konfirmasi Nonaktifkan</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Apakah Anda yakin ingin menghapus data pejabat ini? Tindakan ini tidak dapat
-                    dibatalkan.
+                    Apakah Anda yakin ingin menonaktifkan data pejabat ini? Data yang dinonaktifkan tidak dapat digunakan untuk penandatanganan surat.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Batal</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Hapus</AlertDialogAction>
+                  <AlertDialogAction onClick={handleDelete}>Nonaktifkan</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

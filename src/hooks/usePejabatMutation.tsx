@@ -72,14 +72,57 @@ export const usePejabatMutation = () => {
 
   const deletePejabat = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("pejabat").delete().eq("id", id);
+      // Check dependencies before deactivating
+      const { data: dependencies, error: depsError } = await supabase
+        .rpc("check_pejabat_dependencies", { pejabat_id_param: id });
+
+      if (depsError) throw depsError;
+
+      const deps = dependencies as any;
+      if (!deps.can_deactivate) {
+        throw new Error(
+          `Tidak dapat menonaktifkan pejabat. Masih digunakan di: ${deps.surat_count} surat`
+        );
+      }
+
+      // Soft delete (set is_active to false)
+      const { error } = await supabase
+        .from("pejabat")
+        .update({ is_active: false })
+        .eq("id", id);
+
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pejabat"] });
       toast({
         title: "Berhasil",
-        description: "Data pejabat berhasil dihapus",
+        description: "Data pejabat berhasil dinonaktifkan",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Gagal",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const activatePejabat = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("pejabat")
+        .update({ is_active: true })
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pejabat"] });
+      toast({
+        title: "Berhasil",
+        description: "Data pejabat berhasil diaktifkan",
       });
     },
     onError: (error: Error) => {
@@ -122,6 +165,7 @@ export const usePejabatMutation = () => {
     createPejabat,
     updatePejabat,
     deletePejabat,
+    activatePejabat,
     uploadSignature,
   };
 };

@@ -11,6 +11,8 @@ export const usePejabatList = (filters?: PejabatFilters) => {
   return useQuery({
     queryKey: ["pejabat", filters],
     queryFn: async () => {
+      console.log("Fetching pejabat with filters:", filters);
+      
       let query = supabase
         .from("pejabat")
         .select(`
@@ -39,7 +41,12 @@ export const usePejabatList = (filters?: PejabatFilters) => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching pejabat:", error);
+        throw error;
+      }
+      
+      console.log("Pejabat data fetched:", data);
       return data;
     },
   });
