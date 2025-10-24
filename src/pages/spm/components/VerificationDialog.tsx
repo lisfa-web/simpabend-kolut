@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { CheckCircle2, XCircle, AlertCircle, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 interface VerificationDialogProps {
@@ -29,6 +29,8 @@ interface VerificationDialogProps {
   showNomorBerkas?: boolean;
   showPin?: boolean;
   isLoading?: boolean;
+  onRequestPin?: () => void;
+  isRequestingPin?: boolean;
 }
 
 export const VerificationDialog = ({
@@ -40,6 +42,8 @@ export const VerificationDialog = ({
   showNomorBerkas = false,
   showPin = false,
   isLoading = false,
+  onRequestPin,
+  isRequestingPin = false,
 }: VerificationDialogProps) => {
   const [action, setAction] = useState<"approve" | "reject" | "revise" | null>(null);
   const [catatan, setCatatan] = useState("");
@@ -157,18 +161,35 @@ export const VerificationDialog = ({
 
               {showPin && action === "approve" && (
                 <div className="space-y-2">
-                  <Label htmlFor="pin">
-                    PIN Verifikasi <span className="text-destructive">*</span>
-                  </Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="pin">
+                      PIN Verifikasi <span className="text-destructive">*</span>
+                    </Label>
+                    {onRequestPin && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={onRequestPin}
+                        disabled={isRequestingPin}
+                      >
+                        <KeyRound className="h-4 w-4 mr-2" />
+                        {isRequestingPin ? "Mengirim..." : "Minta PIN"}
+                      </Button>
+                    )}
+                  </div>
                   <Input
                     id="pin"
                     type="password"
-                    placeholder="Masukkan PIN"
+                    placeholder="Masukkan PIN 6 digit"
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
                     maxLength={6}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    PIN akan dikirim via Email & WhatsApp. Berlaku 15 menit.
+                  </p>
                 </div>
               )}
 

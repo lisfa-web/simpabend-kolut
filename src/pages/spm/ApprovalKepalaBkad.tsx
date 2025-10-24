@@ -2,6 +2,8 @@ import { useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useSpmList } from "@/hooks/useSpmList";
 import { useSpmVerification } from "@/hooks/useSpmVerification";
+import { useRequestPin } from "@/hooks/useRequestPin";
+import { useAuth } from "@/hooks/useAuth";
 import { SpmVerificationCard } from "./components/SpmVerificationCard";
 import { VerificationDialog } from "./components/VerificationDialog";
 import { Input } from "@/components/ui/input";
@@ -12,6 +14,7 @@ export default function ApprovalKepalaBkad() {
   const [search, setSearch] = useState("");
   const [selectedSpmId, setSelectedSpmId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { user } = useAuth();
 
   const { data: spmList, isLoading } = useSpmList({
     status: "kepala_bkad_review",
@@ -19,24 +22,31 @@ export default function ApprovalKepalaBkad() {
   });
 
   const { verifySpm } = useSpmVerification("kepala_bkad");
+  const requestPin = useRequestPin();
 
   const handleVerify = (spmId: string) => {
     setSelectedSpmId(spmId);
     setDialogOpen(true);
   };
 
-  const handleSubmitVerification = (data: any) => {
-    if (!selectedSpmId) return;
-
-    // Validasi PIN khusus untuk approval
-    if (data.action === "approve" && data.pin !== "123456") {
+  const handleRequestPin = () => {
+    if (!user?.id) {
       toast({
-        title: "PIN Salah",
-        description: "PIN yang Anda masukkan tidak valid. PIN untuk testing: 123456",
+        title: "Error",
+        description: "User tidak terautentikasi",
         variant: "destructive",
       });
       return;
     }
+
+    requestPin.mutate({
+      userId: user.id,
+      spmId: selectedSpmId || undefined,
+    });
+  };
+
+  const handleSubmitVerification = (data: any) => {
+    if (!selectedSpmId) return;
 
     verifySpm.mutate(
       {
@@ -101,6 +111,8 @@ export default function ApprovalKepalaBkad() {
         title="Persetujuan Kepala BKAD"
         showPin
         isLoading={verifySpm.isPending}
+        onRequestPin={handleRequestPin}
+        isRequestingPin={requestPin.isPending}
       />
     </DashboardLayout>
   );

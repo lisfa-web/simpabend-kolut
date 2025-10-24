@@ -41,9 +41,32 @@ export const useSpmVerification = (role: string) => {
 
       // Validasi PIN untuk kepala_bkad
       if (role === "kepala_bkad" && data.action === "approve") {
-        if (!data.pin || data.pin !== "123456") {
-          throw new Error("PIN tidak valid. Silakan coba lagi.");
+        if (!data.pin) {
+          throw new Error("PIN harus diisi");
         }
+
+        // Validate PIN from database
+        const { data: pinData, error: pinError } = await supabase
+          .from("pin_otp")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("kode_hash", data.pin)
+          .eq("jenis", "approval_pin")
+          .eq("is_used", false)
+          .gt("expires_at", new Date().toISOString())
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (pinError || !pinData) {
+          throw new Error("PIN tidak valid atau sudah kadaluarsa. Silakan minta PIN baru.");
+        }
+
+        // Mark PIN as used
+        await supabase
+          .from("pin_otp")
+          .update({ is_used: true })
+          .eq("id", pinData.id);
       }
 
       // Get current SPM data
