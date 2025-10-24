@@ -9,11 +9,12 @@ export const useAuth = () => {
   
   // Add helper methods for super admin checks
   const isSuperAdmin = (): boolean => {
-    return context.hasRole("super_admin");
+    // Cast to satisfy types until backend types include 'super_admin'
+    return context.hasRole("super_admin" as any);
   };
 
   const isRegularAdmin = (): boolean => {
-    return context.hasRole("administrator") && !context.hasRole("super_admin");
+    return context.hasRole("administrator") && !context.hasRole("super_admin" as any);
   };
 
   return {

@@ -31,12 +31,12 @@ import {
 
 export default function SubkegiatanList() {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { deleteSubkegiatan } = useSubkegiatanMutation();
 
-  const isSuperAdmin = hasRole("super_admin");
+  const isSuperAdminUser = isSuperAdmin();
 
   const { data: subkegiatan, isLoading } = useQuery({
     queryKey: ["subkegiatan-all"],
@@ -148,7 +148,7 @@ export default function SubkegiatanList() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          {isSuperAdmin && (
+                          {isSuperAdminUser && (
                             <Button
                               variant="outline"
                               size="icon"

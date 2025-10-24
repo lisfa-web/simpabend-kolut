@@ -29,14 +29,14 @@ import { useOpdMutation } from "@/hooks/useOpdMutation";
 
 const OpdList = () => {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: opdList, isLoading } = useOpdList();
   const { deleteOpd } = useOpdMutation();
 
-  const isSuperAdmin = hasRole("super_admin");
+  const isSuperAdminUser = isSuperAdmin();
 
   const filteredData = opdList?.filter(
     (opd) =>
@@ -120,7 +120,7 @@ const OpdList = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        {isSuperAdmin && (
+                        {isSuperAdminUser && (
                           <Button
                             variant="ghost"
                             size="icon"

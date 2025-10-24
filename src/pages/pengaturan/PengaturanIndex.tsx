@@ -5,10 +5,10 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 
 const PengaturanIndex = () => {
-  const { hasRole } = useAuth();
+  const { isSuperAdmin } = useAuth();
 
   // Only super admins can access settings
-  if (!hasRole("super_admin")) {
+  if (!isSuperAdmin()) {
     return <Navigate to="/unauthorized" replace />;
   }
   const settingsModules = [

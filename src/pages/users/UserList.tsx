@@ -48,12 +48,12 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 
 const UserList = () => {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const isSuperAdmin = hasRole("super_admin");
+  const isSuperAdminUser = isSuperAdmin();
   const [resetPasswordDialog, setResetPasswordDialog] = useState<{
     open: boolean;
     userId: string;
@@ -113,7 +113,7 @@ const UserList = () => {
 
   // Filter out super admin users for regular admins
   const filteredUsers = users?.filter((user: any) => {
-    if (isSuperAdmin) return true; // Super admin sees all users
+    if (isSuperAdminUser) return true; // Super admin sees all users
     
     // Regular admins don't see super admins
     return !user.user_roles?.some((ur: any) => ur.role === "super_admin");

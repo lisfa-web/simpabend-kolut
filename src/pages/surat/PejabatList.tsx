@@ -40,14 +40,14 @@ import { useOpdList } from "@/hooks/useOpdList";
 
 export default function PejabatList() {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const [search, setSearch] = useState("");
   const [opdFilter, setOpdFilter] = useState<string>("");
   const [showInactive, setShowInactive] = useState(false);
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
   const [activateId, setActivateId] = useState<string | null>(null);
 
-  const isSuperAdmin = hasRole("super_admin");
+  const isSuperAdminUser = isSuperAdmin();
   const { data: opdList = [] } = useOpdList({ is_active: true });
   const { data: pejabatList = [], isLoading } = usePejabatList({
     search,
@@ -186,7 +186,7 @@ export default function PejabatList() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          {isSuperAdmin && pejabat.is_active ? (
+                          {isSuperAdminUser && pejabat.is_active ? (
                             <Button
                               variant="ghost"
                               size="sm"
@@ -194,7 +194,7 @@ export default function PejabatList() {
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
-                          ) : isSuperAdmin && !pejabat.is_active ? (
+                          ) : isSuperAdminUser && !pejabat.is_active ? (
                             <Button
                               variant="ghost"
                               size="sm"

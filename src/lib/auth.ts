@@ -1,6 +1,6 @@
 import { Database } from "@/integrations/supabase/types";
 
-type AppRole = Database["public"]["Enums"]["app_role"];
+type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin';
 
 export const hasRole = (roles: AppRole[], targetRole: AppRole): boolean => {
   return roles.includes(targetRole);

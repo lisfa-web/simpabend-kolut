@@ -30,13 +30,13 @@ import {
 
 export default function ProgramList() {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { data: programs, isLoading } = useProgramList();
   const { deleteProgram } = useProgramMutation();
 
-  const isSuperAdmin = hasRole("super_admin");
+  const isSuperAdminUser = isSuperAdmin();
 
   const filteredPrograms = programs?.filter((program) =>
     program.nama_program.toLowerCase().includes(search.toLowerCase()) ||
@@ -123,7 +123,7 @@ export default function ProgramList() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          {isSuperAdmin && (
+                          {isSuperAdminUser && (
                             <Button
                               variant="outline"
                               size="icon"

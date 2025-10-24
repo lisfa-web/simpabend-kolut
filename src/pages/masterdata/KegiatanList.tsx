@@ -31,12 +31,12 @@ import {
 
 export default function KegiatanList() {
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { deleteKegiatan } = useKegiatanMutation();
 
-  const isSuperAdmin = hasRole("super_admin");
+  const isSuperAdminUser = isSuperAdmin();
 
   const { data: kegiatan, isLoading } = useQuery({
     queryKey: ["kegiatan-all"],
@@ -144,7 +144,7 @@ export default function KegiatanList() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          {isSuperAdmin && (
+                          {isSuperAdminUser && (
                             <Button
                               variant="outline"
                               size="icon"
