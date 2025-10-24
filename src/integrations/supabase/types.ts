@@ -825,6 +825,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "spm_verified_by_kepala_bkad_fkey"
+            columns: ["verified_by_kepala_bkad"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "spm_verified_by_pbmd_fkey"
             columns: ["verified_by_pbmd"]
             isOneToOne: false
