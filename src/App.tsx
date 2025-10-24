@@ -213,6 +213,10 @@ const App = () => (
             <Route path="/masterdata/subkegiatan" element={<RoleProtectedRoute allowedRoles={['administrator']}><SubkegiatanList /></RoleProtectedRoute>} />
             <Route path="/masterdata/subkegiatan/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><SubkegiatanForm /></RoleProtectedRoute>} />
             <Route path="/masterdata/subkegiatan/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><SubkegiatanForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/pejabat" element={<RoleProtectedRoute allowedRoles={['administrator']}><PejabatList /></RoleProtectedRoute>} />
+            <Route path="/masterdata/pejabat/new" element={<RoleProtectedRoute allowedRoles={['administrator']}><PejabatForm /></RoleProtectedRoute>} />
+            <Route path="/masterdata/pejabat/:id" element={<RoleProtectedRoute allowedRoles={['administrator']}><PejabatDetail /></RoleProtectedRoute>} />
+            <Route path="/masterdata/pejabat/:id/edit" element={<RoleProtectedRoute allowedRoles={['administrator']}><PejabatForm /></RoleProtectedRoute>} />
             
             {/* SP2D Routes */}
             <Route path="/sp2d" element={<RoleProtectedRoute allowedRoles={['kuasa_bud', 'kepala_bkad', 'administrator']}><Sp2dList /></RoleProtectedRoute>} />
