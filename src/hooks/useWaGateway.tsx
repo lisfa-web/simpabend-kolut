@@ -9,9 +9,11 @@ export const useWaGateway = () => {
       const { data, error } = await supabase
         .from("wa_gateway")
         .select("*")
-        .single();
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") throw error;
+      if (error) throw error;
       return data;
     },
   });
@@ -30,8 +32,9 @@ export const useWaGatewayMutation = () => {
       const { data: existing } = await supabase
         .from("wa_gateway")
         .select("id")
+        .order("updated_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       if (existing?.id) {
         // Update existing config

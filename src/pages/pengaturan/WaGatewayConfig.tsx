@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useWaGateway, useWaGatewayMutation } from "@/hooks/useWaGateway";
 import { useTestWaGateway } from "@/hooks/useTestWaGateway";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface FormData {
   api_key: string;
@@ -39,6 +39,14 @@ const WaGatewayConfig = () => {
   });
 
   const isActive = watch("is_active");
+
+  useEffect(() => {
+    if (gateway) {
+      setValue("api_key", gateway.api_key || "");
+      setValue("sender_id", gateway.sender_id || "");
+      setValue("is_active", gateway.is_active || false);
+    }
+  }, [gateway, setValue]);
 
   const onSubmit = (data: FormData) => {
     upsertGateway.mutate(data);
