@@ -34,10 +34,10 @@ const InputSpmDetail = () => {
         if (isImageFile(lampiran.nama_file) || isPdfFile(lampiran.nama_file)) {
           loading[lampiran.id] = true;
           try {
-            const filePath = lampiran.file_url.split('/').pop();
+            // Use full path from file_url
             const { data, error } = await supabase.storage
               .from('spm-documents')
-              .createSignedUrl(filePath || '', 3600); // 1 hour expiry
+              .createSignedUrl(lampiran.file_url, 3600); // 1 hour expiry
 
             if (error) throw error;
             if (data?.signedUrl) {
@@ -60,10 +60,10 @@ const InputSpmDetail = () => {
 
   const handleDownload = async (lampiran: any) => {
     try {
-      const filePath = lampiran.file_url.split('/').pop();
+      // Use full path from file_url
       const { data, error } = await supabase.storage
         .from('spm-documents')
-        .download(filePath || '');
+        .download(lampiran.file_url);
 
       if (error) throw error;
 
