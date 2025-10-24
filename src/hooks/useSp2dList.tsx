@@ -26,8 +26,7 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
               nomor_spm,
               opd:opd_id(nama_opd),
               bendahara:profiles!spm_bendahara_id_fkey(full_name)
-            ),
-            kuasa_bud:profiles!sp2d_kuasa_bud_id_fkey(full_name)
+            )
           `)
           .order("created_at", { ascending: false });
 
