@@ -83,23 +83,36 @@ serve(async (req) => {
       }
     }
 
-    // Create SMTP client with better configuration
+    // Create SMTP client with proper TLS/STARTTLS handling
+    const port = Number(config.smtp_port);
+    const useImplicitTLS = port === 465; // SMTPS over implicit TLS
+    console.log("Computed TLS mode -> useImplicitTLS:", useImplicitTLS, "port:", port);
+
     const client = new SMTPClient({
       connection: {
         hostname: config.smtp_host,
-        port: config.smtp_port,
-        tls: true,
+        port,
+        tls: useImplicitTLS, // Only use implicit TLS for 465. For 587 we allow STARTTLS.
         auth: {
           username: config.smtp_user,
           password: config.smtp_password,
         },
       },
+      debug: {
+        log: true,
+        allowUnsecure: false,
+        noStartTLS: false, // ensure STARTTLS is allowed on ports like 587
+      },
     });
 
     // Send test email
     console.log("Sending test email...");
+    const fromHeader = config.smtp_host === "smtp.gmail.com"
+      ? `${config.from_name} <${config.smtp_user}>`
+      : `${config.from_name} <${config.from_email}>`;
+
     await client.send({
-      from: `${config.from_name} <${config.from_email}>`,
+      from: fromHeader,
       to: email,
       subject: "🔔 Test Email - Sistem Manajemen SPM BKAD",
       content: "auto",
