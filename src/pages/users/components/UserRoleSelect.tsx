@@ -11,7 +11,6 @@ import {
 import { X, Plus } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getRoleDisplayName } from "@/lib/auth";
-import { useOpdList } from "@/hooks/useOpdList";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -36,12 +35,8 @@ const AVAILABLE_ROLES: AppRole[] = [
   "kuasa_bud",
 ];
 
-const ROLES_REQUIRING_OPD: AppRole[] = ["bendahara_opd"];
-
 export const UserRoleSelect = ({ value, onChange }: UserRoleSelectProps) => {
   const [selectedRole, setSelectedRole] = useState<AppRole | "">("");
-  const [selectedOpd, setSelectedOpd] = useState<string>("");
-  const { data: opdList } = useOpdList();
 
   const handleAddRole = () => {
     if (!selectedRole) return;
@@ -53,27 +48,15 @@ export const UserRoleSelect = ({ value, onChange }: UserRoleSelectProps) => {
 
     const newRole: UserRole = {
       role: selectedRole,
-      ...(ROLES_REQUIRING_OPD.includes(selectedRole) && selectedOpd
-        ? { opd_id: selectedOpd }
-        : {}),
     };
 
     onChange([...value, newRole]);
     setSelectedRole("");
-    setSelectedOpd("");
   };
 
   const handleRemoveRole = (roleToRemove: AppRole) => {
     onChange(value.filter((r) => r.role !== roleToRemove));
   };
-
-  const getOpdName = (opdId?: string) => {
-    if (!opdId) return null;
-    const opd = opdList?.find((o) => o.id === opdId);
-    return opd?.nama_opd;
-  };
-
-  const requiresOpd = selectedRole && ROLES_REQUIRING_OPD.includes(selectedRole);
 
   return (
     <div className="space-y-4">
@@ -91,25 +74,10 @@ export const UserRoleSelect = ({ value, onChange }: UserRoleSelectProps) => {
           </SelectContent>
         </Select>
 
-        {requiresOpd && (
-          <Select value={selectedOpd} onValueChange={setSelectedOpd}>
-            <SelectTrigger className="flex-1">
-              <SelectValue placeholder="Pilih OPD" />
-            </SelectTrigger>
-            <SelectContent>
-              {opdList?.map((opd) => (
-                <SelectItem key={opd.id} value={opd.id}>
-                  {opd.nama_opd}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
-
         <Button
           type="button"
           onClick={handleAddRole}
-          disabled={!selectedRole || (requiresOpd && !selectedOpd)}
+          disabled={!selectedRole}
           size="icon"
         >
           <Plus className="h-4 w-4" />
@@ -117,24 +85,18 @@ export const UserRoleSelect = ({ value, onChange }: UserRoleSelectProps) => {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {value.map((userRole) => {
-          const opdName = getOpdName(userRole.opd_id);
-          return (
-            <Badge key={userRole.role} variant="secondary" className="gap-2">
-              <span>
-                {getRoleDisplayName(userRole.role)}
-                {opdName && ` - ${opdName}`}
-              </span>
-              <button
-                type="button"
-                onClick={() => handleRemoveRole(userRole.role)}
-                className="hover:text-destructive"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
-          );
-        })}
+        {value.map((userRole) => (
+          <Badge key={userRole.role} variant="secondary" className="gap-2">
+            <span>{getRoleDisplayName(userRole.role)}</span>
+            <button
+              type="button"
+              onClick={() => handleRemoveRole(userRole.role)}
+              className="hover:text-destructive"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
       </div>
     </div>
   );
