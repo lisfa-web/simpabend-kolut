@@ -18,8 +18,10 @@ export type Database = {
         Row: {
           action: string
           created_at: string | null
+          emergency_reason: string | null
           id: string
           ip_address: unknown
+          is_emergency: boolean | null
           new_data: Json | null
           old_data: Json | null
           resource: string
@@ -30,8 +32,10 @@ export type Database = {
         Insert: {
           action: string
           created_at?: string | null
+          emergency_reason?: string | null
           id?: string
           ip_address?: unknown
+          is_emergency?: boolean | null
           new_data?: Json | null
           old_data?: Json | null
           resource: string
@@ -42,8 +46,10 @@ export type Database = {
         Update: {
           action?: string
           created_at?: string | null
+          emergency_reason?: string | null
           id?: string
           ip_address?: unknown
+          is_emergency?: boolean | null
           new_data?: Json | null
           old_data?: Json | null
           resource?: string

@@ -1,5 +1,5 @@
 import { Link, Navigate } from "react-router-dom";
-import { Settings, FileText, MessageSquare, Shield, Mail, ScrollText } from "lucide-react";
+import { Settings, FileText, MessageSquare, Shield, Mail, ScrollText, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,13 @@ const PengaturanIndex = () => {
     return <Navigate to="/unauthorized" replace />;
   }
   const settingsModules = [
+    {
+      title: "Mode Emergency",
+      description: "Bypass OTP/PIN untuk situasi darurat (HP hilang, gateway down)",
+      icon: AlertTriangle,
+      href: "/pengaturan/emergency-mode",
+      color: "text-red-600",
+    },
     {
       title: "Konfigurasi Sistem",
       description: "Kelola pengaturan umum aplikasi seperti nama instansi, alamat, dan kontak",

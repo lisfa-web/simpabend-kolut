@@ -39,8 +39,17 @@ export const useSpmVerification = (role: string) => {
     mutationFn: async (data: VerificationData) => {
       if (!user?.id) throw new Error("User not authenticated");
 
-      // Validasi PIN untuk kepala_bkad
-      if (role === "kepala_bkad" && data.action === "approve") {
+      // Check emergency mode
+      const { data: emergencyMode } = await supabase
+        .from('config_sistem')
+        .select('value')
+        .eq('key', 'emergency_mode_enabled')
+        .single();
+
+      const isEmergencyMode = emergencyMode?.value === 'true';
+
+      // Validasi PIN untuk kepala_bkad (skip jika emergency mode)
+      if (role === "kepala_bkad" && data.action === "approve" && !isEmergencyMode) {
         if (!data.pin) {
           throw new Error("PIN harus diisi");
         }
@@ -127,6 +136,18 @@ export const useSpmVerification = (role: string) => {
         .eq("id", data.spmId);
 
       if (updateError) throw updateError;
+
+      // Get emergency mode reason if active
+      let emergencyReason = null;
+      if (isEmergencyMode) {
+        const { data: reasonData } = await supabase
+          .from('config_sistem')
+          .select('value')
+          .eq('key', 'emergency_mode_reason')
+          .single();
+        emergencyReason = reasonData?.value || 'Emergency mode active';
+        console.log(`[EMERGENCY MODE] SPM verification bypassed PIN check - ${emergencyReason}`);
+      }
 
       // Create notification for bendahara
       const { data: spmData } = await supabase

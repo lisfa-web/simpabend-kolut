@@ -59,6 +59,7 @@ import WaGatewayConfig from "./pages/pengaturan/WaGatewayConfig";
 import EmailConfig from "./pages/pengaturan/EmailConfig";
 import PermissionsList from "./pages/pengaturan/PermissionsList";
 import AuditTrail from "./pages/pengaturan/AuditTrail";
+import EmergencyMode from "./pages/pengaturan/EmergencyMode";
 import PanduanManual from "./pages/panduan/PanduanManual";
 import PanduanManualAdmin from "./pages/panduan/PanduanManualAdmin";
 

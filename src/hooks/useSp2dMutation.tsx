@@ -120,43 +120,60 @@ export const useSp2dMutation = () => {
 
   const verifyOtp = useMutation({
     mutationFn: async ({ id, otp }: { id: string; otp: string }) => {
-      // Validate OTP from pin_otp table
-      const { data: otpRecord, error: otpError } = await supabase
-        .from("pin_otp")
-        .select("*")
-        .eq("kode_hash", otp)
-        .eq("jenis", "sp2d_verification")
-        .eq("sp2d_id", id)
-        .eq("is_used", false)
-        .gte("expires_at", new Date().toISOString())
+      // Check emergency mode first
+      const { data: emergencyMode } = await supabase
+        .from('config_sistem')
+        .select('value')
+        .eq('key', 'emergency_mode_enabled')
         .single();
 
-      if (otpError || !otpRecord) {
-        // Check if OTP exists but is expired or used
-        const { data: expiredOtp } = await supabase
+      const isEmergencyMode = emergencyMode?.value === 'true';
+
+      let otpRecord = null;
+      
+      if (!isEmergencyMode) {
+        // Validate OTP from pin_otp table only if not in emergency mode
+        const { data: otpData, error: otpError } = await supabase
           .from("pin_otp")
-          .select("is_used, expires_at")
+          .select("*")
           .eq("kode_hash", otp)
           .eq("jenis", "sp2d_verification")
           .eq("sp2d_id", id)
+          .eq("is_used", false)
+          .gte("expires_at", new Date().toISOString())
           .single();
 
-        if (expiredOtp) {
-          if (expiredOtp.is_used) {
-            throw new Error("Kode OTP sudah digunakan");
-          }
-          if (new Date(expiredOtp.expires_at) < new Date()) {
-            throw new Error("Kode OTP sudah kadaluarsa");
-          }
-        }
-        throw new Error("Kode OTP tidak valid");
-      }
+        if (otpError || !otpData) {
+          // Check if OTP exists but is expired or used
+          const { data: expiredOtp } = await supabase
+            .from("pin_otp")
+            .select("is_used, expires_at")
+            .eq("kode_hash", otp)
+            .eq("jenis", "sp2d_verification")
+            .eq("sp2d_id", id)
+            .single();
 
-      // Mark OTP as used
-      await supabase
-        .from("pin_otp")
-        .update({ is_used: true })
-        .eq("id", otpRecord.id);
+          if (expiredOtp) {
+            if (expiredOtp.is_used) {
+              throw new Error("Kode OTP sudah digunakan");
+            }
+            if (new Date(expiredOtp.expires_at) < new Date()) {
+              throw new Error("Kode OTP sudah kadaluarsa");
+            }
+          }
+          throw new Error("Kode OTP tidak valid");
+        }
+
+        otpRecord = otpData;
+
+        // Mark OTP as used
+        await supabase
+          .from("pin_otp")
+          .update({ is_used: true })
+          .eq("id", otpRecord.id);
+      } else {
+        console.log('[EMERGENCY MODE] SP2D OTP verification bypassed');
+      }
 
       const { data: result, error } = await supabase
         .from("sp2d")
