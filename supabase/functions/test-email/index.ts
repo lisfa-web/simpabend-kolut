@@ -19,16 +19,16 @@ serve(async (req) => {
     if (!email) {
       return new Response(
         JSON.stringify({ success: false, message: "Email address diperlukan" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Get Supabase client
+    // Get backend client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get Email config (get the latest one)
+    // Get latest email config
     console.log("Fetching email config...");
     const { data: config, error: configError } = await supabase
       .from("email_config")
@@ -49,7 +49,7 @@ serve(async (req) => {
           message: "Konfigurasi email tidak ditemukan. Silakan simpan konfigurasi terlebih dahulu.",
           error: configError?.message
         }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -60,7 +60,7 @@ serve(async (req) => {
           success: false, 
           message: "Konfigurasi tidak lengkap. Email dan App Password wajib diisi." 
         }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -78,94 +78,117 @@ serve(async (req) => {
             success: false, 
             message: "Gmail App Password harus 16 karakter. Pastikan Anda menggunakan App Password dari Google Account, bukan password Gmail biasa. Generate di: https://myaccount.google.com/apppasswords"
           }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
     }
 
-    // Create SMTP client with proper TLS/STARTTLS handling
-    const port = Number(config.smtp_port);
-    const useImplicitTLS = port === 465; // SMTPS over implicit TLS
-    console.log("Computed TLS mode -> useImplicitTLS:", useImplicitTLS, "port:", port);
+    // Build initial client: STARTTLS for 587, implicit TLS for 465
+    const initialPort = Number(config.smtp_port);
+    const initialUseImplicitTLS = initialPort === 465;
+    console.log("Computed TLS mode -> useImplicitTLS:", initialUseImplicitTLS, "port:", initialPort);
 
-    const client = new SMTPClient({
-      connection: {
-        hostname: config.smtp_host,
-        port,
-        tls: useImplicitTLS, // Only use implicit TLS for 465. For 587 we allow STARTTLS.
-        auth: {
-          username: config.smtp_user,
-          password: config.smtp_password,
+    const buildClient = (port: number, implicitTLS: boolean) =>
+      new SMTPClient({
+        connection: {
+          hostname: config.smtp_host,
+          port,
+          tls: implicitTLS,
+          auth: {
+            username: config.smtp_user,
+            password: config.smtp_password,
+          },
         },
-      },
-      debug: {
-        log: true,
-        allowUnsecure: false,
-        noStartTLS: false, // ensure STARTTLS is allowed on ports like 587
-      },
-    });
+        debug: {
+          log: true,
+          allowUnsecure: false,
+          noStartTLS: !implicitTLS ? false : true,
+        },
+      });
 
-    // Send test email
-    console.log("Sending test email...");
+    let client = buildClient(initialPort, initialUseImplicitTLS);
+
+    // Prepare email content
     const fromHeader = config.smtp_host === "smtp.gmail.com"
       ? `${config.from_name} <${config.smtp_user}>`
       : `${config.from_name} <${config.from_email}>`;
 
-    await client.send({
-      from: fromHeader,
-      to: email,
-      subject: "🔔 Test Email - Sistem Manajemen SPM BKAD",
-      content: "auto",
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-            .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
-            .success-badge { background-color: #10b981; color: white; padding: 10px 20px; border-radius: 6px; display: inline-block; margin: 20px 0; }
-            .info { background-color: #dbeafe; padding: 15px; border-radius: 6px; margin: 20px 0; }
-            .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #6b7280; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>✉️ Test Email Berhasil</h1>
-            </div>
-            <div class="content">
-              <p>Selamat! Konfigurasi email Anda telah berhasil diuji.</p>
-              
-              <div class="success-badge">
-                ✅ Koneksi SMTP Berhasil
-              </div>
-              
-              <div class="info">
-                <strong>Detail Test:</strong><br>
-                Waktu: ${new Date().toLocaleString("id-ID")}<br>
-                SMTP Server: ${config.smtp_host}:${config.smtp_port}<br>
-                From: ${config.from_name} &lt;${config.from_email}&gt;
-              </div>
-              
-              <p>Email ini dikirim secara otomatis oleh sistem untuk memverifikasi bahwa konfigurasi email Anda berfungsi dengan baik.</p>
-              
-              <p>Jika Anda menerima email ini, berarti sistem sudah siap untuk mengirim notifikasi email kepada pengguna.</p>
-            </div>
-            <div class="footer">
-              <p>Sistem Manajemen SPM BKAD</p>
-              <p>Email ini dikirim secara otomatis, mohon tidak membalas email ini.</p>
-            </div>
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .success-badge { background-color: #10b981; color: white; padding: 10px 20px; border-radius: 6px; display: inline-block; margin: 20px 0; }
+          .info { background-color: #dbeafe; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #6b7280; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>✉️ Test Email Berhasil</h1>
           </div>
-        </body>
-        </html>
-      `,
-    });
+          <div class="content">
+            <p>Selamat! Konfigurasi email Anda telah berhasil diuji.</p>
+            <div class="success-badge">✅ Koneksi SMTP Berhasil</div>
+            <div class="info">
+              <strong>Detail Test:</strong><br>
+              Waktu: ${new Date().toLocaleString("id-ID")}<br>
+              SMTP Server: ${config.smtp_host}:${config.smtp_port}<br>
+              From: ${config.from_name} &lt;${config.from_email}&gt;
+            </div>
+            <p>Email ini dikirim secara otomatis oleh sistem untuk memverifikasi bahwa konfigurasi email Anda berfungsi dengan baik.</p>
+            <p>Jika Anda menerima email ini, berarti sistem sudah siap untuk mengirim notifikasi email kepada pengguna.</p>
+          </div>
+          <div class="footer">
+            <p>Sistem Manajemen SPM BKAD</p>
+            <p>Email ini dikirim secara otomatis, mohon tidak membalas email ini.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
 
-    console.log("Email sent successfully");
-    await client.close();
+    // Try send with fallback (587 STARTTLS -> 465 TLS)
+    console.log("Sending test email...");
+    try {
+      await client.send({
+        from: fromHeader,
+        to: email,
+        subject: "🔔 Test Email - Sistem Manajemen SPM BKAD",
+        content: "auto",
+        html: emailHtml,
+      });
+      console.log("Email sent successfully (primary)");
+      try { await client.close(); } catch (_) {}
+    } catch (primaryErr: any) {
+      console.error("Primary send failed:", primaryErr?.message || primaryErr);
+      const msg = String(primaryErr?.message || primaryErr || "");
+      const shouldFallback = msg.includes("startTls") || msg.includes("BadResource") || msg.includes("invalid cmd");
+      if (!shouldFallback) throw primaryErr;
+
+      try { await client.close(); } catch (_) {}
+
+      console.log("Retrying with implicit TLS on port 465...");
+      client = buildClient(465, true);
+      try {
+        await client.send({
+          from: fromHeader,
+          to: email,
+          subject: "🔔 Test Email - Sistem Manajemen SPM BKAD",
+          content: "auto",
+          html: emailHtml,
+        });
+        console.log("Email sent successfully (fallback 465)");
+      } finally {
+        try { await client.close(); } catch (_) {}
+      }
+    }
 
     // Update test status in database
     await supabase
@@ -215,23 +238,21 @@ serve(async (req) => {
     }
 
     let errorMessage = error.message || "Gagal mengirim email test. Periksa konfigurasi SMTP Anda.";
-    
-    // Provide more specific error messages
     if (errorMessage.includes("InvalidContentType") || errorMessage.includes("InvalidData")) {
       errorMessage = "Koneksi SMTP gagal. Pastikan Anda menggunakan Gmail App Password yang valid (16 karakter), bukan password Gmail biasa. Generate App Password di: https://myaccount.google.com/apppasswords";
     } else if (errorMessage.includes("authentication")) {
       errorMessage = "Autentikasi gagal. Pastikan email dan App Password sudah benar.";
-    } else if (errorMessage.includes("connection")) {
-      errorMessage = "Gagal terhubung ke server SMTP. Periksa host dan port.";
+    } else if (errorMessage.includes("connection") || errorMessage.includes("BadResource") || errorMessage.includes("startTls")) {
+      errorMessage = "Koneksi STARTTLS gagal di lingkungan server. Coba ganti port ke 465 (TLS).";
     }
-    
+
     return new Response(
       JSON.stringify({ 
         success: false, 
         message: errorMessage,
-        hint: "Gunakan Gmail App Password (16 karakter) dari https://myaccount.google.com/apppasswords"
+        hint: "Jika masih gagal di 587, gunakan port 465 (TLS)."
       }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
