@@ -18,12 +18,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Eye, Loader2, FileCheck } from "lucide-react";
+import { Plus, Search, Eye, Loader2, FileCheck, CheckCircle2, Banknote } from "lucide-react";
 import { useSp2dList } from "@/hooks/useSp2dList";
+import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
+import { Sp2dVerificationDialog } from "./components/Sp2dVerificationDialog";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
@@ -34,11 +46,41 @@ const Sp2dList = () => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [selectedSp2dId, setSelectedSp2dId] = useState<string | null>(null);
+  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
+  const [showDisburseDialog, setShowDisburseDialog] = useState(false);
 
   const { data: sp2dList, isLoading, error } = useSp2dList({
     search,
     status: statusFilter,
   });
+
+  const { verifyOtp, disburseSp2d } = useSp2dMutation();
+
+  const handleVerifyOtp = (otp: string) => {
+    if (selectedSp2dId) {
+      verifyOtp.mutate(
+        { id: selectedSp2dId, otp },
+        {
+          onSuccess: () => {
+            setShowVerifyDialog(false);
+            setSelectedSp2dId(null);
+          },
+        }
+      );
+    }
+  };
+
+  const handleDisburse = () => {
+    if (selectedSp2dId) {
+      disburseSp2d.mutate(selectedSp2dId, {
+        onSuccess: () => {
+          setShowDisburseDialog(false);
+          setSelectedSp2dId(null);
+        },
+      });
+    }
+  };
 
   // Fetch SPM yang sudah disetujui dan belum ada SP2D
   const { data: approvedSpm, isLoading: isLoadingApproved } = useQuery({
@@ -318,13 +360,43 @@ const Sp2dList = () => {
                               <Sp2dStatusBadge status={sp2d.status || "pending"} />
                             </TableCell>
                             <TableCell>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => navigate(`/sp2d/${sp2d.id}`)}
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => navigate(`/sp2d/${sp2d.id}`)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                
+                                {sp2d.status === "pending" && (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedSp2dId(sp2d.id);
+                                      setShowVerifyDialog(true);
+                                    }}
+                                  >
+                                    <CheckCircle2 className="h-4 w-4 mr-1" />
+                                    Verifikasi OTP
+                                  </Button>
+                                )}
+                                
+                                {sp2d.status === "diterbitkan" && (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedSp2dId(sp2d.id);
+                                      setShowDisburseDialog(true);
+                                    }}
+                                  >
+                                    <Banknote className="h-4 w-4 mr-1" />
+                                    Cairkan Dana
+                                  </Button>
+                                )}
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))
@@ -336,6 +408,35 @@ const Sp2dList = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Verification Dialog */}
+        <Sp2dVerificationDialog
+          open={showVerifyDialog}
+          onOpenChange={setShowVerifyDialog}
+          onVerify={handleVerifyOtp}
+          loading={verifyOtp.isPending}
+        />
+
+        {/* Disbursement Confirmation Dialog */}
+        <AlertDialog open={showDisburseDialog} onOpenChange={setShowDisburseDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Konfirmasi Pencairan Dana</AlertDialogTitle>
+              <AlertDialogDescription>
+                Apakah Anda yakin ingin mencairkan dana SP2D ini? Dana akan ditransfer ke rekening vendor yang tercantum.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Batal</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleDisburse}
+                disabled={disburseSp2d.isPending}
+              >
+                {disburseSp2d.isPending ? "Memproses..." : "Cairkan Dana"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </DashboardLayout>
   );
