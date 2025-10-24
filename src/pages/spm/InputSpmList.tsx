@@ -65,9 +65,11 @@ const InputSpmList = () => {
     });
   };
 
-  const canEdit = (status: string) => status === "draft";
+  const canEdit = (status: string) => 
+    status === "draft" || status === "perlu_revisi" || status === "ditolak";
   const canDelete = (status: string) => status === "draft";
-  const canSubmit = (status: string) => status === "draft";
+  const canSubmit = (status: string) => 
+    status === "draft" || status === "perlu_revisi" || status === "ditolak";
 
   if (isLoading) {
     return (
@@ -198,6 +200,7 @@ const InputSpmList = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleSubmit(spm.id)}
+                          title={spm.status === "draft" ? "Ajukan SPM" : "Ajukan Ulang"}
                         >
                           <Send className="h-4 w-4" />
                         </Button>

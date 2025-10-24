@@ -9,6 +9,7 @@ interface TimelineStep {
   status: StatusSpm;
   label: string;
   timestamp?: string | null;
+  catatan?: string | null;
 }
 
 interface SpmTimelineProps {
@@ -20,11 +21,11 @@ export const SpmTimeline = ({ currentStatus, spm }: SpmTimelineProps) => {
   const steps: TimelineStep[] = [
     { status: "draft", label: "Draft", timestamp: spm.created_at },
     { status: "diajukan", label: "Diajukan", timestamp: spm.tanggal_ajuan },
-    { status: "resepsionis_verifikasi", label: "Resepsionis", timestamp: spm.tanggal_resepsionis },
-    { status: "pbmd_verifikasi", label: "PBMD", timestamp: spm.tanggal_pbmd },
-    { status: "akuntansi_validasi", label: "Akuntansi", timestamp: spm.tanggal_akuntansi },
-    { status: "perbendaharaan_verifikasi", label: "Perbendaharaan", timestamp: spm.tanggal_perbendaharaan },
-    { status: "kepala_bkad_review", label: "Kepala BKAD", timestamp: spm.tanggal_kepala_bkad },
+    { status: "resepsionis_verifikasi", label: "Resepsionis", timestamp: spm.tanggal_resepsionis, catatan: spm.catatan_resepsionis },
+    { status: "pbmd_verifikasi", label: "PBMD", timestamp: spm.tanggal_pbmd, catatan: spm.catatan_pbmd },
+    { status: "akuntansi_validasi", label: "Akuntansi", timestamp: spm.tanggal_akuntansi, catatan: spm.catatan_akuntansi },
+    { status: "perbendaharaan_verifikasi", label: "Perbendaharaan", timestamp: spm.tanggal_perbendaharaan, catatan: spm.catatan_perbendaharaan },
+    { status: "kepala_bkad_review", label: "Kepala BKAD", timestamp: spm.tanggal_kepala_bkad, catatan: spm.catatan_kepala_bkad },
     { status: "disetujui", label: "Disetujui", timestamp: spm.tanggal_disetujui },
   ];
 
@@ -97,6 +98,11 @@ export const SpmTimeline = ({ currentStatus, spm }: SpmTimelineProps) => {
                 <p className="text-sm text-muted-foreground">
                   {format(new Date(step.timestamp), "dd MMM yyyy HH:mm", { locale: id })}
                 </p>
+              )}
+              {step.catatan && (
+                <div className="mt-2 text-sm bg-destructive/10 text-destructive p-3 rounded-md border border-destructive/20">
+                  <strong>Catatan:</strong> {step.catatan}
+                </div>
               )}
             </div>
           </div>

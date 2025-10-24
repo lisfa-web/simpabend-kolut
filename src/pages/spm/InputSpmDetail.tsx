@@ -8,7 +8,7 @@ import { useSpmDetail } from "@/hooks/useSpmDetail";
 import { SpmStatusBadge } from "./components/SpmStatusBadge";
 import { SpmTimeline } from "./components/SpmTimeline";
 import { formatCurrency } from "@/lib/currency";
-import { ArrowLeft, Download, Loader2, Eye } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Eye, Edit, AlertCircle } from "lucide-react";
 import { formatFileSize, isImageFile, isPdfFile } from "@/lib/fileValidation";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -130,6 +130,62 @@ const InputSpmDetail = () => {
           </TabsList>
 
           <TabsContent value="info" className="space-y-6">
+            {/* Catatan Verifikasi */}
+            {(spm.status === "perlu_revisi" || spm.status === "ditolak") && (
+              <Card className="p-6 border-destructive bg-destructive/5">
+                <div className="flex items-start gap-3 mb-4">
+                  <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-destructive">
+                      {spm.status === "perlu_revisi" ? "SPM Perlu Revisi" : "SPM Ditolak"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Silakan perbaiki SPM sesuai catatan di bawah ini
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => navigate(`/input-spm/edit/${spm.id}`)}
+                    size="sm"
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit & Perbaiki
+                  </Button>
+                </div>
+                <div className="space-y-3">
+                  {spm.catatan_resepsionis && (
+                    <div className="border-l-4 border-orange-500 pl-4 py-2">
+                      <p className="text-sm font-medium">Resepsionis:</p>
+                      <p className="text-sm text-muted-foreground">{spm.catatan_resepsionis}</p>
+                    </div>
+                  )}
+                  {spm.catatan_pbmd && (
+                    <div className="border-l-4 border-blue-500 pl-4 py-2">
+                      <p className="text-sm font-medium">PBMD:</p>
+                      <p className="text-sm text-muted-foreground">{spm.catatan_pbmd}</p>
+                    </div>
+                  )}
+                  {spm.catatan_akuntansi && (
+                    <div className="border-l-4 border-purple-500 pl-4 py-2">
+                      <p className="text-sm font-medium">Akuntansi:</p>
+                      <p className="text-sm text-muted-foreground">{spm.catatan_akuntansi}</p>
+                    </div>
+                  )}
+                  {spm.catatan_perbendaharaan && (
+                    <div className="border-l-4 border-green-500 pl-4 py-2">
+                      <p className="text-sm font-medium">Perbendaharaan:</p>
+                      <p className="text-sm text-muted-foreground">{spm.catatan_perbendaharaan}</p>
+                    </div>
+                  )}
+                  {spm.catatan_kepala_bkad && (
+                    <div className="border-l-4 border-red-500 pl-4 py-2">
+                      <p className="text-sm font-medium">Kepala BKAD:</p>
+                      <p className="text-sm text-muted-foreground">{spm.catatan_kepala_bkad}</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
             <Card className="p-6">
               <h3 className="font-semibold mb-4">Data SPM</h3>
               <dl className="grid grid-cols-2 gap-4">
