@@ -58,6 +58,7 @@ import FormatNomorForm from "./pages/pengaturan/FormatNomorForm";
 import WaGatewayConfig from "./pages/pengaturan/WaGatewayConfig";
 import EmailConfig from "./pages/pengaturan/EmailConfig";
 import PermissionsList from "./pages/pengaturan/PermissionsList";
+import AuditTrail from "./pages/pengaturan/AuditTrail";
 
 const queryClient = new QueryClient();
 
@@ -243,6 +244,7 @@ const App = () => (
           <Route path="/pengaturan/wa-gateway" element={<RoleProtectedRoute allowedRoles={["administrator"]}><WaGatewayConfig /></RoleProtectedRoute>} />
           <Route path="/pengaturan/email" element={<RoleProtectedRoute allowedRoles={["administrator"]}><EmailConfig /></RoleProtectedRoute>} />
           <Route path="/pengaturan/permissions" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PermissionsList /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/audit-trail" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><AuditTrail /></RoleProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

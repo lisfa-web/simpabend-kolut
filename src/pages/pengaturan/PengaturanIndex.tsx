@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Settings, FileText, MessageSquare, Shield, Mail } from "lucide-react";
+import { Settings, FileText, MessageSquare, Shield, Mail, ScrollText } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 
@@ -39,6 +39,13 @@ const PengaturanIndex = () => {
       icon: Shield,
       href: "/pengaturan/permissions",
       color: "text-orange-600",
+    },
+    {
+      title: "Audit Trail",
+      description: "Log aktivitas dan perubahan data sistem untuk monitoring keamanan",
+      icon: ScrollText,
+      href: "/pengaturan/audit-trail",
+      color: "text-purple-600",
     },
   ];
 
