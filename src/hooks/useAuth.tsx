@@ -17,9 +17,14 @@ export const useAuth = () => {
     return context.hasRole("administrator") && !context.hasRole("super_admin" as any);
   };
 
+  const isAdminOrAkuntansi = (): boolean => {
+    return context.hasRole("administrator") || context.hasRole("akuntansi");
+  };
+
   return {
     ...context,
     isSuperAdmin,
     isRegularAdmin,
+    isAdminOrAkuntansi,
   };
 };

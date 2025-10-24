@@ -23,20 +23,24 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Ban, CheckCircle } from "lucide-react";
 import { useOpdList } from "@/hooks/useOpdList";
 import { useOpdMutation } from "@/hooks/useOpdMutation";
 
 const OpdList = () => {
   const navigate = useNavigate();
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isRegularAdmin, isAdminOrAkuntansi } = useAuth();
   const [search, setSearch] = useState("");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deactivateId, setDeactivateId] = useState<string | null>(null);
+  const [activateId, setActivateId] = useState<string | null>(null);
+  const [permanentDeleteId, setPermanentDeleteId] = useState<string | null>(null);
 
   const { data: opdList, isLoading } = useOpdList();
-  const { deleteOpd } = useOpdMutation();
+  const { deleteOpd, activateOpd, permanentDeleteOpd } = useOpdMutation();
 
   const isSuperAdminUser = isSuperAdmin();
+  const isRegularAdminUser = isRegularAdmin();
+  const canManage = isAdminOrAkuntansi();
 
   const filteredData = opdList?.filter(
     (opd) =>
@@ -44,10 +48,26 @@ const OpdList = () => {
       opd.kode_opd.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = () => {
-    if (deleteId) {
-      deleteOpd.mutate(deleteId, {
-        onSuccess: () => setDeleteId(null),
+  const handleDeactivate = () => {
+    if (deactivateId) {
+      deleteOpd.mutate(deactivateId, {
+        onSuccess: () => setDeactivateId(null),
+      });
+    }
+  };
+
+  const handleActivate = () => {
+    if (activateId) {
+      activateOpd.mutate(activateId, {
+        onSuccess: () => setActivateId(null),
+      });
+    }
+  };
+
+  const handlePermanentDelete = () => {
+    if (permanentDeleteId) {
+      permanentDeleteOpd.mutate(permanentDeleteId, {
+        onSuccess: () => setPermanentDeleteId(null),
       });
     }
   };
@@ -117,16 +137,43 @@ const OpdList = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => navigate(`/masterdata/opd/${opd.id}/edit`)}
+                          title="Edit"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
+                        
+                        {canManage && (
+                          <>
+                            {opd.is_active ? (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeactivateId(opd.id)}
+                                title="Nonaktifkan"
+                              >
+                                <Ban className="h-4 w-4 text-orange-600" />
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setActivateId(opd.id)}
+                                title="Aktifkan"
+                              >
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                              </Button>
+                            )}
+                          </>
+                        )}
+                        
                         {isSuperAdminUser && (
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setDeleteId(opd.id)}
+                            onClick={() => setPermanentDeleteId(opd.id)}
+                            title="Hapus Permanen"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         )}
                       </div>
@@ -148,18 +195,68 @@ const OpdList = () => {
         </div>
       </div>
 
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+      <AlertDialog open={!!deactivateId} onOpenChange={() => setDeactivateId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hapus OPD</AlertDialogTitle>
+            <AlertDialogTitle>Nonaktifkan OPD</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus OPD ini? Tindakan ini tidak dapat
-              dibatalkan.
+              Data OPD akan dinonaktifkan dan tidak muncul di pilihan aktif. 
+              Data tetap tersimpan dan dapat diaktifkan kembali.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Hapus</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeactivate}>
+              Nonaktifkan
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!activateId} onOpenChange={() => setActivateId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aktifkan OPD</AlertDialogTitle>
+            <AlertDialogDescription>
+              Data OPD akan diaktifkan kembali dan muncul di pilihan aktif.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleActivate}>
+              Aktifkan
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!permanentDeleteId} onOpenChange={() => setPermanentDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              ⚠️ Hapus Permanen OPD
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p className="font-semibold text-destructive">
+                PERINGATAN: Tindakan ini tidak dapat dibatalkan!
+              </p>
+              <p>
+                Data OPD akan dihapus PERMANEN dari database. Semua histori dan 
+                relasi akan hilang selamanya.
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Pastikan tidak ada user, SPM, atau pejabat yang terkait dengan OPD ini.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handlePermanentDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Hapus Permanen
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

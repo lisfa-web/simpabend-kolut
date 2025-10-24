@@ -84,5 +84,41 @@ export const useVendorMutation = () => {
     },
   });
 
-  return { createVendor, updateVendor, deleteVendor, activateVendor };
+  const permanentDeleteVendor = useMutation({
+    mutationFn: async (id: string) => {
+      // Check dependencies first
+      const { data: depCheck } = await supabase
+        .rpc("check_vendor_dependencies", { vendor_id_param: id });
+      
+      const deps = depCheck as any;
+      if (deps && !deps.can_deactivate) {
+        throw new Error(
+          `Tidak dapat menghapus Vendor. Masih terdapat ${deps.spm_count} SPM terkait.`
+        );
+      }
+
+      // HARD DELETE - actual deletion from database
+      const { error } = await supabase
+        .from("vendor")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vendor-list"] });
+      toast.success("Vendor berhasil dihapus permanen dari database");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Gagal menghapus Vendor");
+    },
+  });
+
+  return {
+    createVendor,
+    updateVendor,
+    deleteVendor,
+    activateVendor,
+    permanentDeleteVendor,
+  };
 };

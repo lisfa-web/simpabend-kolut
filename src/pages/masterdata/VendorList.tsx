@@ -23,29 +23,48 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Ban, CheckCircle } from "lucide-react";
 import { useVendorList } from "@/hooks/useVendorList";
 import { useVendorMutation } from "@/hooks/useVendorMutation";
 
 const VendorList = () => {
   const navigate = useNavigate();
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isRegularAdmin, isAdminOrAkuntansi } = useAuth();
   const [search, setSearch] = useState("");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deactivateId, setDeactivateId] = useState<string | null>(null);
+  const [activateId, setActivateId] = useState<string | null>(null);
+  const [permanentDeleteId, setPermanentDeleteId] = useState<string | null>(null);
 
   const { data: vendorList, isLoading } = useVendorList();
-  const { deleteVendor } = useVendorMutation();
+  const { deleteVendor, activateVendor, permanentDeleteVendor } = useVendorMutation();
 
   const isSuperAdminUser = isSuperAdmin();
+  const canManage = isAdminOrAkuntansi();
 
   const filteredData = vendorList?.filter((vendor) =>
     vendor.nama_vendor.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = () => {
-    if (deleteId) {
-      deleteVendor.mutate(deleteId, {
-        onSuccess: () => setDeleteId(null),
+  const handleDeactivate = () => {
+    if (deactivateId) {
+      deleteVendor.mutate(deactivateId, {
+        onSuccess: () => setDeactivateId(null),
+      });
+    }
+  };
+
+  const handleActivate = () => {
+    if (activateId) {
+      activateVendor.mutate(activateId, {
+        onSuccess: () => setActivateId(null),
+      });
+    }
+  };
+
+  const handlePermanentDelete = () => {
+    if (permanentDeleteId) {
+      permanentDeleteVendor.mutate(permanentDeleteId, {
+        onSuccess: () => setPermanentDeleteId(null),
       });
     }
   };
@@ -119,16 +138,43 @@ const VendorList = () => {
                           onClick={() =>
                             navigate(`/masterdata/vendor/${vendor.id}/edit`)
                           }
+                          title="Edit"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
+                        
+                        {canManage && (
+                          <>
+                            {vendor.is_active ? (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeactivateId(vendor.id)}
+                                title="Nonaktifkan"
+                              >
+                                <Ban className="h-4 w-4 text-orange-600" />
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setActivateId(vendor.id)}
+                                title="Aktifkan"
+                              >
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                              </Button>
+                            )}
+                          </>
+                        )}
+                        
                         {isSuperAdminUser && (
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setDeleteId(vendor.id)}
+                            onClick={() => setPermanentDeleteId(vendor.id)}
+                            title="Hapus Permanen"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         )}
                       </div>
@@ -150,18 +196,68 @@ const VendorList = () => {
         </div>
       </div>
 
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+      <AlertDialog open={!!deactivateId} onOpenChange={() => setDeactivateId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hapus Vendor</AlertDialogTitle>
+            <AlertDialogTitle>Nonaktifkan Vendor</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus vendor ini? Tindakan ini tidak
-              dapat dibatalkan.
+              Data Vendor akan dinonaktifkan dan tidak muncul di pilihan aktif. 
+              Data tetap tersimpan dan dapat diaktifkan kembali.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Hapus</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeactivate}>
+              Nonaktifkan
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!activateId} onOpenChange={() => setActivateId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aktifkan Vendor</AlertDialogTitle>
+            <AlertDialogDescription>
+              Data Vendor akan diaktifkan kembali dan muncul di pilihan aktif.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleActivate}>
+              Aktifkan
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!permanentDeleteId} onOpenChange={() => setPermanentDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              ⚠️ Hapus Permanen Vendor
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p className="font-semibold text-destructive">
+                PERINGATAN: Tindakan ini tidak dapat dibatalkan!
+              </p>
+              <p>
+                Data Vendor akan dihapus PERMANEN dari database. Semua histori dan 
+                relasi akan hilang selamanya.
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Pastikan tidak ada SPM yang terkait dengan Vendor ini.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handlePermanentDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Hapus Permanen
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Ban, CheckCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useKegiatanMutation } from "@/hooks/useKegiatanMutation";
@@ -31,12 +31,16 @@ import {
 
 export default function KegiatanList() {
   const navigate = useNavigate();
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isRegularAdmin, isAdminOrAkuntansi } = useAuth();
   const [search, setSearch] = useState("");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
-  const { deleteKegiatan } = useKegiatanMutation();
+  const [deactivateId, setDeactivateId] = useState<string | null>(null);
+  const [activateId, setActivateId] = useState<string | null>(null);
+  const [permanentDeleteId, setPermanentDeleteId] = useState<string | null>(null);
+
+  const { deleteKegiatan, activateKegiatan, permanentDeleteKegiatan } = useKegiatanMutation();
 
   const isSuperAdminUser = isSuperAdmin();
+  const canManage = isAdminOrAkuntansi();
 
   const { data: kegiatan, isLoading } = useQuery({
     queryKey: ["kegiatan-all"],
@@ -62,10 +66,24 @@ export default function KegiatanList() {
     item.kode_kegiatan.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = async () => {
-    if (deleteId) {
-      await deleteKegiatan.mutateAsync(deleteId);
-      setDeleteId(null);
+  const handleDeactivate = async () => {
+    if (deactivateId) {
+      await deleteKegiatan.mutateAsync(deactivateId);
+      setDeactivateId(null);
+    }
+  };
+
+  const handleActivate = async () => {
+    if (activateId) {
+      await activateKegiatan.mutateAsync(activateId);
+      setActivateId(null);
+    }
+  };
+
+  const handlePermanentDelete = async () => {
+    if (permanentDeleteId) {
+      await permanentDeleteKegiatan.mutateAsync(permanentDeleteId);
+      setPermanentDeleteId(null);
     }
   };
 
@@ -141,16 +159,43 @@ export default function KegiatanList() {
                             onClick={() =>
                               navigate(`/masterdata/kegiatan/${item.id}`)
                             }
+                            title="Edit"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
+                          
+                          {canManage && (
+                            <>
+                              {item.is_active ? (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => setDeactivateId(item.id)}
+                                  title="Nonaktifkan"
+                                >
+                                  <Ban className="h-4 w-4 text-orange-600" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => setActivateId(item.id)}
+                                  title="Aktifkan"
+                                >
+                                  <CheckCircle className="h-4 w-4 text-green-600" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                          
                           {isSuperAdminUser && (
                             <Button
                               variant="outline"
                               size="icon"
-                              onClick={() => setDeleteId(item.id)}
+                              onClick={() => setPermanentDeleteId(item.id)}
+                              title="Hapus Permanen"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           )}
                         </div>
@@ -170,17 +215,64 @@ export default function KegiatanList() {
         </Card>
       </div>
 
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+      <AlertDialog open={!!deactivateId} onOpenChange={() => setDeactivateId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hapus Kegiatan</AlertDialogTitle>
+            <AlertDialogTitle>Nonaktifkan Kegiatan</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus kegiatan ini? Tindakan ini tidak dapat dibatalkan.
+              Data Kegiatan akan dinonaktifkan dan tidak muncul di pilihan aktif. 
+              Data tetap tersimpan dan dapat diaktifkan kembali.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Hapus</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeactivate}>Nonaktifkan</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!activateId} onOpenChange={() => setActivateId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aktifkan Kegiatan</AlertDialogTitle>
+            <AlertDialogDescription>
+              Data Kegiatan akan diaktifkan kembali dan muncul di pilihan aktif.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleActivate}>Aktifkan</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!permanentDeleteId} onOpenChange={() => setPermanentDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              ⚠️ Hapus Permanen Kegiatan
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p className="font-semibold text-destructive">
+                PERINGATAN: Tindakan ini tidak dapat dibatalkan!
+              </p>
+              <p>
+                Data Kegiatan akan dihapus PERMANEN dari database. Semua histori dan 
+                relasi akan hilang selamanya.
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Pastikan tidak ada subkegiatan atau SPM yang terkait dengan Kegiatan ini.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handlePermanentDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Hapus Permanen
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

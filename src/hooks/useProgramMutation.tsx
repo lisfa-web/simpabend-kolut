@@ -80,5 +80,41 @@ export const useProgramMutation = () => {
     },
   });
 
-  return { createProgram, updateProgram, deleteProgram, activateProgram };
+  const permanentDeleteProgram = useMutation({
+    mutationFn: async (id: string) => {
+      // Check dependencies first
+      const { data: depCheck } = await supabase
+        .rpc("check_program_dependencies", { program_id_param: id });
+      
+      const deps = depCheck as any;
+      if (deps && !deps.can_deactivate) {
+        throw new Error(
+          `Tidak dapat menghapus Program. Masih terdapat ${deps.kegiatan_count} kegiatan dan ${deps.spm_count} SPM terkait.`
+        );
+      }
+
+      // HARD DELETE - actual deletion from database
+      const { error } = await supabase
+        .from("program")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["program-list"] });
+      toast.success("Program berhasil dihapus permanen dari database");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Gagal menghapus Program");
+    },
+  });
+
+  return {
+    createProgram,
+    updateProgram,
+    deleteProgram,
+    activateProgram,
+    permanentDeleteProgram,
+  };
 };

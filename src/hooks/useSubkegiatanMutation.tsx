@@ -88,5 +88,41 @@ export const useSubkegiatanMutation = () => {
     },
   });
 
-  return { createSubkegiatan, updateSubkegiatan, deleteSubkegiatan, activateSubkegiatan };
+  const permanentDeleteSubkegiatan = useMutation({
+    mutationFn: async (id: string) => {
+      // Check dependencies first
+      const { data: depCheck } = await supabase
+        .rpc("check_subkegiatan_dependencies", { subkegiatan_id_param: id });
+      
+      const deps = depCheck as any;
+      if (deps && !deps.can_deactivate) {
+        throw new Error(
+          `Tidak dapat menghapus Subkegiatan. Masih terdapat ${deps.spm_count} SPM terkait.`
+        );
+      }
+
+      // HARD DELETE - actual deletion from database
+      const { error } = await supabase
+        .from("subkegiatan")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["subkegiatan-list"] });
+      toast.success("Subkegiatan berhasil dihapus permanen dari database");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Gagal menghapus Subkegiatan");
+    },
+  });
+
+  return {
+    createSubkegiatan,
+    updateSubkegiatan,
+    deleteSubkegiatan,
+    activateSubkegiatan,
+    permanentDeleteSubkegiatan,
+  };
 };

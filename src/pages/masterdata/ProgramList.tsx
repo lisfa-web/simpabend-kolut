@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Trash2 } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Ban, CheckCircle } from "lucide-react";
 import { useProgramList } from "@/hooks/useProgramList";
 import { useProgramMutation } from "@/hooks/useProgramMutation";
 import {
@@ -30,23 +30,41 @@ import {
 
 export default function ProgramList() {
   const navigate = useNavigate();
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isRegularAdmin, isAdminOrAkuntansi } = useAuth();
   const [search, setSearch] = useState("");
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deactivateId, setDeactivateId] = useState<string | null>(null);
+  const [activateId, setActivateId] = useState<string | null>(null);
+  const [permanentDeleteId, setPermanentDeleteId] = useState<string | null>(null);
+
   const { data: programs, isLoading } = useProgramList();
-  const { deleteProgram } = useProgramMutation();
+  const { deleteProgram, activateProgram, permanentDeleteProgram } = useProgramMutation();
 
   const isSuperAdminUser = isSuperAdmin();
+  const canManage = isAdminOrAkuntansi();
 
   const filteredPrograms = programs?.filter((program) =>
     program.nama_program.toLowerCase().includes(search.toLowerCase()) ||
     program.kode_program.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleDelete = async () => {
-    if (deleteId) {
-      await deleteProgram.mutateAsync(deleteId);
-      setDeleteId(null);
+  const handleDeactivate = async () => {
+    if (deactivateId) {
+      await deleteProgram.mutateAsync(deactivateId);
+      setDeactivateId(null);
+    }
+  };
+
+  const handleActivate = async () => {
+    if (activateId) {
+      await activateProgram.mutateAsync(activateId);
+      setActivateId(null);
+    }
+  };
+
+  const handlePermanentDelete = async () => {
+    if (permanentDeleteId) {
+      await permanentDeleteProgram.mutateAsync(permanentDeleteId);
+      setPermanentDeleteId(null);
     }
   };
 
@@ -120,16 +138,43 @@ export default function ProgramList() {
                             onClick={() =>
                               navigate(`/masterdata/program/${program.id}`)
                             }
+                            title="Edit"
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
+                          
+                          {canManage && (
+                            <>
+                              {program.is_active ? (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => setDeactivateId(program.id)}
+                                  title="Nonaktifkan"
+                                >
+                                  <Ban className="h-4 w-4 text-orange-600" />
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => setActivateId(program.id)}
+                                  title="Aktifkan"
+                                >
+                                  <CheckCircle className="h-4 w-4 text-green-600" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                          
                           {isSuperAdminUser && (
                             <Button
                               variant="outline"
                               size="icon"
-                              onClick={() => setDeleteId(program.id)}
+                              onClick={() => setPermanentDeleteId(program.id)}
+                              title="Hapus Permanen"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           )}
                         </div>
@@ -149,17 +194,64 @@ export default function ProgramList() {
         </Card>
       </div>
 
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+      <AlertDialog open={!!deactivateId} onOpenChange={() => setDeactivateId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hapus Program</AlertDialogTitle>
+            <AlertDialogTitle>Nonaktifkan Program</AlertDialogTitle>
             <AlertDialogDescription>
-              Apakah Anda yakin ingin menghapus program ini? Tindakan ini tidak dapat dibatalkan.
+              Data Program akan dinonaktifkan dan tidak muncul di pilihan aktif. 
+              Data tetap tersimpan dan dapat diaktifkan kembali.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete}>Hapus</AlertDialogAction>
+            <AlertDialogAction onClick={handleDeactivate}>Nonaktifkan</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!activateId} onOpenChange={() => setActivateId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Aktifkan Program</AlertDialogTitle>
+            <AlertDialogDescription>
+              Data Program akan diaktifkan kembali dan muncul di pilihan aktif.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleActivate}>Aktifkan</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!permanentDeleteId} onOpenChange={() => setPermanentDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-destructive">
+              ⚠️ Hapus Permanen Program
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p className="font-semibold text-destructive">
+                PERINGATAN: Tindakan ini tidak dapat dibatalkan!
+              </p>
+              <p>
+                Data Program akan dihapus PERMANEN dari database. Semua histori dan 
+                relasi akan hilang selamanya.
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Pastikan tidak ada kegiatan atau SPM yang terkait dengan Program ini.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handlePermanentDelete}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Hapus Permanen
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
