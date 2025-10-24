@@ -31,25 +31,21 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Eye, Loader2, FileCheck, CheckCircle2, Banknote } from "lucide-react";
+import { Plus, Search, Eye, Loader2, FileCheck, Banknote } from "lucide-react";
 import { useSp2dList } from "@/hooks/useSp2dList";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
-import { Sp2dVerificationDialog } from "./components/Sp2dVerificationDialog";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/currency";
-import { useAuth } from "@/hooks/useAuth";
 
 const Sp2dList = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [selectedSp2dId, setSelectedSp2dId] = useState<string | null>(null);
-  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
   const [showDisburseDialog, setShowDisburseDialog] = useState(false);
 
   const { data: sp2dList, isLoading, error } = useSp2dList({
@@ -57,21 +53,7 @@ const Sp2dList = () => {
     status: statusFilter,
   });
 
-  const { verifyOtp, disburseSp2d } = useSp2dMutation();
-
-  const handleVerifyOtp = (otp: string) => {
-    if (selectedSp2dId) {
-      verifyOtp.mutate(
-        { id: selectedSp2dId, otp },
-        {
-          onSuccess: () => {
-            setShowVerifyDialog(false);
-            setSelectedSp2dId(null);
-          },
-        }
-      );
-    }
-  };
+  const { disburseSp2d } = useSp2dMutation();
 
   const handleDisburse = () => {
     if (selectedSp2dId) {
@@ -371,20 +353,6 @@ const Sp2dList = () => {
                                   <Eye className="h-4 w-4" />
                                 </Button>
                                 
-                                {sp2d.status === "pending" && (
-                                  <Button
-                                    variant="default"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedSp2dId(sp2d.id);
-                                      setShowVerifyDialog(true);
-                                    }}
-                                  >
-                                    <CheckCircle2 className="h-4 w-4 mr-1" />
-                                    Verifikasi OTP
-                                  </Button>
-                                )}
-                                
                                 {sp2d.status === "diterbitkan" && (
                                   <Button
                                     variant="default"
@@ -410,16 +378,6 @@ const Sp2dList = () => {
             </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Verification Dialog */}
-      <Sp2dVerificationDialog
-        open={showVerifyDialog}
-        onOpenChange={setShowVerifyDialog}
-        onVerify={handleVerifyOtp}
-        loading={verifyOtp.isPending}
-        sp2dId={selectedSp2dId || ""}
-        userId={user?.id || ""}
-      />
 
         {/* Disbursement Confirmation Dialog */}
         <AlertDialog open={showDisburseDialog} onOpenChange={setShowDisburseDialog}>
