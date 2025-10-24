@@ -140,16 +140,20 @@ const InputSpmDetail = () => {
                       {spm.status === "perlu_revisi" ? "SPM Perlu Revisi" : "SPM Ditolak"}
                     </h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Silakan perbaiki SPM sesuai catatan di bawah ini
+                      {spm.status === "perlu_revisi" 
+                        ? "Silakan perbaiki SPM sesuai catatan di bawah ini" 
+                        : "SPM ini telah ditolak dan tidak dapat diperbaiki. Silakan buat pengajuan SPM baru."}
                     </p>
                   </div>
-                  <Button 
-                    onClick={() => navigate(`/input-spm/edit/${spm.id}`)}
-                    size="sm"
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit & Perbaiki
-                  </Button>
+                  {spm.status === "perlu_revisi" && (
+                    <Button 
+                      onClick={() => navigate(`/input-spm/edit/${spm.id}`)}
+                      size="sm"
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit & Perbaiki
+                    </Button>
+                  )}
                 </div>
                 <div className="space-y-3">
                   {spm.catatan_resepsionis && (
