@@ -78,6 +78,12 @@ const UserForm = () => {
 
   const { createUser, updateUser } = useUserMutation();
 
+  // Register 'roles' field since it's managed outside of RHF inputs
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    register("roles" as any);
+  }, [register]);
+
   useEffect(() => {
     if (userData) {
       setValue("full_name", userData.full_name);
@@ -91,6 +97,9 @@ const UserForm = () => {
         opd_id: ur.opd_id,
       })) || [];
       setRoles(userRoles);
+      // Sync roles to RHF form state for validation
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setValue("roles" as any, userRoles as any, { shouldValidate: true });
     }
   }, [userData, setValue, isEdit]);
 
@@ -229,7 +238,15 @@ const UserForm = () => {
                 <Label>
                   Role <span className="text-destructive">*</span>
                 </Label>
-                <UserRoleSelect value={roles} onChange={setRoles} />
+                <UserRoleSelect
+                  value={roles}
+                  onChange={(newRoles) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    setRoles(newRoles as any);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    setValue("roles" as any, newRoles as any, { shouldValidate: true, shouldDirty: true });
+                  }}
+                />
                 {errors.roles && (
                   <p className="text-sm text-destructive">{errors.roles.message}</p>
                 )}
