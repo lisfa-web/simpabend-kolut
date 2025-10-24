@@ -21,7 +21,7 @@ export const useLaporanVerifikasi = (filters?: LaporanVerifikasiFilters) => {
           .select(`
             *,
             opd:opd_id(nama_opd),
-            bendahara:bendahara_id(full_name)
+            bendahara:profiles!spm_bendahara_id_fkey(full_name)
           `)
           .order("tanggal_ajuan", { ascending: false });
 
