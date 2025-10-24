@@ -22,11 +22,11 @@ export const useLaporanSp2d = (filters?: LaporanSp2dFilters) => {
           .from("sp2d")
           .select(`
             *,
-            creator:created_by(full_name),
-            verifier:verified_by(full_name),
-            spm:spm_id(
+            creator:profiles!sp2d_created_by_fkey(full_name),
+            verifier:profiles!sp2d_verified_by_fkey(full_name),
+            spm:spm!sp2d_spm_id_fkey(
               nomor_spm,
-              opd:opd_id(nama_opd, kode_opd, id),
+              opd:opd!spm_opd_id_fkey(nama_opd, kode_opd, id),
               bendahara:profiles!spm_bendahara_id_fkey(full_name)
             )
           `)

@@ -20,13 +20,13 @@ export const useLaporanVerifikasi = (filters?: LaporanVerifikasiFilters) => {
           .from("spm")
           .select(`
             *,
-            opd:opd_id(nama_opd),
+            opd:opd!spm_opd_id_fkey(nama_opd),
             bendahara:profiles!spm_bendahara_id_fkey(full_name),
-            resepsionis:verified_by_resepsionis(full_name),
-            pbmd:verified_by_pbmd(full_name),
-            akuntansi:verified_by_akuntansi(full_name),
-            perbendaharaan:verified_by_perbendaharaan(full_name),
-            kepala_bkad:verified_by_kepala_bkad(full_name)
+            resepsionis:profiles!spm_verified_by_resepsionis_fkey(full_name),
+            pbmd:profiles!spm_verified_by_pbmd_fkey(full_name),
+            akuntansi:profiles!spm_verified_by_akuntansi_fkey(full_name),
+            perbendaharaan:profiles!spm_verified_by_perbendaharaan_fkey(full_name),
+            kepala_bkad:profiles!spm_verified_by_kepala_bkad_fkey(full_name)
           `)
           .order("tanggal_ajuan", { ascending: false });
 
