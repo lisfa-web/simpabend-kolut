@@ -13,6 +13,7 @@ import {
   Users,
   Database as DatabaseIcon,
   ScrollText,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
@@ -104,6 +105,17 @@ const menuItems: MenuItem[] = [
     icon: ScrollText, 
     path: "/pengaturan/audit-trail",
     roles: ["administrator", "kepala_bkad"]
+  },
+  { 
+    name: "Panduan Manual", 
+    icon: BookOpen, 
+    path: "/panduan-manual"
+  },
+  { 
+    name: "Kelola Panduan", 
+    icon: BookOpen, 
+    path: "/panduan-manual/admin",
+    roles: ["administrator"]
   },
 ];
 

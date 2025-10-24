@@ -59,6 +59,8 @@ import WaGatewayConfig from "./pages/pengaturan/WaGatewayConfig";
 import EmailConfig from "./pages/pengaturan/EmailConfig";
 import PermissionsList from "./pages/pengaturan/PermissionsList";
 import AuditTrail from "./pages/pengaturan/AuditTrail";
+import PanduanManual from "./pages/panduan/PanduanManual";
+import PanduanManualAdmin from "./pages/panduan/PanduanManualAdmin";
 
 const queryClient = new QueryClient();
 
@@ -245,6 +247,10 @@ const App = () => (
           <Route path="/pengaturan/email" element={<RoleProtectedRoute allowedRoles={["administrator"]}><EmailConfig /></RoleProtectedRoute>} />
           <Route path="/pengaturan/permissions" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PermissionsList /></RoleProtectedRoute>} />
           <Route path="/pengaturan/audit-trail" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><AuditTrail /></RoleProtectedRoute>} />
+
+          {/* Panduan Manual Routes */}
+          <Route path="/panduan-manual" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />
+          <Route path="/panduan-manual/admin" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PanduanManualAdmin /></RoleProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
