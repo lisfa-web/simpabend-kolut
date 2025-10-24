@@ -12,6 +12,7 @@ export const isAdmin = (roles: AppRole[]): boolean => {
 
 export const getRoleDisplayName = (role: AppRole): string => {
   const roleNames: Record<AppRole, string> = {
+    super_admin: "Super Administrator",
     administrator: "Administrator",
     bendahara_opd: "Bendahara OPD",
     resepsionis: "Resepsionis",
@@ -27,6 +28,7 @@ export const getRoleDisplayName = (role: AppRole): string => {
 
 export const getRoleBadgeColor = (role: AppRole): string => {
   const colors: Record<AppRole, string> = {
+    super_admin: "bg-gradient-to-r from-purple-600 to-pink-600 text-white",
     administrator: "bg-destructive text-destructive-foreground",
     kepala_bkad: "bg-primary text-primary-foreground",
     kuasa_bud: "bg-info text-info-foreground",

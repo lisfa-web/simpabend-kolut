@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Table,
   TableBody,
@@ -28,11 +29,14 @@ import { useVendorMutation } from "@/hooks/useVendorMutation";
 
 const VendorList = () => {
   const navigate = useNavigate();
+  const { hasRole } = useAuth();
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: vendorList, isLoading } = useVendorList();
   const { deleteVendor } = useVendorMutation();
+
+  const isSuperAdmin = hasRole("super_admin");
 
   const filteredData = vendorList?.filter((vendor) =>
     vendor.nama_vendor.toLowerCase().includes(search.toLowerCase())
@@ -118,13 +122,15 @@ const VendorList = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleteId(vendor.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {isSuperAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteId(vendor.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

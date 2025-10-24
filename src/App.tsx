@@ -242,15 +242,15 @@ const App = () => (
           <Route path="/surat/template/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator"]}><TemplateSuratForm /></RoleProtectedRoute>} />
           <Route path="/surat/generate" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><GenerateSurat /></RoleProtectedRoute>} />
 
-          {/* Pengaturan Routes - Administrator only */}
-          <Route path="/pengaturan" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PengaturanIndex /></RoleProtectedRoute>} />
-          <Route path="/pengaturan/config" element={<RoleProtectedRoute allowedRoles={["administrator"]}><ConfigList /></RoleProtectedRoute>} />
-          <Route path="/pengaturan/format-nomor" element={<RoleProtectedRoute allowedRoles={["administrator"]}><FormatNomorList /></RoleProtectedRoute>} />
-          <Route path="/pengaturan/format-nomor/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator"]}><FormatNomorForm /></RoleProtectedRoute>} />
-          <Route path="/pengaturan/wa-gateway" element={<RoleProtectedRoute allowedRoles={["administrator"]}><WaGatewayConfig /></RoleProtectedRoute>} />
-          <Route path="/pengaturan/email" element={<RoleProtectedRoute allowedRoles={["administrator"]}><EmailConfig /></RoleProtectedRoute>} />
-          <Route path="/pengaturan/permissions" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PermissionsList /></RoleProtectedRoute>} />
-          <Route path="/pengaturan/audit-trail" element={<RoleProtectedRoute allowedRoles={["administrator", "kepala_bkad"]}><AuditTrail /></RoleProtectedRoute>} />
+          {/* Pengaturan Routes - Super Administrator only */}
+          <Route path="/pengaturan" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><PengaturanIndex /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/config" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><ConfigList /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/format-nomor" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><FormatNomorList /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/format-nomor/:id/edit" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><FormatNomorForm /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/wa-gateway" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><WaGatewayConfig /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/email" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><EmailConfig /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/permissions" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><PermissionsList /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/audit-trail" element={<RoleProtectedRoute allowedRoles={["super_admin", "kepala_bkad"]}><AuditTrail /></RoleProtectedRoute>} />
 
           {/* Panduan Manual Routes */}
           <Route path="/panduan-manual" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />

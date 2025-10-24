@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Table,
   TableBody,
@@ -28,11 +29,14 @@ import { useOpdMutation } from "@/hooks/useOpdMutation";
 
 const OpdList = () => {
   const navigate = useNavigate();
+  const { hasRole } = useAuth();
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const { data: opdList, isLoading } = useOpdList();
   const { deleteOpd } = useOpdMutation();
+
+  const isSuperAdmin = hasRole("super_admin");
 
   const filteredData = opdList?.filter(
     (opd) =>
@@ -116,13 +120,15 @@ const OpdList = () => {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleteId(opd.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        {isSuperAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteId(opd.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

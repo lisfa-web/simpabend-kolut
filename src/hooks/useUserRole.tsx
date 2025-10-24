@@ -32,10 +32,20 @@ export const useUserRole = () => {
     return hasRole("administrator") || hasRole("kepala_bkad");
   };
 
+  const isSuperAdmin = (): boolean => {
+    return hasRole("super_admin");
+  };
+
+  const isRegularAdmin = (): boolean => {
+    return hasRole("administrator") && !hasRole("super_admin");
+  };
+
   return {
     roles,
     hasRole,
     isAdmin,
+    isSuperAdmin,
+    isRegularAdmin,
     ...rest,
   };
 };

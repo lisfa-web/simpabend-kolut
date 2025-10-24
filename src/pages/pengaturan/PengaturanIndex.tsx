@@ -1,9 +1,16 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Settings, FileText, MessageSquare, Shield, Mail, ScrollText } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
+import { useAuth } from "@/hooks/useAuth";
 
 const PengaturanIndex = () => {
+  const { hasRole } = useAuth();
+
+  // Only super admins can access settings
+  if (!hasRole("super_admin")) {
+    return <Navigate to="/unauthorized" replace />;
+  }
   const settingsModules = [
     {
       title: "Konfigurasi Sistem",

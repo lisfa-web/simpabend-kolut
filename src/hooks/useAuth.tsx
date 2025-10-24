@@ -6,5 +6,19 @@ export const useAuth = () => {
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context;
+  
+  // Add helper methods for super admin checks
+  const isSuperAdmin = (): boolean => {
+    return context.hasRole("super_admin");
+  };
+
+  const isRegularAdmin = (): boolean => {
+    return context.hasRole("administrator") && !context.hasRole("super_admin");
+  };
+
+  return {
+    ...context,
+    isSuperAdmin,
+    isRegularAdmin,
+  };
 };

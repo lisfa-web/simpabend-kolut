@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Table,
   TableBody,
@@ -29,10 +30,13 @@ import {
 
 export default function ProgramList() {
   const navigate = useNavigate();
+  const { hasRole } = useAuth();
   const [search, setSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const { data: programs, isLoading } = useProgramList();
   const { deleteProgram } = useProgramMutation();
+
+  const isSuperAdmin = hasRole("super_admin");
 
   const filteredPrograms = programs?.filter((program) =>
     program.nama_program.toLowerCase().includes(search.toLowerCase()) ||
@@ -119,13 +123,15 @@ export default function ProgramList() {
                           >
                             <Edit className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => setDeleteId(program.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {isSuperAdmin && (
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => setDeleteId(program.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

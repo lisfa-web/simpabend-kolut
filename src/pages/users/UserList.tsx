@@ -39,6 +39,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Eye, Edit, Key, Power } from "lucide-react";
 import { useUserList } from "@/hooks/useUserList";
 import { useUserMutation } from "@/hooks/useUserMutation";
+import { useAuth } from "@/hooks/useAuth";
 import { UserStatusBadge } from "./components/UserStatusBadge";
 import { getRoleDisplayName } from "@/lib/auth";
 import { Database } from "@/integrations/supabase/types";
@@ -47,9 +48,12 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 
 const UserList = () => {
   const navigate = useNavigate();
+  const { hasRole } = useAuth();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const isSuperAdmin = hasRole("super_admin");
   const [resetPasswordDialog, setResetPasswordDialog] = useState<{
     open: boolean;
     userId: string;
@@ -106,6 +110,14 @@ const UserList = () => {
   });
 
   const { resetPassword, toggleUserStatus } = useUserMutation();
+
+  // Filter out super admin users for regular admins
+  const filteredUsers = users?.filter((user: any) => {
+    if (isSuperAdmin) return true; // Super admin sees all users
+    
+    // Regular admins don't see super admins
+    return !user.user_roles?.some((ur: any) => ur.role === "super_admin");
+  });
 
   const handleResetPassword = () => {
     if (!newPassword || newPassword.length < 6) {
@@ -205,8 +217,8 @@ const UserList = () => {
                     Memuat data...
                   </TableCell>
                 </TableRow>
-              ) : users && users.length > 0 ? (
-                users.map((user: any) => (
+              ) : filteredUsers && filteredUsers.length > 0 ? (
+                filteredUsers.map((user: any) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.full_name}</TableCell>
                     <TableCell>{user.email}</TableCell>
