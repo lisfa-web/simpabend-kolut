@@ -245,6 +245,7 @@ const App = () => (
 
           {/* Pengaturan Routes - Super Administrator only */}
           <Route path="/pengaturan" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><PengaturanIndex /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/emergency-mode" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><EmergencyMode /></RoleProtectedRoute>} />
           <Route path="/pengaturan/config" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><ConfigList /></RoleProtectedRoute>} />
           <Route path="/pengaturan/format-nomor" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><FormatNomorList /></RoleProtectedRoute>} />
           <Route path="/pengaturan/format-nomor/:id/edit" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><FormatNomorForm /></RoleProtectedRoute>} />
