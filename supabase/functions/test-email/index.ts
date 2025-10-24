@@ -14,6 +14,7 @@ serve(async (req) => {
 
   try {
     const { email } = await req.json();
+    console.log("Test Email - Email:", email);
 
     if (!email) {
       return new Response(
@@ -27,18 +28,46 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get Email config
+    // Get Email config (get the latest one)
+    console.log("Fetching email config...");
     const { data: config, error: configError } = await supabase
       .from("email_config")
       .select("*")
-      .single();
+      .order("updated_at", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    console.log("Email config:", config);
+    console.log("Config error:", configError);
 
     if (configError || !config) {
+      console.error("Email config not found:", configError);
       return new Response(
-        JSON.stringify({ success: false, message: "Konfigurasi email tidak ditemukan" }),
+        JSON.stringify({ 
+          success: false, 
+          message: "Konfigurasi email tidak ditemukan. Silakan simpan konfigurasi terlebih dahulu.",
+          error: configError?.message
+        }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    if (!config.smtp_user || !config.smtp_password) {
+      console.error("Email config incomplete:", config);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: "Konfigurasi tidak lengkap. Email dan App Password wajib diisi." 
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Creating SMTP client...");
+    console.log("SMTP Host:", config.smtp_host);
+    console.log("SMTP Port:", config.smtp_port);
+    console.log("SMTP User:", config.smtp_user);
 
     // Create SMTP client
     const client = new SMTPClient({
@@ -54,6 +83,7 @@ serve(async (req) => {
     });
 
     // Send test email
+    console.log("Sending test email...");
     await client.send({
       from: `${config.from_name} <${config.from_email}>`,
       to: email,
@@ -107,6 +137,7 @@ serve(async (req) => {
       `,
     });
 
+    console.log("Email sent successfully");
     await client.close();
 
     // Update test status in database
@@ -121,13 +152,14 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Test email berhasil dikirim!",
+        message: `Test email berhasil dikirim ke ${email}!`,
         email: email 
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
     console.error("Error in test-email:", error);
+    console.error("Error stack:", error.stack);
 
     // Try to update test status to failed
     try {
@@ -138,7 +170,9 @@ serve(async (req) => {
       const { data: config } = await supabase
         .from("email_config")
         .select("id")
-        .single();
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (config) {
         await supabase
@@ -153,8 +187,9 @@ serve(async (req) => {
       console.error("Error updating test status:", updateError);
     }
 
+    const errorMessage = error.message || "Gagal mengirim email test. Periksa konfigurasi SMTP Anda.";
     return new Response(
-      JSON.stringify({ success: false, message: error.message }),
+      JSON.stringify({ success: false, message: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -9,9 +9,11 @@ export const useEmailConfig = () => {
       const { data, error } = await supabase
         .from("email_config")
         .select("*")
-        .single();
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      if (error && error.code !== "PGRST116") throw error;
+      if (error) throw error;
       return data;
     },
   });
@@ -30,18 +32,26 @@ export const useEmailConfigMutation = () => {
       from_name: string;
       is_active: boolean;
     }) => {
+      // Check if config already exists
       const { data: existing } = await supabase
         .from("email_config")
         .select("id")
-        .single();
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (existing?.id) {
+        // Update existing config
         const { error } = await supabase
           .from("email_config")
-          .update(config)
+          .update({
+            ...config,
+            updated_at: new Date().toISOString(),
+          })
           .eq("id", existing.id);
         if (error) throw error;
       } else {
+        // Insert new config
         const { error } = await supabase.from("email_config").insert(config);
         if (error) throw error;
       }
@@ -51,6 +61,7 @@ export const useEmailConfigMutation = () => {
       toast.success("Konfigurasi email berhasil disimpan");
     },
     onError: (error: any) => {
+      console.error("Save email config error:", error);
       toast.error(error.message || "Gagal menyimpan konfigurasi email");
     },
   });

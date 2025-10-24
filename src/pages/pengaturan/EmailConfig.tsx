@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useEmailConfig, useEmailConfigMutation } from "@/hooks/useEmailConfig";
 import { useTestEmail } from "@/hooks/useTestEmail";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface FormData {
   smtp_host: string;
@@ -28,7 +28,7 @@ const EmailConfig = () => {
   const testEmail = useTestEmail();
   const [testEmailAddress, setTestEmailAddress] = useState("");
 
-  const { register, handleSubmit, watch } = useForm<FormData>({
+  const { register, handleSubmit, watch, setValue } = useForm<FormData>({
     values: config
       ? {
           smtp_host: config.smtp_host,
@@ -51,6 +51,18 @@ const EmailConfig = () => {
   });
 
   const isActive = watch("is_active");
+
+  useEffect(() => {
+    if (config) {
+      setValue("smtp_host", config.smtp_host || "smtp.gmail.com");
+      setValue("smtp_port", config.smtp_port || 587);
+      setValue("smtp_user", config.smtp_user || "");
+      setValue("smtp_password", config.smtp_password || "");
+      setValue("from_email", config.from_email || "");
+      setValue("from_name", config.from_name || "");
+      setValue("is_active", config.is_active || false);
+    }
+  }, [config, setValue]);
 
   const onSubmit = (data: FormData) => {
     upsertConfig.mutate(data);
@@ -222,8 +234,8 @@ const EmailConfig = () => {
                 </div>
                 <Switch
                   id="is_active"
-                  {...register("is_active")}
                   checked={isActive}
+                  onCheckedChange={(checked) => setValue("is_active", checked)}
                 />
               </div>
             </CardContent>
