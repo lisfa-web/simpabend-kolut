@@ -72,8 +72,16 @@ const UserForm = () => {
     handleSubmit,
     formState: { errors },
     setValue,
+    reset,
+    clearErrors,
   } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
+    defaultValues: {
+      full_name: "",
+      phone: "",
+      is_active: true,
+      roles: [],
+    },
   });
 
   const { createUser, updateUser } = useUserMutation();
@@ -86,22 +94,22 @@ const UserForm = () => {
 
   useEffect(() => {
     if (userData) {
-      setValue("full_name", userData.full_name);
-      setValue("phone", userData.phone || "");
-      if (isEdit) {
-        setValue("is_active", userData.is_active);
-      }
-      
       const userRoles = userData.user_roles?.map((ur: any) => ({
         role: ur.role,
         opd_id: ur.opd_id,
       })) || [];
       setRoles(userRoles);
-      // Sync roles to RHF form state for validation
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setValue("roles" as any, userRoles as any, { shouldValidate: true });
+
+      reset({
+        full_name: userData.full_name,
+        phone: userData.phone || "",
+        is_active: userData.is_active ?? true,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        roles: userRoles as any,
+      });
+      clearErrors(["roles"]);
     }
-  }, [userData, setValue, isEdit]);
+  }, [userData, reset, clearErrors]);
 
   const onSubmit = (data: UserFormData) => {
     if (isEdit) {
@@ -232,7 +240,7 @@ const UserForm = () => {
                       <Label htmlFor="is_active">Status Aktif</Label>
                       <Switch
                         id="is_active"
-                        onCheckedChange={(checked) => setValue("is_active", checked)}
+                        onCheckedChange={(checked) => setValue("is_active", checked, { shouldDirty: true, shouldValidate: true })}
                         defaultChecked={userData?.is_active}
                       />
                     </div>
@@ -251,6 +259,7 @@ const UserForm = () => {
                     setRoles(newRoles as any);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     setValue("roles" as any, newRoles as any, { shouldValidate: true, shouldDirty: true });
+                    clearErrors(["roles"]);
                   }}
                 />
                 {errors.roles && (
