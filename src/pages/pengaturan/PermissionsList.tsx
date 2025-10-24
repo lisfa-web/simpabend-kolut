@@ -22,6 +22,7 @@ const PermissionsList = () => {
   const [changes, setChanges] = useState<Map<string, Partial<Permission>>>(new Map());
 
   const roles: AppRole[] = [
+    "super_admin",
     "administrator",
     "kepala_bkad",
     "kuasa_bud",
@@ -35,6 +36,7 @@ const PermissionsList = () => {
 
   const getRoleLabel = (role: AppRole): string => {
     const labels: Record<AppRole, string> = {
+      super_admin: "Super Administrator",
       administrator: "Administrator",
       kepala_bkad: "Kepala BKAD",
       kuasa_bud: "Kuasa BUD",

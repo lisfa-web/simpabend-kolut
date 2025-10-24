@@ -1143,6 +1143,7 @@ export type Database = {
         | "kepala_bkad"
         | "kuasa_bud"
         | "publik"
+        | "super_admin"
       jenis_lampiran: "spm" | "tbk" | "spj" | "kwitansi" | "kontrak" | "lainnya"
       jenis_notifikasi:
         | "spm_diajukan"
@@ -1308,6 +1309,7 @@ export const Constants = {
         "kepala_bkad",
         "kuasa_bud",
         "publik",
+        "super_admin",
       ],
       jenis_lampiran: ["spm", "tbk", "spj", "kwitansi", "kontrak", "lainnya"],
       jenis_notifikasi: [
