@@ -62,25 +62,29 @@ export const useSpmVerification = (role: string) => {
         status: nextStatus,
       };
 
-      // Add role-specific fields
+      // Add role-specific fields and verified_by tracking
       switch (role) {
         case "resepsionis":
           updateData.catatan_resepsionis = data.catatan;
           updateData.tanggal_resepsionis = new Date().toISOString();
+          updateData.verified_by_resepsionis = user.id;
           if (data.nomorAntrian) updateData.nomor_antrian = data.nomorAntrian;
           if (data.nomorBerkas) updateData.nomor_berkas = data.nomorBerkas;
           break;
         case "pbmd":
           updateData.catatan_pbmd = data.catatan;
           updateData.tanggal_pbmd = new Date().toISOString();
+          updateData.verified_by_pbmd = user.id;
           break;
         case "akuntansi":
           updateData.catatan_akuntansi = data.catatan;
           updateData.tanggal_akuntansi = new Date().toISOString();
+          updateData.verified_by_akuntansi = user.id;
           break;
         case "perbendaharaan":
           updateData.catatan_perbendaharaan = data.catatan;
           updateData.tanggal_perbendaharaan = new Date().toISOString();
+          updateData.verified_by_perbendaharaan = user.id;
           break;
         case "kepala_bkad":
           updateData.catatan_kepala_bkad = data.catatan;

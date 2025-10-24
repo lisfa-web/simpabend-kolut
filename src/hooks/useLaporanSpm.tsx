@@ -28,7 +28,12 @@ export const useLaporanSpm = (filters?: LaporanSpmFilters) => {
             kegiatan:kegiatan_id(nama_kegiatan),
             subkegiatan:subkegiatan_id(nama_subkegiatan),
             vendor:vendor_id(nama_vendor),
-            bendahara:bendahara_id(full_name)
+            bendahara:bendahara_id(full_name),
+            resepsionis:verified_by_resepsionis(full_name),
+            pbmd:verified_by_pbmd(full_name),
+            akuntansi:verified_by_akuntansi(full_name),
+            perbendaharaan:verified_by_perbendaharaan(full_name),
+            kepala_bkad:verified_by_kepala_bkad(full_name)
           `)
           .order("tanggal_ajuan", { ascending: false });
 

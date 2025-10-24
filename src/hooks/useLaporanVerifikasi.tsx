@@ -21,7 +21,12 @@ export const useLaporanVerifikasi = (filters?: LaporanVerifikasiFilters) => {
           .select(`
             *,
             opd:opd_id(nama_opd),
-            bendahara:profiles!spm_bendahara_id_fkey(full_name)
+            bendahara:profiles!spm_bendahara_id_fkey(full_name),
+            resepsionis:verified_by_resepsionis(full_name),
+            pbmd:verified_by_pbmd(full_name),
+            akuntansi:verified_by_akuntansi(full_name),
+            perbendaharaan:verified_by_perbendaharaan(full_name),
+            kepala_bkad:verified_by_kepala_bkad(full_name)
           `)
           .order("tanggal_ajuan", { ascending: false });
 

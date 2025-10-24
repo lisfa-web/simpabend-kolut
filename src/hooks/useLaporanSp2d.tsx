@@ -22,6 +22,8 @@ export const useLaporanSp2d = (filters?: LaporanSp2dFilters) => {
           .from("sp2d")
           .select(`
             *,
+            creator:created_by(full_name),
+            verifier:verified_by(full_name),
             spm:spm_id(
               nomor_spm,
               opd:opd_id(nama_opd, kode_opd, id),

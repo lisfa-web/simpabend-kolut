@@ -576,6 +576,7 @@ export type Database = {
         Row: {
           catatan: string | null
           created_at: string | null
+          created_by: string | null
           id: string
           kuasa_bud_id: string | null
           nama_bank: string | null
@@ -590,10 +591,12 @@ export type Database = {
           tanggal_sp2d: string | null
           ttd_digital_url: string | null
           updated_at: string | null
+          verified_by: string | null
         }
         Insert: {
           catatan?: string | null
           created_at?: string | null
+          created_by?: string | null
           id?: string
           kuasa_bud_id?: string | null
           nama_bank?: string | null
@@ -608,10 +611,12 @@ export type Database = {
           tanggal_sp2d?: string | null
           ttd_digital_url?: string | null
           updated_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           catatan?: string | null
           created_at?: string | null
+          created_by?: string | null
           id?: string
           kuasa_bud_id?: string | null
           nama_bank?: string | null
@@ -626,13 +631,28 @@ export type Database = {
           tanggal_sp2d?: string | null
           ttd_digital_url?: string | null
           updated_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "sp2d_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "sp2d_spm_id_fkey"
             columns: ["spm_id"]
             isOneToOne: false
             referencedRelation: "spm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sp2d_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -668,7 +688,11 @@ export type Database = {
           updated_at: string | null
           uraian: string | null
           vendor_id: string | null
+          verified_by_akuntansi: string | null
           verified_by_kepala_bkad: string | null
+          verified_by_pbmd: string | null
+          verified_by_perbendaharaan: string | null
+          verified_by_resepsionis: string | null
         }
         Insert: {
           bendahara_id: string
@@ -700,7 +724,11 @@ export type Database = {
           updated_at?: string | null
           uraian?: string | null
           vendor_id?: string | null
+          verified_by_akuntansi?: string | null
           verified_by_kepala_bkad?: string | null
+          verified_by_pbmd?: string | null
+          verified_by_perbendaharaan?: string | null
+          verified_by_resepsionis?: string | null
         }
         Update: {
           bendahara_id?: string
@@ -732,7 +760,11 @@ export type Database = {
           updated_at?: string | null
           uraian?: string | null
           vendor_id?: string | null
+          verified_by_akuntansi?: string | null
           verified_by_kepala_bkad?: string | null
+          verified_by_pbmd?: string | null
+          verified_by_perbendaharaan?: string | null
+          verified_by_resepsionis?: string | null
         }
         Relationships: [
           {
@@ -775,6 +807,34 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spm_verified_by_akuntansi_fkey"
+            columns: ["verified_by_akuntansi"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spm_verified_by_pbmd_fkey"
+            columns: ["verified_by_pbmd"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spm_verified_by_perbendaharaan_fkey"
+            columns: ["verified_by_perbendaharaan"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "spm_verified_by_resepsionis_fkey"
+            columns: ["verified_by_resepsionis"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

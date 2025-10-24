@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "./useAuth";
 import { Database } from "@/integrations/supabase/types";
 
 type Sp2dInsert = Database["public"]["Tables"]["sp2d"]["Insert"];
@@ -9,12 +10,19 @@ type Sp2dUpdate = Database["public"]["Tables"]["sp2d"]["Update"];
 export const useSp2dMutation = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const createSp2d = useMutation({
     mutationFn: async (data: Sp2dInsert) => {
+      // Add created_by field
+      const insertData = {
+        ...data,
+        created_by: user?.id,
+      };
+
       const { data: result, error } = await supabase
         .from("sp2d")
-        .insert(data)
+        .insert(insertData)
         .select()
         .single();
 
@@ -74,7 +82,8 @@ export const useSp2dMutation = () => {
         .from("sp2d")
         .update({ 
           otp_verified_at: new Date().toISOString(),
-          status: "diterbitkan" as any
+          status: "diterbitkan" as any,
+          verified_by: user?.id,
         })
         .eq("id", id)
         .select()
