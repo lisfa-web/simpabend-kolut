@@ -18,9 +18,8 @@ export const useSp2dDetail = (sp2dId: string | undefined) => {
             kegiatan:kegiatan_id(nama_kegiatan, kode_kegiatan),
             subkegiatan:subkegiatan_id(nama_subkegiatan, kode_subkegiatan),
             vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening),
-            bendahara:bendahara_id(full_name, email)
-          ),
-          kuasa_bud:kuasa_bud_id(full_name, email)
+            bendahara:profiles!spm_bendahara_id_fkey(full_name, email)
+          )
         `)
         .eq("id", sp2dId)
         .maybeSingle();
