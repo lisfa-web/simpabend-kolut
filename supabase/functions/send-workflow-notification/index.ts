@@ -52,6 +52,18 @@ serve(async (req) => {
       if (spmError) throw spmError;
       documentData = spm;
 
+      // Safely derive bendahara display name (fallback from email)
+      const getDisplayName = (name?: string | null, email?: string | null) => {
+        const capitalize = (word: string) => word ? word.charAt(0).toUpperCase() + word.slice(1) : '';
+        if (name && name.trim() && !name.includes('@')) return name.trim();
+        if (email && email.includes('@')) {
+          const local = email.split('@')[0].replace(/[._-]+/g, ' ').trim();
+          return local.split(' ').filter(Boolean).map(capitalize).join(' ');
+        }
+        return '-';
+      };
+      const bendaharaName = getDisplayName(spm.bendahara?.full_name, spm.bendahara?.email);
+
       // Determine recipients based on action and stage
       if (action === 'created' || action === 'submitted') {
         // Notify Resepsionis when SPM is submitted
@@ -67,7 +79,7 @@ serve(async (req) => {
         }
         
         recipientIds = resepsionis?.map((r: any) => r.user_id) || [];
-        messageTemplate = `📋 *SPM Baru*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nOPD: ${spm.opd?.nama_opd}\nNilai: Rp ${new Intl.NumberFormat('id-ID').format(spm.nilai_spm)}\nBendahara: ${spm.bendahara?.full_name}\n\nSilakan proses verifikasi di sistem.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+        messageTemplate = `📋 *SPM Baru*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nOPD: ${spm.opd?.nama_opd}\nNilai: Rp ${new Intl.NumberFormat('id-ID').format(spm.nilai_spm)}\nBendahara: ${bendaharaName}\n\nSilakan proses verifikasi di sistem.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
       
       } else if (action === 'verified') {
         // Notify next stage based on current status
