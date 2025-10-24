@@ -113,6 +113,10 @@ const UserForm = () => {
   }, [userData, reset, clearErrors]);
 
   const onSubmit = (data: UserFormData) => {
+    console.log("Form submitted with data:", data);
+    console.log("Current roles:", roles);
+    console.log("is_active value:", data.is_active);
+    
     if (isEdit) {
       updateUser.mutate(
         {
@@ -124,8 +128,12 @@ const UserForm = () => {
         },
         {
           onSuccess: () => {
+            console.log("Update successful");
             // Wait for toast to show before navigating
             setTimeout(() => navigate("/users"), 1500);
+          },
+          onError: (error) => {
+            console.error("Update failed:", error);
           },
         }
       );
@@ -246,7 +254,14 @@ const UserForm = () => {
                           <Switch
                             id="is_active"
                             checked={!!field.value}
-                            onCheckedChange={(checked) => field.onChange(checked)}
+                            onCheckedChange={(checked) => {
+                              console.log("Switch changed to:", checked);
+                              field.onChange(checked);
+                              setValue("is_active", checked, { 
+                                shouldDirty: true, 
+                                shouldValidate: true 
+                              });
+                            }}
                           />
                         )}
                       />
