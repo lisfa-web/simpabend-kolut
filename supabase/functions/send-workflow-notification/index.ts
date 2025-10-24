@@ -55,10 +55,16 @@ serve(async (req) => {
       // Determine recipients based on action and stage
       if (action === 'created' || action === 'submitted') {
         // Notify Resepsionis when SPM is submitted
-        const { data: resepsionis } = await supabase
+        const { data: resepsionis, error: resepsionisError } = await supabase
           .from("user_roles")
-          .select("user_id, profiles:user_id(full_name, phone, email)")
+          .select("user_id")
           .eq("role", "resepsionis");
+        
+        if (resepsionisError) {
+          console.error("Error fetching resepsionis:", resepsionisError);
+        } else {
+          console.log("Found resepsionis users:", resepsionis);
+        }
         
         recipientIds = resepsionis?.map((r: any) => r.user_id) || [];
         messageTemplate = `📋 *SPM Baru*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nOPD: ${spm.opd?.nama_opd}\nNilai: Rp ${new Intl.NumberFormat('id-ID').format(spm.nilai_spm)}\nBendahara: ${spm.bendahara?.full_name}\n\nSilakan proses verifikasi di sistem.`;
@@ -84,7 +90,7 @@ serve(async (req) => {
         if (nextRole) {
           const { data: nextUsers } = await supabase
             .from("user_roles")
-            .select("user_id, profiles:user_id(full_name, phone, email)")
+            .select("user_id")
             .eq("role", nextRole);
           
           recipientIds = nextUsers?.map((u: any) => u.user_id) || [];
@@ -121,7 +127,7 @@ serve(async (req) => {
         // Notify Kuasa BUD when SP2D is created
         const { data: kuasaBud } = await supabase
           .from("user_roles")
-          .select("user_id, profiles:user_id(full_name, phone, email)")
+          .select("user_id")
           .eq("role", "kuasa_bud");
         
         recipientIds = kuasaBud?.map((k: any) => k.user_id) || [];
