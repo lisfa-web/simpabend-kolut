@@ -31,23 +31,19 @@ export const Sp2dVerificationDialog = ({
   userId,
 }: Sp2dVerificationDialogProps) => {
   const [otp, setOtp] = useState("");
-  const [countdown, setCountdown] = useState(60);
-  const [canResend, setCanResend] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [canResend, setCanResend] = useState(true);
   
   const requestOtp = useRequestSp2dOtp();
 
-  // Countdown timer
+  // Countdown timer - only runs when countdown > 0
   useEffect(() => {
-    if (!open) return;
-    
-    setCountdown(60);
-    setCanResend(false);
+    if (countdown <= 0) return;
     
     const interval = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           setCanResend(true);
-          clearInterval(interval);
           return 0;
         }
         return prev - 1;
@@ -55,7 +51,7 @@ export const Sp2dVerificationDialog = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [open]);
+  }, [countdown]);
 
   const handleSubmit = () => {
     if (otp.length === 6) {
