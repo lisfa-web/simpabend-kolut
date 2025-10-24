@@ -22,11 +22,11 @@ export const useAuditLog = (filters?: AuditLogFilters) => {
       try {
         let query = supabase
           .from("audit_log")
-          .select(`
-            *,
-            user:user_id(full_name, email)
-          `)
-          .order("created_at", { ascending: false });
+            .select(`
+              *,
+              user:profiles!audit_log_user_id_fkey(full_name, email)
+            `)
+            .order("created_at", { ascending: false });
 
         // Apply filters
         if (filters?.tanggal_dari) {
