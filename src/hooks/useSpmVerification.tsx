@@ -153,20 +153,40 @@ export const useSpmVerification = (role: string) => {
           pesan: notifMessage,
         });
 
-        // Send Email & WhatsApp notification (async, no await)
-        supabase.functions.invoke("send-approval-notification", {
+        // Send workflow notification (async, no await)
+        supabase.functions.invoke("send-workflow-notification", {
           body: {
-            spmId: data.spmId,
-            action: data.action,
-            role: role,
+            type: 'spm',
+            documentId: data.spmId,
+            action: data.action === "approve" ? "verified" : data.action === "reject" ? "rejected" : "revised",
+            stage: role,
+            verifiedBy: user?.id,
+            notes: data.catatan || "",
           },
         }).then(({ data: notifData, error: notifError }) => {
           if (notifError) {
-            console.error("Notification error:", notifError);
+            console.error("Workflow notification error:", notifError);
           } else {
-            console.log("Notification sent:", notifData);
+            console.log("Workflow notification sent:", notifData);
           }
         });
+
+        // For kepala_bkad approval, also send email notification
+        if (role === "kepala_bkad" && (data.action === "approve" || data.action === "reject" || data.action === "revise")) {
+          supabase.functions.invoke("send-approval-notification", {
+            body: {
+              spmId: data.spmId,
+              action: data.action,
+              role: role,
+            },
+          }).then(({ data: notifData, error: notifError }) => {
+            if (notifError) {
+              console.error("Approval notification error:", notifError);
+            } else {
+              console.log("Approval notification sent:", notifData);
+            }
+          });
+        }
       }
 
       return { success: true };

@@ -47,6 +47,22 @@ export const useSpmMutation = () => {
         .single();
 
       if (error) throw error;
+
+      // Send notification if status changed to diajukan
+      if (data.status === 'diajukan') {
+        try {
+          await supabase.functions.invoke('send-workflow-notification', {
+            body: {
+              type: 'spm',
+              documentId: id,
+              action: 'submitted',
+            },
+          });
+        } catch (notifError) {
+          console.error('Failed to send notification:', notifError);
+        }
+      }
+
       return spm;
     },
     onSuccess: () => {

@@ -28,6 +28,20 @@ export const useSp2dMutation = () => {
         .single();
 
       if (error) throw error;
+
+      // Send notification
+      try {
+        await supabase.functions.invoke('send-workflow-notification', {
+          body: {
+            type: 'sp2d',
+            documentId: result.id,
+            action: 'created',
+          },
+        });
+      } catch (notifError) {
+        console.error('Failed to send notification:', notifError);
+      }
+
       return result;
     },
     onSuccess: () => {
@@ -56,6 +70,23 @@ export const useSp2dMutation = () => {
         .single();
 
       if (error) throw error;
+
+      // Send notification if status changed to gagal (rejected)
+      if (data.status === 'gagal') {
+        try {
+          await supabase.functions.invoke('send-workflow-notification', {
+            body: {
+              type: 'sp2d',
+              documentId: id,
+              action: 'rejected',
+              notes: data.catatan || '',
+            },
+          });
+        } catch (notifError) {
+          console.error('Failed to send notification:', notifError);
+        }
+      }
+
       return result;
     },
     onSuccess: () => {
@@ -140,6 +171,20 @@ export const useSp2dMutation = () => {
         .single();
 
       if (error) throw error;
+
+      // Send notification
+      try {
+        await supabase.functions.invoke('send-workflow-notification', {
+          body: {
+            type: 'sp2d',
+            documentId: id,
+            action: 'approved',
+          },
+        });
+      } catch (notifError) {
+        console.error('Failed to send notification:', notifError);
+      }
+
       return result;
     },
     onSuccess: () => {

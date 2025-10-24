@@ -5,3 +5,12 @@ verify_jwt = false
 
 [functions.send-pin]
 verify_jwt = false
+
+[functions.send-workflow-notification]
+verify_jwt = false
+
+[functions.test-email]
+verify_jwt = false
+
+[functions.test-wa-gateway]
+verify_jwt = false
