@@ -67,7 +67,7 @@ serve(async (req) => {
         }
         
         recipientIds = resepsionis?.map((r: any) => r.user_id) || [];
-        messageTemplate = `📋 *SPM Baru*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nOPD: ${spm.opd?.nama_opd}\nNilai: Rp ${new Intl.NumberFormat('id-ID').format(spm.nilai_spm)}\nBendahara: ${spm.bendahara?.full_name}\n\nSilakan proses verifikasi di sistem.`;
+        messageTemplate = `📋 *SPM Baru*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nOPD: ${spm.opd?.nama_opd}\nNilai: Rp ${new Intl.NumberFormat('id-ID').format(spm.nilai_spm)}\nBendahara: ${spm.bendahara?.full_name}\n\nSilakan proses verifikasi di sistem.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
       
       } else if (action === 'verified') {
         // Notify next stage based on current status
@@ -75,16 +75,16 @@ serve(async (req) => {
         
         if (spm.status === 'resepsionis_verifikasi') {
           nextRole = 'pbmd';
-          messageTemplate = `✅ *SPM Diverifikasi Resepsionis*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\nNomor Antrian: ${spm.nomor_antrian}\n\nSilakan lanjutkan verifikasi PBMD.`;
+          messageTemplate = `✅ *SPM Diverifikasi Resepsionis*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\nNomor Antrian: ${spm.nomor_antrian}\n\nSilakan lanjutkan verifikasi PBMD.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         } else if (spm.status === 'pbmd_verifikasi') {
           nextRole = 'akuntansi';
-          messageTemplate = `✅ *SPM Diverifikasi PBMD*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\n\nSilakan lanjutkan verifikasi Akuntansi.`;
+          messageTemplate = `✅ *SPM Diverifikasi PBMD*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\n\nSilakan lanjutkan verifikasi Akuntansi.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         } else if (spm.status === 'akuntansi_validasi') {
           nextRole = 'perbendaharaan';
-          messageTemplate = `✅ *SPM Divalidasi Akuntansi*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\n\nSilakan lanjutkan verifikasi Perbendaharaan.`;
+          messageTemplate = `✅ *SPM Divalidasi Akuntansi*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\n\nSilakan lanjutkan verifikasi Perbendaharaan.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         } else if (spm.status === 'perbendaharaan_verifikasi') {
           nextRole = 'kepala_bkad';
-          messageTemplate = `✅ *SPM Diverifikasi Perbendaharaan*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\n\nMenunggu review Kepala BKAD.`;
+          messageTemplate = `✅ *SPM Diverifikasi Perbendaharaan*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\n\nMenunggu review Kepala BKAD.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         }
 
         if (nextRole) {
@@ -102,7 +102,7 @@ serve(async (req) => {
       } else if (action === 'revised') {
         // Notify bendahara about revision
         recipientIds = [spm.bendahara_id];
-        messageTemplate = `⚠️ *SPM Perlu Revisi*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nTahap: ${stage}\nCatatan: ${notes || '-'}\n\nSilakan perbaiki dan ajukan kembali.`;
+        messageTemplate = `⚠️ *SPM Perlu Revisi*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nTahap: ${stage}\nCatatan: ${notes || '-'}\n\nSilakan perbaiki dan ajukan kembali.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
       }
 
     } else if (type === 'sp2d') {
@@ -131,20 +131,20 @@ serve(async (req) => {
           .eq("role", "kuasa_bud");
         
         recipientIds = kuasaBud?.map((k: any) => k.user_id) || [];
-        messageTemplate = `💰 *SP2D Baru*\n\nNomor: ${sp2d.nomor_sp2d}\nDari SPM: ${sp2d.spm?.nomor_spm}\nNilai: Rp ${new Intl.NumberFormat('id-ID').format(sp2d.nilai_sp2d)}\n\nSilakan proses verifikasi.`;
+        messageTemplate = `💰 *SP2D Baru*\n\nNomor: ${sp2d.nomor_sp2d}\nDari SPM: ${sp2d.spm?.nomor_spm}\nNilai: Rp ${new Intl.NumberFormat('id-ID').format(sp2d.nilai_sp2d)}\n\nSilakan proses verifikasi.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
       
       } else if (action === 'approved') {
         // Notify bendahara when SP2D is approved
         if (sp2d.spm?.bendahara_id) {
           recipientIds = [sp2d.spm.bendahara_id];
-          messageTemplate = `✅ *SP2D Diterbitkan*\n\nNomor: ${sp2d.nomor_sp2d}\nNomor SPM: ${sp2d.spm?.nomor_spm}\nNilai: Rp ${new Intl.NumberFormat('id-ID').format(sp2d.nilai_sp2d)}\nTanggal Cair: ${sp2d.tanggal_cair ? new Date(sp2d.tanggal_cair).toLocaleDateString('id-ID') : '-'}\n\nSP2D sudah dapat diproses.`;
+          messageTemplate = `✅ *SP2D Diterbitkan*\n\nNomor: ${sp2d.nomor_sp2d}\nNomor SPM: ${sp2d.spm?.nomor_spm}\nNilai: Rp ${new Intl.NumberFormat('id-ID').format(sp2d.nilai_sp2d)}\nTanggal Cair: ${sp2d.tanggal_cair ? new Date(sp2d.tanggal_cair).toLocaleDateString('id-ID') : '-'}\n\nSP2D sudah dapat diproses.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         }
       
       } else if (action === 'rejected') {
         // Notify bendahara when SP2D is rejected
         if (sp2d.spm?.bendahara_id) {
           recipientIds = [sp2d.spm.bendahara_id];
-          messageTemplate = `❌ *SP2D Ditolak*\n\nNomor: ${sp2d.nomor_sp2d}\nNomor SPM: ${sp2d.spm?.nomor_spm}\nCatatan: ${notes || '-'}\n\nSilakan cek kembali dokumen SPM.`;
+          messageTemplate = `❌ *SP2D Ditolak*\n\nNomor: ${sp2d.nomor_sp2d}\nNomor SPM: ${sp2d.spm?.nomor_spm}\nCatatan: ${notes || '-'}\n\nSilakan cek kembali dokumen SPM.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         }
       }
     }
