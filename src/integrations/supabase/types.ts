@@ -959,6 +959,7 @@ export type Database = {
           is_active: boolean | null
           jenis_surat: string
           konten_html: string
+          kop_surat_url: string | null
           nama_template: string
           updated_at: string | null
           variables: Json | null
@@ -969,6 +970,7 @@ export type Database = {
           is_active?: boolean | null
           jenis_surat: string
           konten_html: string
+          kop_surat_url?: string | null
           nama_template: string
           updated_at?: string | null
           variables?: Json | null
@@ -979,6 +981,7 @@ export type Database = {
           is_active?: boolean | null
           jenis_surat?: string
           konten_html?: string
+          kop_surat_url?: string | null
           nama_template?: string
           updated_at?: string | null
           variables?: Json | null

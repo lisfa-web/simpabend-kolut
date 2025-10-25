@@ -6,6 +6,7 @@ interface TemplateSuratData {
   nama_template: string;
   jenis_surat: string;
   konten_html: string;
+  kop_surat_url?: string;
   variables?: Record<string, string>;
   is_active: boolean;
 }
