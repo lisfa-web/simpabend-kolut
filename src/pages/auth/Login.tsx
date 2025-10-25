@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useConfigSistem } from "@/hooks/useConfigSistem";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,8 +20,11 @@ const Login = () => {
   const [captchaAnswer, setCaptchaAnswer] = useState("");
   
   const { login, user } = useAuth();
+  const { data: configs } = useConfigSistem();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const logoUrl = configs?.find(c => c.key === 'logo_bkad_url')?.value;
 
   const generateCaptcha = () => {
     const num1 = Math.floor(Math.random() * 10) + 1;
@@ -82,9 +86,17 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary mb-4">
-            <FileText className="h-10 w-10 text-primary-foreground" />
-          </div>
+          {logoUrl ? (
+            <img 
+              src={logoUrl} 
+              alt="Logo BKAD" 
+              className="h-20 w-20 object-contain mb-4"
+            />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary mb-4">
+              <FileText className="h-10 w-10 text-primary-foreground" />
+            </div>
+          )}
           <h1 className="text-2xl font-bold text-foreground">SIMPA BEND BKADKU</h1>
           <p className="text-sm text-muted-foreground">BKAD Kolaka Utara</p>
         </div>
