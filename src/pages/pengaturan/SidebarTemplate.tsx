@@ -124,6 +124,18 @@ const SidebarTemplate = () => {
                               <span>Pengaturan</span>
                             </div>
                           </div>
+                          
+                          {/* Icon Style Badge */}
+                          <div className="px-3 py-2 bg-gray-50 border-t">
+                            <div className="text-xs text-gray-600">
+                              <span className="font-medium">Icon Style: </span>
+                              {template.iconStyle === 'standard' && '● Standard'}
+                              {template.iconStyle === 'colorful-per-menu' && '🎨 Colorful'}
+                              {template.iconStyle === 'rounded-background' && '⬜ Rounded BG'}
+                              {template.iconStyle === 'gradient-icon' && '✨ Gradient'}
+                              {template.iconStyle === 'subtle-accent' && '🎯 Subtle Accent'}
+                            </div>
+                          </div>
                         </div>
 
                         {/* Radio Button */}

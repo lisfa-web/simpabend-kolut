@@ -19,6 +19,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
 import { useSidebarTemplate } from "@/hooks/useSidebarTemplate";
 import { SIDEBAR_TEMPLATES } from "@/types/sidebar";
+import { getIconClasses, getIconWrapperClasses } from "@/lib/iconStyles";
 import {
   Sidebar,
   SidebarContent,
@@ -170,16 +171,33 @@ export function AppSidebar() {
             <SidebarMenu>
               {menuItems
                 .filter((item) => canAccessMenu(item.roles))
-                .map((item) => (
-                  <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.name} className="text-base">
-                      <NavLink to={item.path}>
-                        <item.icon className="h-6 w-6" />
-                        <span>{item.name}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                .map((item) => {
+                  const IconComponent = item.icon;
+                  const iconClasses = getIconClasses({
+                    style: theme.iconStyle,
+                    menuName: item.name,
+                    isActive: isActive(item.path),
+                    templateId: activeTemplate || 'blue-gradient',
+                  });
+                  const wrapperClasses = getIconWrapperClasses(theme.iconStyle, item.name);
+                  
+                  return (
+                    <SidebarMenuItem key={item.path}>
+                      <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.name} className="text-base group">
+                        <NavLink to={item.path}>
+                          {wrapperClasses ? (
+                            <div className={wrapperClasses}>
+                              <IconComponent className={iconClasses} />
+                            </div>
+                          ) : (
+                            <IconComponent className={iconClasses} />
+                          )}
+                          <span>{item.name}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
