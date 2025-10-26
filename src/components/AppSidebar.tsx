@@ -16,11 +16,13 @@ import {
   BookOpen,
   Building2,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
 import { useSidebarTemplate } from "@/hooks/useSidebarTemplate";
 import { SIDEBAR_TEMPLATES } from "@/types/sidebar";
 import { getIconClasses, getIconWrapperClasses } from "@/lib/iconStyles";
+import { useMenuNotifications } from "@/hooks/useMenuNotifications";
 import {
   Sidebar,
   SidebarContent,
@@ -139,12 +141,28 @@ export function AppSidebar() {
   const location = useLocation();
   const { open } = useSidebar();
   const { data: activeTemplate } = useSidebarTemplate();
+  const { data: notifications } = useMenuNotifications();
 
   // Validate template exists, fallback to blue-gradient if not found
   const validTemplate = activeTemplate && SIDEBAR_TEMPLATES[activeTemplate] 
     ? activeTemplate 
     : 'blue-gradient';
   const theme = SIDEBAR_TEMPLATES[validTemplate];
+
+  // Get notification count for menu item
+  const getNotificationCount = (path: string): number => {
+    if (!notifications) return 0;
+    const notificationMap: Record<string, number> = {
+      "/input-spm": notifications.inputSpm,
+      "/verifikasi-resepsionis": notifications.verifikasiResepsionis,
+      "/verifikasi-pbmd": notifications.verifikasiPbmd,
+      "/verifikasi-akuntansi": notifications.verifikasiAkuntansi,
+      "/verifikasi-perbendaharaan": notifications.verifikasiPerbendaharaan,
+      "/approval-kepala-bkad": notifications.approvalKepalaBkad,
+      "/sp2d": notifications.sp2d,
+    };
+    return notificationMap[path] || 0;
+  };
 
   const canAccessMenu = (menuRoles?: AppRole[]) => {
     if (!menuRoles || menuRoles.length === 0) return true;
@@ -192,19 +210,30 @@ export function AppSidebar() {
                     templateId: validTemplate,
                   });
                   const wrapperClasses = getIconWrapperClasses(theme.iconStyle, item.name);
+                  const notificationCount = getNotificationCount(item.path);
                   
                   return (
                     <SidebarMenuItem key={item.path}>
                       <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.name} className="text-base group">
-                        <NavLink to={item.path}>
-                          {wrapperClasses ? (
-                            <div className={wrapperClasses}>
+                        <NavLink to={item.path} className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-3">
+                            {wrapperClasses ? (
+                              <div className={wrapperClasses}>
+                                <IconComponent className={iconClasses} />
+                              </div>
+                            ) : (
                               <IconComponent className={iconClasses} />
-                            </div>
-                          ) : (
-                            <IconComponent className={iconClasses} />
+                            )}
+                            <span>{item.name}</span>
+                          </div>
+                          {notificationCount > 0 && open && (
+                            <Badge 
+                              variant="destructive" 
+                              className="ml-auto h-5 w-5 flex items-center justify-center p-0 text-xs rounded-full animate-pulse"
+                            >
+                              {notificationCount > 99 ? "99+" : notificationCount}
+                            </Badge>
                           )}
-                          <span>{item.name}</span>
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

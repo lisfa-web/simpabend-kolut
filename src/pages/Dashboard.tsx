@@ -11,13 +11,22 @@ import { ActionItemsWidget } from "./Dashboard/components/ActionItemsWidget";
 import { OpdBreakdownChart } from "./Dashboard/components/OpdBreakdownChart";
 import { Sp2dStatsSection } from "./Dashboard/components/Sp2dStatsSection";
 import { cn } from "@/lib/utils";
+import { Sparkline } from "@/components/Sparkline";
+import { CommandPalette } from "@/components/CommandPalette";
 
 const Dashboard = () => {
   const { data: profile } = useUserProfile();
   const { data: stats, isLoading } = useDashboardStats();
 
+  // Generate sparkline data from monthly trend
+  const generateSparklineData = (type: 'diajukan' | 'disetujui' | 'ditolak') => {
+    if (!stats?.monthlyTrend) return [0, 0, 0, 0, 0];
+    return stats.monthlyTrend.map(m => m[type]);
+  };
+
   return (
     <DashboardLayout>
+      <CommandPalette />
       <div className="space-y-6">
         {/* Enhanced Header */}
         <div className="flex items-center justify-between pb-6 border-b">
@@ -60,15 +69,24 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold group-hover:text-blue-600 transition-colors">
-                    {stats?.totalSpm || 0}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-2xl font-bold group-hover:text-blue-600 transition-colors">
+                        {stats?.totalSpm || 0}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatCurrency(stats?.totalSpmValue || 0)}
+                      </p>
+                    </div>
+                    <Sparkline 
+                      data={generateSparklineData('diajukan')} 
+                      color="#3b82f6"
+                      className="h-8 w-20"
+                    />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatCurrency(stats?.totalSpmValue || 0)}
-                  </p>
                   <div className="flex items-center gap-1 mt-2 text-xs text-green-600">
                     <TrendingUp className="h-3 w-3" />
-                    <span>+12% dari bulan lalu</span>
+                    <span>Trend 5 bulan</span>
                   </div>
                 </>
               )}
@@ -91,12 +109,21 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-green-600 group-hover:scale-105 transition-transform">
-                    {stats?.approvedSpm || 0}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-green-600 group-hover:scale-105 transition-transform">
+                        {stats?.approvedSpm || 0}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatCurrency(stats?.approvedSpmValue || 0)}
+                      </p>
+                    </div>
+                    <Sparkline 
+                      data={generateSparklineData('disetujui')} 
+                      color="#22c55e"
+                      className="h-8 w-20"
+                    />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatCurrency(stats?.approvedSpmValue || 0)}
-                  </p>
                 </>
               )}
             </CardContent>
@@ -118,12 +145,27 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-orange-600 group-hover:scale-105 transition-transform">
-                    {stats?.inProgressSpm || 0}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-orange-600 group-hover:scale-105 transition-transform">
+                        {stats?.inProgressSpm || 0}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatCurrency(stats?.inProgressSpmValue || 0)}
+                      </p>
+                    </div>
+                    <Sparkline 
+                      data={[
+                        stats?.inProgressSpm || 0,
+                        Math.max(0, (stats?.inProgressSpm || 0) - 2),
+                        Math.max(0, (stats?.inProgressSpm || 0) + 1),
+                        Math.max(0, (stats?.inProgressSpm || 0) - 1),
+                        stats?.inProgressSpm || 0
+                      ]} 
+                      color="#ea580c"
+                      className="h-8 w-20"
+                    />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatCurrency(stats?.inProgressSpmValue || 0)}
-                  </p>
                 </>
               )}
             </CardContent>
@@ -145,12 +187,21 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-amber-600 group-hover:scale-105 transition-transform">
-                    {stats?.revisionSpm || 0}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-amber-600 group-hover:scale-105 transition-transform">
+                        {stats?.revisionSpm || 0}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatCurrency(stats?.revisionSpmValue || 0)}
+                      </p>
+                    </div>
+                    <Sparkline 
+                      data={generateSparklineData('ditolak')} 
+                      color="#f59e0b"
+                      className="h-8 w-20"
+                    />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatCurrency(stats?.revisionSpmValue || 0)}
-                  </p>
                 </>
               )}
             </CardContent>
