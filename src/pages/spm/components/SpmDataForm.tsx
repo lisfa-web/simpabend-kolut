@@ -480,6 +480,46 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
           </div>
         )}
 
+        {/* Inline Tax Details */}
+        {jenisSpm && (
+          <section className="rounded-lg border border-border bg-card p-4 space-y-3">
+            <h4 className="font-semibold text-sm">Pajak yang akan dipotong</h4>
+            {['up','gu','tu'].includes(jenisSpm) ? (
+              <p className="text-sm text-muted-foreground">Tidak dikenakan potongan pajak untuk jenis SPM ini.</p>
+            ) : (
+              Array.isArray((taxMapping as any)[jenisSpm]) && (taxMapping as any)[jenisSpm].length > 0 ? (
+                <>
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground font-medium">Pajak Default (Otomatis):</p>
+                    {(taxMapping as any)[jenisSpm].filter((t: any) => t.is_default).map((tax: any) => (
+                      <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
+                        <div className="space-y-0.5">
+                          <span className="text-sm font-medium">{tax.nama}</span>
+                          {tax.uraian && <p className="text-xs text-muted-foreground">{tax.uraian}</p>}
+                        </div>
+                        <span className="font-semibold text-primary">{tax.tarif}%</span>
+                      </div>
+                    ))}
+                  </div>
+                  {(taxMapping as any)[jenisSpm].filter((t: any) => !t.is_default).length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground font-medium">Pajak Opsional (Dapat ditambahkan):</p>
+                      {(taxMapping as any)[jenisSpm].filter((t: any) => !t.is_default).map((tax: any) => (
+                        <div key={tax.id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
+                          <span className="text-sm">{tax.nama}</span>
+                          <span className="font-medium">{tax.tarif}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">Tidak ada pajak terkonfigurasi.</p>
+              )
+            )}
+          </section>
+        )}
+
         {requiresVendor && (
           <FormField
             control={form.control}
