@@ -5,7 +5,7 @@ import { useSpmVerification } from "@/hooks/useSpmVerification";
 import { SpmVerificationCard } from "./components/SpmVerificationCard";
 import { VerificationDialog } from "./components/VerificationDialog";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, FileText, Inbox } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function VerifikasiResepsionis() {
@@ -93,8 +93,14 @@ export default function VerifikasiResepsionis() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                Tidak ada SPM baru
+              <div className="text-center py-16 animate-fade-in">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-4">
+                  <Inbox className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Belum Ada SPM Baru</h3>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                  SPM yang diajukan oleh bendahara akan muncul di sini untuk diverifikasi
+                </p>
               </div>
             )}
           </TabsContent>
@@ -115,8 +121,14 @@ export default function VerifikasiResepsionis() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 text-muted-foreground">
-                Tidak ada SPM dalam proses
+              <div className="text-center py-16 animate-fade-in">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-4">
+                  <FileText className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Tidak Ada SPM Dalam Proses</h3>
+                <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                  SPM yang sedang Anda verifikasi akan muncul di sini
+                </p>
               </div>
             )}
           </TabsContent>

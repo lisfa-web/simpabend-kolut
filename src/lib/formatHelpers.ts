@@ -66,3 +66,19 @@ export const formatAngka = (amount: number): string => {
     maximumFractionDigits: 0,
   }).format(amount);
 };
+
+// Format jenis SPM ke label yang readable
+export const formatJenisSpm = (jenis: string | undefined): string => {
+  if (!jenis) return "-";
+  
+  const labels: Record<string, string> = {
+    up: "UP",
+    gu: "GU", 
+    tu: "TU",
+    ls_gaji: "LS Gaji",
+    ls_barang_jasa: "LS Barang Jasa",
+    ls_belanja_modal: "LS Belanja Modal"
+  };
+  
+  return labels[jenis.toLowerCase()] || jenis;
+};
