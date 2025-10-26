@@ -30,7 +30,7 @@ export function getIconClasses({
     
     case 'rounded-background':
       return cn(
-        "h-5 w-5 text-white transition-all duration-200",
+        "h-4 w-4 text-white transition-all duration-200",
         "group-hover:scale-110"
       );
     
@@ -69,7 +69,7 @@ export function getIconWrapperClasses(style: IconStyle, menuName: string): strin
   if (style === 'rounded-background') {
     const bgColor = ICON_BG_COLORS[menuName] || "bg-gray-600";
     return cn(
-      "p-2 rounded-lg transition-all duration-200",
+      "p-1.5 rounded-lg transition-all duration-200",
       bgColor,
       "group-hover:shadow-md group-hover:scale-105"
     );
