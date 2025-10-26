@@ -399,14 +399,33 @@ export const generateSpmPDF = (
           ${kepalaBkadNip ? `<div>NIP. ${kepalaBkadNip}</div>` : ''}
         </div>
         
-        <script>
-          window.onload = function() {
-            window.print();
-            setTimeout(function() {
-              window.close();
-            }, 500);
-          };
-        </script>
+        <!-- Print Button -->
+        <div style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+          <button 
+            onclick="window.print()" 
+            style="
+              background-color: #2563eb;
+              color: white;
+              padding: 12px 24px;
+              border: none;
+              border-radius: 6px;
+              font-size: 14pt;
+              font-weight: bold;
+              cursor: pointer;
+              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            "
+          >
+            🖨️ Cetak Dokumen
+          </button>
+        </div>
+        
+        <style>
+          @media print {
+            button {
+              display: none !important;
+            }
+          }
+        </style>
       </body>
     </html>
   `;
