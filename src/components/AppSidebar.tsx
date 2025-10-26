@@ -214,9 +214,9 @@ export function AppSidebar() {
                   
                   return (
                     <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.name} className="text-base group">
+                      <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.name} className="text-sm group">
                         <NavLink to={item.path} className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2">
                             {wrapperClasses ? (
                               <div className={wrapperClasses}>
                                 <IconComponent className={iconClasses} />
