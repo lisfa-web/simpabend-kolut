@@ -75,6 +75,55 @@ interface DashboardStats {
     date: string;
     count: number;
   }>;
+  bottleneckAnalysis: Array<{
+    stage: string;
+    avgDays: number;
+    count: number;
+    slaTarget: number;
+  }>;
+  periodComparison: {
+    weekly: {
+      current: {
+        submitted: number;
+        approved: number;
+        rejected: number;
+        avgProcessDays: number;
+        totalValue: number;
+      };
+      previous: {
+        submitted: number;
+        approved: number;
+        rejected: number;
+        avgProcessDays: number;
+        totalValue: number;
+      };
+    };
+    monthly: {
+      current: {
+        submitted: number;
+        approved: number;
+        rejected: number;
+        avgProcessDays: number;
+        totalValue: number;
+      };
+      previous: {
+        submitted: number;
+        approved: number;
+        rejected: number;
+        avgProcessDays: number;
+        totalValue: number;
+      };
+    };
+  };
+  rejectionAnalysis: {
+    totalRejected: number;
+    byStage: Array<{
+      stage: string;
+      count: number;
+      percentage: number;
+    }>;
+    trendVsLastMonth: number;
+  };
 }
 
 export const useDashboardStats = () => {
@@ -238,14 +287,14 @@ export const useDashboardStats = () => {
       }));
 
       // Alert: Stuck SPM (in progress > 7 days)
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const stuckSpmSevenDaysAgo = new Date();
+      stuckSpmSevenDaysAgo.setDate(stuckSpmSevenDaysAgo.getDate() - 7);
 
       const stuckSpm = allSpm
         ?.filter((s) => {
           const isInProgress = inProgressStatuses.includes(s.status || "");
           const updatedAt = new Date(s.updated_at || "");
-          return isInProgress && updatedAt < sevenDaysAgo;
+          return isInProgress && updatedAt < stuckSpmSevenDaysAgo;
         })
         .map((s) => ({
           id: s.id,
@@ -350,8 +399,8 @@ export const useDashboardStats = () => {
       const trendVsLastMonth = successRate - lastMonthSuccessRate;
 
       // Daily Submissions (last 30 days)
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const dailySubmissionsThirtyDaysAgo = new Date();
+      dailySubmissionsThirtyDaysAgo.setDate(dailySubmissionsThirtyDaysAgo.getDate() - 30);
 
       const dailyMap = new Map<string, number>();
       for (let i = 0; i < 30; i++) {
@@ -363,7 +412,7 @@ export const useDashboardStats = () => {
 
       allSpm?.forEach((s) => {
         const date = new Date(s.tanggal_ajuan || "");
-        if (date >= thirtyDaysAgo) {
+        if (date >= dailySubmissionsThirtyDaysAgo) {
           const dateStr = date.toISOString().split("T")[0];
           dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + 1);
         }
@@ -372,6 +421,119 @@ export const useDashboardStats = () => {
       const dailySubmissions = Array.from(dailyMap.entries())
         .map(([date, count]) => ({ date, count }))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // Bottleneck Analysis
+      const STAGE_LABELS: Record<string, string> = {
+        "resepsionis_verifikasi": "Resepsionis",
+        "pbmd_verifikasi": "PBMD",
+        "akuntansi_validasi": "Akuntansi",
+        "perbendaharaan_verifikasi": "Perbendaharaan",
+        "kepala_bkad_review": "Kepala BKAD",
+      };
+
+      const bottleneckAnalysis = [
+        { field: "resepsionis_to_pbmd", stage: "Resepsionis", data: processTimeline.resepsionis_to_pbmd },
+        { field: "pbmd_to_akuntansi", stage: "PBMD", data: processTimeline.pbmd_to_akuntansi },
+        { field: "akuntansi_to_perbendaharaan", stage: "Akuntansi", data: processTimeline.akuntansi_to_perbendaharaan },
+        { field: "perbendaharaan_to_kepala", stage: "Perbendaharaan", data: processTimeline.perbendaharaan_to_kepala },
+      ].map(({ stage, data }) => {
+        const stageCount = spmWithDates.filter((s) => {
+          // Count SPM that passed through this stage
+          return s.status !== "draft" && s.status !== "diajukan";
+        }).length;
+
+        return {
+          stage,
+          avgDays: data,
+          count: stageCount,
+          slaTarget: 2, // 2 days SLA target per stage
+        };
+      });
+
+      // Period Comparison - Weekly
+      const now = new Date();
+      const sevenDaysAgo = new Date(now);
+      sevenDaysAgo.setDate(now.getDate() - 7);
+      const fourteenDaysAgo = new Date(now);
+      fourteenDaysAgo.setDate(now.getDate() - 14);
+
+      const currentWeekSpm = allSpm?.filter((s) => {
+        const date = new Date(s.tanggal_ajuan || "");
+        return date >= sevenDaysAgo && date <= now;
+      }) || [];
+
+      const previousWeekSpm = allSpm?.filter((s) => {
+        const date = new Date(s.tanggal_ajuan || "");
+        return date >= fourteenDaysAgo && date < sevenDaysAgo;
+      }) || [];
+
+      const calculatePeriodStats = (spmList: any[]) => {
+        const submitted = spmList.length;
+        const approved = spmList.filter((s) => s.status === "disetujui").length;
+        const rejected = spmList.filter((s) => s.status === "ditolak" || s.status === "perlu_revisi").length;
+        const totalValue = spmList.reduce((sum, s) => sum + Number(s.nilai_spm || 0), 0);
+        
+        const completedSpm = spmList.filter((s) => s.status === "disetujui" && s.tanggal_ajuan && s.tanggal_disetujui);
+        const avgProcessDays = completedSpm.length > 0
+          ? completedSpm.reduce((sum, s) => {
+              const start = new Date(s.tanggal_ajuan!).getTime();
+              const end = new Date(s.tanggal_disetujui!).getTime();
+              return sum + (end - start) / (1000 * 60 * 60 * 24);
+            }, 0) / completedSpm.length
+          : 0;
+
+        return { submitted, approved, rejected, avgProcessDays, totalValue };
+      };
+
+      // Period Comparison - Monthly
+      const thirtyDaysAgoDate = new Date(now);
+      thirtyDaysAgoDate.setDate(now.getDate() - 30);
+      const sixtyDaysAgoDate = new Date(now);
+      sixtyDaysAgoDate.setDate(now.getDate() - 60);
+
+      const currentMonthSpm = allSpm?.filter((s) => {
+        const date = new Date(s.tanggal_ajuan || "");
+        return date >= thirtyDaysAgoDate && date <= now;
+      }) || [];
+
+      const previousMonthSpm = allSpm?.filter((s) => {
+        const date = new Date(s.tanggal_ajuan || "");
+        return date >= sixtyDaysAgoDate && date < thirtyDaysAgoDate;
+      }) || [];
+
+      // Rejection Analysis
+      const rejectedSpmList = allSpm?.filter((s) => s.status === "ditolak" || s.status === "perlu_revisi") || [];
+      
+      // Count rejections by stage (where they were rejected from)
+      const rejectionByStage = new Map<string, number>();
+      rejectedSpmList.forEach((s) => {
+        // Determine at which stage it was rejected based on the last verification timestamp
+        let rejectionStage = "Unknown";
+        
+        if (s.tanggal_kepala_bkad) rejectionStage = STAGE_LABELS["kepala_bkad_review"];
+        else if (s.tanggal_perbendaharaan) rejectionStage = STAGE_LABELS["perbendaharaan_verifikasi"];
+        else if (s.tanggal_akuntansi) rejectionStage = STAGE_LABELS["akuntansi_validasi"];
+        else if (s.tanggal_pbmd) rejectionStage = STAGE_LABELS["pbmd_verifikasi"];
+        else if (s.tanggal_resepsionis) rejectionStage = STAGE_LABELS["resepsionis_verifikasi"];
+        
+        rejectionByStage.set(rejectionStage, (rejectionByStage.get(rejectionStage) || 0) + 1);
+      });
+
+      const totalRejections = rejectedSpmList.length;
+      const rejectionByStageArray = Array.from(rejectionByStage.entries())
+        .map(([stage, count]) => ({
+          stage,
+          count,
+          percentage: totalRejections > 0 ? (count / totalRejections) * 100 : 0,
+        }))
+        .sort((a, b) => b.count - a.count);
+
+      // Calculate rejection trend vs last month
+      const lastMonthRejected = previousMonthSpm.filter((s) => s.status === "ditolak" || s.status === "perlu_revisi").length;
+      const currentMonthRejected = currentMonthSpm.filter((s) => s.status === "ditolak" || s.status === "perlu_revisi").length;
+      const rejectionTrend = lastMonthRejected > 0 
+        ? ((currentMonthRejected - lastMonthRejected) / lastMonthRejected) * 100 
+        : 0;
 
       return {
         totalSpm,
@@ -409,6 +571,22 @@ export const useDashboardStats = () => {
           trendVsLastMonth,
         },
         dailySubmissions,
+        bottleneckAnalysis,
+        periodComparison: {
+          weekly: {
+            current: calculatePeriodStats(currentWeekSpm),
+            previous: calculatePeriodStats(previousWeekSpm),
+          },
+          monthly: {
+            current: calculatePeriodStats(currentMonthSpm),
+            previous: calculatePeriodStats(previousMonthSpm),
+          },
+        },
+        rejectionAnalysis: {
+          totalRejected: totalRejections,
+          byStage: rejectionByStageArray,
+          trendVsLastMonth: rejectionTrend,
+        },
       };
     },
     enabled: !!user,

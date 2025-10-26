@@ -17,6 +17,9 @@ import { TopVendorsWidget } from "./Dashboard/components/TopVendorsWidget";
 import { ProcessTimelineWidget } from "./Dashboard/components/ProcessTimelineWidget";
 import { SuccessRateWidget } from "./Dashboard/components/SuccessRateWidget";
 import { SubmissionTrendWidget } from "./Dashboard/components/SubmissionTrendWidget";
+import { BottleneckAnalysisWidget } from "./Dashboard/components/BottleneckAnalysisWidget";
+import { PeriodComparisonWidget } from "./Dashboard/components/PeriodComparisonWidget";
+import { RejectionAnalysisWidget } from "./Dashboard/components/RejectionAnalysisWidget";
 import { cn } from "@/lib/utils";
 import { Sparkline } from "@/components/Sparkline";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -351,6 +354,27 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
+        </div>
+
+        {/* Advanced Analytics Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">Advanced Analytics</h2>
+            <Badge variant="outline">Prioritas Tinggi</Badge>
+          </div>
+          
+          {/* Bottleneck & Period Comparison */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <BottleneckAnalysisWidget data={stats?.bottleneckAnalysis} isLoading={isLoading} />
+            <PeriodComparisonWidget 
+              weeklyData={stats?.periodComparison.weekly} 
+              monthlyData={stats?.periodComparison.monthly}
+              isLoading={isLoading} 
+            />
+          </div>
+
+          {/* Rejection Analysis */}
+          <RejectionAnalysisWidget data={stats?.rejectionAnalysis} isLoading={isLoading} />
         </div>
 
         {/* Financial Breakdown & Recent Activity */}
