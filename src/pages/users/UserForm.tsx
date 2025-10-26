@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { ArrowLeft, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useUserMutation } from "@/hooks/useUserMutation";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +21,8 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 
 const userSchema = z.object({
   email: z.string().email("Email tidak valid").optional(),
-  password: z.string().min(6, "Password minimal 6 karakter").optional(),
+  password: z.string().min(8, "Password minimal 8 karakter").optional(),
+  confirmPassword: z.string().optional(),
   full_name: z.string().min(1, "Nama lengkap wajib diisi"),
   phone: z.string().optional(),
   is_active: z.boolean().optional(),
@@ -28,7 +30,19 @@ const userSchema = z.object({
     role: z.string(),
     opd_id: z.string().optional().nullable(),
   })).min(1, "Minimal 1 role harus dipilih"),
-});
+}).refine(
+  (data) => {
+    // Only validate password match when creating new user
+    if (data.password && data.confirmPassword) {
+      return data.password === data.confirmPassword;
+    }
+    return true;
+  },
+  {
+    message: "Password tidak cocok",
+    path: ["confirmPassword"],
+  }
+);
 
 type UserFormData = z.infer<typeof userSchema>;
 
@@ -38,6 +52,10 @@ const UserForm = () => {
   const isEdit = !!id;
 
   const [roles, setRoles] = useState<{ role: AppRole; opd_id?: string }[]>([]);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { data: userData } = useQuery({
     queryKey: ["user", id],
@@ -86,6 +104,48 @@ const UserForm = () => {
   });
 
   const { createUser, updateUser } = useUserMutation();
+
+  // Password strength calculator
+  const passwordStrength = useMemo(() => {
+    if (!password) return { score: 0, label: "", color: "" };
+    
+    let score = 0;
+    
+    // Length check
+    if (password.length >= 8) score += 25;
+    if (password.length >= 12) score += 15;
+    
+    // Has lowercase
+    if (/[a-z]/.test(password)) score += 15;
+    
+    // Has uppercase
+    if (/[A-Z]/.test(password)) score += 15;
+    
+    // Has numbers
+    if (/\d/.test(password)) score += 15;
+    
+    // Has special characters
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) score += 15;
+    
+    let label = "";
+    let color = "";
+    
+    if (score < 30) {
+      label = "Lemah";
+      color = "text-red-600";
+    } else if (score < 60) {
+      label = "Sedang";
+      color = "text-yellow-600";
+    } else if (score < 80) {
+      label = "Kuat";
+      color = "text-blue-600";
+    } else {
+      label = "Sangat Kuat";
+      color = "text-green-600";
+    }
+    
+    return { score, label, color };
+  }, [password]);
 
   // Register 'roles' field since it's managed outside of RHF inputs
   useEffect(() => {
@@ -243,20 +303,136 @@ const UserForm = () => {
                 </div>
 
                 {!isEdit && (
-                  <div className="space-y-2">
-                    <Label htmlFor="password">
-                      Password <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      {...register("password")}
-                      placeholder="Minimal 6 karakter"
-                    />
-                    {errors.password && (
-                      <p className="text-sm text-destructive">{errors.password.message}</p>
-                    )}
-                  </div>
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">
+                        Password <span className="text-destructive">*</span>
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => {
+                            setPassword(e.target.value);
+                            setValue("password", e.target.value, { shouldValidate: true });
+                          }}
+                          placeholder="Minimal 8 karakter"
+                          error={!!errors.password}
+                          success={password.length >= 8 && passwordStrength.score >= 60}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {/* Password Strength Indicator */}
+                      {password && (
+                        <div className="space-y-2 animate-fade-in">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Kekuatan Password:</span>
+                            <span className={`font-medium ${passwordStrength.color}`}>
+                              {passwordStrength.label}
+                            </span>
+                          </div>
+                          <Progress value={passwordStrength.score} className="h-2" />
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li className={password.length >= 8 ? "text-green-600" : ""}>
+                              {password.length >= 8 ? "✓" : "○"} Minimal 8 karakter
+                            </li>
+                            <li className={/[A-Z]/.test(password) ? "text-green-600" : ""}>
+                              {/[A-Z]/.test(password) ? "✓" : "○"} Huruf besar (A-Z)
+                            </li>
+                            <li className={/[a-z]/.test(password) ? "text-green-600" : ""}>
+                              {/[a-z]/.test(password) ? "✓" : "○"} Huruf kecil (a-z)
+                            </li>
+                            <li className={/\d/.test(password) ? "text-green-600" : ""}>
+                              {/\d/.test(password) ? "✓" : "○"} Angka (0-9)
+                            </li>
+                            <li className={/[!@#$%^&*(),.?":{}|<>]/.test(password) ? "text-green-600" : ""}>
+                              {/[!@#$%^&*(),.?":{}|<>]/.test(password) ? "✓" : "○"} Karakter spesial (!@#$%...)
+                            </li>
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {errors.password && (
+                        <p className="text-sm text-destructive flex items-center gap-2">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.password.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">
+                        Konfirmasi Password <span className="text-destructive">*</span>
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="confirmPassword"
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(e) => {
+                            setConfirmPassword(e.target.value);
+                            setValue("confirmPassword", e.target.value, { shouldValidate: true });
+                          }}
+                          placeholder="Ulangi password"
+                          error={!!errors.confirmPassword}
+                          success={confirmPassword && password === confirmPassword}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {/* Match Indicator */}
+                      {confirmPassword && (
+                        <div className={`text-xs flex items-center gap-2 animate-fade-in ${
+                          password === confirmPassword ? "text-green-600" : "text-amber-600"
+                        }`}>
+                          {password === confirmPassword ? (
+                            <>
+                              <CheckCircle2 className="h-3 w-3" />
+                              <span>Password cocok</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="h-3 w-3" />
+                              <span>Password belum cocok</span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                      
+                      {errors.confirmPassword && (
+                        <p className="text-sm text-destructive flex items-center gap-2">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.confirmPassword.message}
+                        </p>
+                      )}
+                    </div>
+                  </>
                 )}
 
                 {isEdit && (
