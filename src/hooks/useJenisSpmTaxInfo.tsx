@@ -23,14 +23,15 @@ export const useJenisSpmTaxInfo = () => {
         .from("pajak_per_jenis_spm")
         .select(`
           *,
-          master_pajak:master_pajak_id (
+          master_pajak!inner:master_pajak_id (
             id,
             kode_pajak,
             nama_pajak,
             jenis_pajak,
             tarif_default,
             kategori,
-            deskripsi
+            deskripsi,
+            is_active
           )
         `)
         .eq("master_pajak.is_active", true)
