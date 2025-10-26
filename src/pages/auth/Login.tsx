@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FileText, Loader2, AlertCircle } from "lucide-react";
+import { FileText, Loader2, AlertCircle, Mail, Lock, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
@@ -18,6 +18,7 @@ const Login = () => {
   const [captchaNum1, setCaptchaNum1] = useState(0);
   const [captchaNum2, setCaptchaNum2] = useState(0);
   const [captchaAnswer, setCaptchaAnswer] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   
   const { login, user } = useAuth();
   const { data: configs } = useConfigSistem();
@@ -83,83 +84,133 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
-      <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4">
+      {/* Animated gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
+      <div className="absolute inset-0 bg-grid-white/5" />
+      
+      {/* Glassmorphism card container */}
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo and branding */}
+        <div className="flex flex-col items-center mb-8 animate-fade-in">
           {logoUrl ? (
-            <img 
-              src={logoUrl} 
-              alt="Logo BKAD" 
-              className="h-20 w-20 object-contain mb-4"
-            />
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+              <img 
+                src={logoUrl} 
+                alt="Logo BKAD" 
+                className="h-24 w-24 object-contain mb-4 relative z-10 drop-shadow-2xl"
+              />
+            </div>
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary mb-4">
-              <FileText className="h-10 w-10 text-primary-foreground" />
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
+              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 mb-4 relative z-10 shadow-lg">
+                <FileText className="h-12 w-12 text-primary-foreground" />
+              </div>
             </div>
           )}
-          <h1 className="text-2xl font-bold text-foreground">SIMPA BEND BKADKU</h1>
-          <p className="text-sm text-muted-foreground">BKAD Kolaka Utara</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2 text-center">SIMPA BEND BKADKU</h1>
+          <p className="text-sm text-muted-foreground font-medium">BKAD Kolaka Utara</p>
         </div>
 
-        <Card className="border-border">
-          <CardHeader>
-            <CardTitle>Login</CardTitle>
-            <CardDescription>
+        {/* Glass card with border glow */}
+        <Card className="border-2 border-border/50 backdrop-blur-xl bg-card/80 shadow-2xl">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-2xl font-bold">Selamat Datang</CardTitle>
+            <CardDescription className="text-base">
               Masuk ke sistem monitoring dan validasi digital
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="animate-fade-in">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
 
+              {/* Email field with icon */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="nama@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  required
-                />
+                <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="nama@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={loading}
+                    required
+                    className="pl-10 h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
               </div>
 
+              {/* Password field with icon and toggle */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                  required
-                />
+                <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
+                    required
+                    className="pl-10 pr-10 h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    disabled={loading}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
+              {/* Captcha field */}
               <div className="space-y-2">
-                <Label htmlFor="captcha">Captcha: {captchaNum1} + {captchaNum2} = ?</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="captcha" className="text-sm font-semibold">
+                    Captcha: {captchaNum1} + {captchaNum2} = ?
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={generateCaptcha}
+                    className="text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+                    disabled={loading}
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    Refresh
+                  </button>
+                </div>
                 <Input
                   id="captcha"
                   type="number"
-                  placeholder="Jawaban"
+                  placeholder="Masukkan jawaban"
                   value={captchaAnswer}
                   onChange={(e) => setCaptchaAnswer(e.target.value)}
                   disabled={loading}
                   required
+                  className="h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button 
+                type="submit" 
+                className="w-full h-11 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
+                disabled={loading}
+              >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                     Memproses...
                   </>
                 ) : (
@@ -167,14 +218,22 @@ const Login = () => {
                 )}
               </Button>
 
-              <div className="text-center text-sm text-muted-foreground">
-                <Link to="/" className="hover:text-primary transition-colors">
-                  Kembali ke Beranda
+              <div className="text-center text-sm">
+                <Link 
+                  to="/" 
+                  className="text-muted-foreground hover:text-primary transition-colors font-medium inline-flex items-center gap-1"
+                >
+                  ← Kembali ke Beranda
                 </Link>
               </div>
             </form>
           </CardContent>
         </Card>
+
+        {/* Footer info */}
+        <p className="text-center text-xs text-muted-foreground mt-6">
+          © 2024 BKAD Kolaka Utara. All rights reserved.
+        </p>
       </div>
     </div>
   );
