@@ -40,7 +40,7 @@ export const useSuggestedTaxes = (jenisSpm: string | null) => {
         .from("pajak_per_jenis_spm")
         .select(`
           *,
-          master_pajak:master_pajak_id (*)
+          master_pajak:master_pajak_id!inner (*)
         `)
         .eq("jenis_spm", jenisSpm)
         .eq("is_default", true)
