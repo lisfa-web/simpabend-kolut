@@ -208,15 +208,6 @@ const InputSpmDetail = () => {
             <p className="text-muted-foreground">{spm.nomor_spm || "Draft"}</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <Button
-              variant="outline"
-              onClick={handlePrintSpm}
-              className="gap-2"
-            >
-              <Printer className="h-4 w-4" />
-              <span className="hidden sm:inline">Cetak Draft SPM</span>
-              <span className="sm:hidden">Cetak</span>
-            </Button>
             <SpmStatusBadge status={spm.status} className="text-lg px-4 py-2" />
           </div>
         </div>

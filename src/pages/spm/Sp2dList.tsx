@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -31,7 +32,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Eye, Loader2, FileCheck, Banknote } from "lucide-react";
+import { Plus, Search, Eye, Loader2, FileCheck, Banknote, Printer } from "lucide-react";
 import { useSp2dList } from "@/hooks/useSp2dList";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
@@ -40,9 +41,12 @@ import { id as localeId } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/currency";
+import { generateSpmPDF } from "@/lib/spmPdfUtils";
+import { getJenisSpmLabel } from "@/lib/jenisSpmOptions";
 
 const Sp2dList = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [selectedSp2dId, setSelectedSp2dId] = useState<string | null>(null);
@@ -55,6 +59,29 @@ const Sp2dList = () => {
 
   const { disburseSp2d } = useSp2dMutation();
 
+  // Query untuk logo dan nama instansi
+  const { data: configData } = useQuery({
+    queryKey: ["sistem-config-sp2d"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("config_sistem")
+        .select("key, value")
+        .in("key", ["logo_instansi_url", "nama_instansi"]);
+      
+      if (error) throw error;
+      
+      const config: Record<string, string> = {};
+      data?.forEach(item => {
+        config[item.key] = item.value;
+      });
+      
+      return {
+        logoUrl: config.logo_instansi_url || null,
+        namaInstansi: config.nama_instansi || "PEMERINTAH KABUPATEN KOLAKA UTARA"
+      };
+    },
+  });
+
   const handleDisburse = () => {
     if (selectedSp2dId) {
       disburseSp2d.mutate(selectedSp2dId, {
@@ -64,6 +91,66 @@ const Sp2dList = () => {
         },
       });
     }
+  };
+
+  const handlePrintSpm = (spm: any) => {
+    if (!spm) return;
+
+    const spmData = {
+      nomor_spm: spm.nomor_spm || "DRAFT",
+      tanggal_spm: spm.tanggal_ajuan || new Date().toISOString(),
+      tanggal_ajuan: spm.tanggal_ajuan || new Date().toISOString(),
+      jenis_spm: getJenisSpmLabel(spm.jenis_spm),
+      opd: {
+        nama_opd: spm.opd?.nama_opd || "-",
+        kode_opd: spm.opd?.kode_opd || "-",
+      },
+      program: {
+        nama_program: spm.program?.nama_program || "-",
+        kode_program: spm.program?.kode_program || "-",
+      },
+      kegiatan: {
+        nama_kegiatan: spm.kegiatan?.nama_kegiatan || "-",
+        kode_kegiatan: spm.kegiatan?.kode_kegiatan || "-",
+      },
+      subkegiatan: {
+        nama_subkegiatan: spm.subkegiatan?.nama_subkegiatan || "-",
+        kode_subkegiatan: spm.subkegiatan?.kode_subkegiatan || "-",
+      },
+      vendor: spm.vendor ? {
+        nama_vendor: spm.vendor.nama_vendor,
+        npwp: (spm.vendor as any).npwp || "-",
+        nama_bank: spm.vendor.nama_bank || "-",
+        nomor_rekening: spm.vendor.nomor_rekening || "-",
+        nama_rekening: spm.vendor.nama_rekening || "-",
+      } : undefined,
+      uraian: spm.uraian || "-",
+      nilai_spm: spm.nilai_spm,
+      potongan_pajak: spm.potongan_pajak_spm?.map((pajak: any) => ({
+        jenis_pajak: pajak.jenis_pajak || pajak.uraian,
+        rekening_pajak: pajak.rekening_pajak || "-",
+        uraian: pajak.uraian || "",
+        tarif: pajak.tarif,
+        dasar_pengenaan: pajak.dasar_pengenaan,
+        jumlah_pajak: pajak.jumlah_pajak,
+      })) || [],
+      total_potongan: spm.total_potongan || 0,
+      nilai_bersih: spm.nilai_bersih || spm.nilai_spm,
+    };
+
+    generateSpmPDF(
+      spmData, 
+      configData?.logoUrl,
+      "Kuasa Bendahara Umum Daerah",
+      "",
+      "Lasusua",
+      configData?.namaInstansi
+    );
+
+    toast({
+      title: "Mencetak SPM",
+      description: "Dokumen sedang disiapkan untuk dicetak",
+    });
   };
 
   // Fetch SPM yang sudah disetujui dan belum ada SP2D
@@ -193,6 +280,14 @@ const Sp2dList = () => {
                                   onClick={() => navigate(`/input-spm/detail/${spm.id}`)}
                                 >
                                   <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handlePrintSpm(spm)}
+                                >
+                                  <Printer className="h-4 w-4 mr-1" />
+                                  Cetak SPM
                                 </Button>
                                 <Button
                                   variant="default"
