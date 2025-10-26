@@ -25,8 +25,29 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const logoUrl = configs?.find(c => c.key === 'logo_bkad_url')?.value || 
-                  "https://storage.googleapis.com/gpt-engineer-file-uploads/YiG4vutaHxeJX1je6rv0tIwuuYZ2/uploads/1761358201412-Lambang_Kabupaten_Kolaka_Utara.png";
+  // Cache logo URL in localStorage (24 hours TTL)
+  const getCachedLogoUrl = () => {
+    const cached = localStorage.getItem('bkad_logo_cache');
+    if (cached) {
+      const { url, timestamp } = JSON.parse(cached);
+      const isExpired = Date.now() - timestamp > 24 * 60 * 60 * 1000; // 24 hours
+      if (!isExpired) return url;
+    }
+    
+    const configUrl = configs?.find(c => c.key === 'logo_bkad_url')?.value;
+    const logoUrl = configUrl || "https://storage.googleapis.com/gpt-engineer-file-uploads/YiG4vutaHxeJX1je6rv0tIwuuYZ2/uploads/1761358201412-Lambang_Kabupaten_Kolaka_Utara.png";
+    
+    if (configUrl) {
+      localStorage.setItem('bkad_logo_cache', JSON.stringify({ 
+        url: logoUrl, 
+        timestamp: Date.now() 
+      }));
+    }
+    
+    return logoUrl;
+  };
+
+  const logoUrl = getCachedLogoUrl();
 
   const generateCaptcha = () => {
     const num1 = Math.floor(Math.random() * 10) + 1;
@@ -51,7 +72,9 @@ const Login = () => {
     setError("");
     setLoading(true);
 
-    if (!email || !password) {
+    const trimmedEmail = email.trim();
+    
+    if (!trimmedEmail || !password) {
       setError("Email dan password harus diisi");
       setLoading(false);
       return;
@@ -65,7 +88,7 @@ const Login = () => {
       return;
     }
 
-    const { error: loginError } = await login(email, password);
+    const { error: loginError } = await login(trimmedEmail, password);
 
     if (loginError) {
       setError(loginError.message === "Invalid login credentials" 
@@ -88,12 +111,16 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/5 to-accent/5">
       <div className="w-full max-w-md">
         {/* Logo and branding */}
-        <div className="flex flex-col items-center mb-8">
+        <header className="flex flex-col items-center mb-8" role="banner">
           {logoUrl ? (
             <img 
               src={logoUrl} 
-              alt="Logo BKAD" 
+              alt="Logo BKAD Kolaka Utara" 
               className="h-24 w-24 object-contain mb-4"
+              width="96"
+              height="96"
+              loading="lazy"
+              decoding="async"
             />
           ) : (
             <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary mb-4">
@@ -102,10 +129,10 @@ const Login = () => {
           )}
           <h1 className="text-3xl font-bold text-foreground mb-2 text-center">SIMPA BEND BKADKU</h1>
           <p className="text-sm text-muted-foreground font-medium">BKAD Kolaka Utara</p>
-        </div>
+        </header>
 
         {/* Card */}
-        <Card className="border">
+        <Card className="border" role="main">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-2xl font-bold">Selamat Datang</CardTitle>
             <CardDescription className="text-base">
@@ -113,9 +140,9 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               {error && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" role="alert" aria-live="polite">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
@@ -125,16 +152,21 @@ const Login = () => {
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   <Input
                     id="email"
+                    name="email"
                     type="email"
+                    autoComplete="email"
+                    inputMode="email"
                     placeholder="nama@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={loading}
                     required
-                    className="pl-10 h-11"
+                    aria-required="true"
+                    aria-invalid={!!error}
+                    className="pl-10 h-11 transition-all duration-200"
                   />
                 </div>
               </div>
@@ -143,22 +175,26 @@ const Login = () => {
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-semibold">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   <Input
                     id="password"
+                    name="password"
                     type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
                     required
-                    className="pl-10 pr-10 h-11"
+                    aria-required="true"
+                    className="pl-10 pr-10 h-11 transition-all duration-200"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     disabled={loading}
+                    aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -174,8 +210,9 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={generateCaptcha}
-                    className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
+                    className="text-xs text-primary hover:text-primary/80 flex items-center gap-1 transition-colors"
                     disabled={loading}
+                    aria-label="Refresh captcha"
                   >
                     <RefreshCw className="h-3 w-3" />
                     Refresh
@@ -184,18 +221,24 @@ const Login = () => {
                 <Input
                   id="captcha"
                   type="number"
+                  inputMode="numeric"
                   placeholder="Masukkan jawaban"
                   value={captchaAnswer}
                   onChange={(e) => setCaptchaAnswer(e.target.value)}
                   disabled={loading}
                   required
-                  className="h-11"
+                  aria-required="true"
+                  aria-describedby="captcha-hint"
+                  className="h-11 transition-all duration-200"
                 />
+                <span id="captcha-hint" className="sr-only">
+                  Masukkan hasil penjumlahan untuk verifikasi
+                </span>
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full h-11 text-base font-semibold" 
+                className="w-full h-11 text-base font-semibold transition-all duration-200 hover:shadow-lg" 
                 disabled={loading}
               >
                 {loading ? (
@@ -221,9 +264,9 @@ const Login = () => {
         </Card>
 
         {/* Footer info */}
-        <p className="text-center text-xs text-muted-foreground mt-6">
+        <footer className="text-center text-xs text-muted-foreground mt-6">
           © 2024 BKAD Kolaka Utara. All rights reserved.
-        </p>
+        </footer>
       </div>
     </div>
   );
