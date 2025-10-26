@@ -8,13 +8,16 @@ import { useSpmDetail } from "@/hooks/useSpmDetail";
 import { SpmStatusBadge } from "./components/SpmStatusBadge";
 import { SpmTimeline } from "./components/SpmTimeline";
 import { formatCurrency } from "@/lib/currency";
-import { ArrowLeft, Download, Loader2, Eye, Edit, AlertCircle, Calculator } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Eye, Edit, AlertCircle, Calculator, Printer } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { formatFileSize, isImageFile, isPdfFile } from "@/lib/fileValidation";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { generateSpmPDF } from "@/lib/spmPdfUtils";
+import { getJenisSpmLabel } from "@/lib/jenisSpmOptions";
 
 const InputSpmDetail = () => {
   const { id } = useParams();
@@ -24,6 +27,21 @@ const InputSpmDetail = () => {
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [loadingPreviews, setLoadingPreviews] = useState<Record<string, boolean>>({});
+
+  // Query untuk kop surat
+  const { data: kopSuratConfig } = useQuery({
+    queryKey: ["kop-surat-config"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("config_sistem")
+        .select("value")
+        .eq("key", "kop_surat_url")
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data?.value || null;
+    },
+  });
 
   useEffect(() => {
     const fetchPreviewUrls = async () => {
@@ -87,6 +105,57 @@ const InputSpmDetail = () => {
     }
   };
 
+  const handlePrintSpm = () => {
+    if (!spm) return;
+
+    const spmData = {
+      nomor_spm: spm.nomor_spm || "DRAFT",
+      tanggal_spm: spm.tanggal_ajuan || new Date().toISOString(),
+      tanggal_ajuan: spm.tanggal_ajuan || new Date().toISOString(),
+      jenis_spm: getJenisSpmLabel(spm.jenis_spm),
+      opd: {
+        nama_opd: spm.opd?.nama_opd || "-",
+        kode_opd: spm.opd?.kode_opd || "-",
+      },
+      program: {
+        nama_program: spm.program?.nama_program || "-",
+        kode_program: spm.program?.kode_program || "-",
+      },
+      kegiatan: {
+        nama_kegiatan: spm.kegiatan?.nama_kegiatan || "-",
+        kode_kegiatan: spm.kegiatan?.kode_kegiatan || "-",
+      },
+      subkegiatan: {
+        nama_subkegiatan: spm.subkegiatan?.nama_subkegiatan || "-",
+        kode_subkegiatan: spm.subkegiatan?.kode_subkegiatan || "-",
+      },
+      vendor: spm.vendor ? {
+        nama_vendor: spm.vendor.nama_vendor,
+        nama_bank: spm.vendor.nama_bank || "-",
+        nomor_rekening: spm.vendor.nomor_rekening || "-",
+        nama_rekening: spm.vendor.nama_rekening || "-",
+      } : undefined,
+      uraian: spm.uraian || "-",
+      nilai_spm: spm.nilai_spm,
+      potongan_pajak: spm.potongan_pajak_spm?.map((pajak: any) => ({
+        jenis_pajak: pajak.uraian,
+        rekening_pajak: pajak.rekening_pajak || "-",
+        tarif: pajak.tarif,
+        dasar_pengenaan: pajak.dasar_pengenaan,
+        jumlah_pajak: pajak.jumlah_pajak,
+      })) || [],
+      total_potongan: spm.total_potongan || 0,
+      nilai_bersih: spm.nilai_bersih || spm.nilai_spm,
+    };
+
+    generateSpmPDF(spmData, kopSuratConfig);
+
+    toast({
+      title: "Mencetak Draft SPM",
+      description: "Dokumen sedang disiapkan untuk dicetak",
+    });
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -113,7 +182,7 @@ const InputSpmDetail = () => {
   return (
     <DashboardLayout>
       <div className="max-w-5xl mx-auto space-y-6">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
           <Button variant="ghost" size="icon" onClick={() => navigate("/input-spm")}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -121,7 +190,18 @@ const InputSpmDetail = () => {
             <h1 className="text-3xl font-bold">Detail SPM</h1>
             <p className="text-muted-foreground">{spm.nomor_spm || "Draft"}</p>
           </div>
-          <SpmStatusBadge status={spm.status} className="text-lg px-4 py-2" />
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button
+              variant="outline"
+              onClick={handlePrintSpm}
+              className="gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              <span className="hidden sm:inline">Cetak Draft SPM</span>
+              <span className="sm:hidden">Cetak</span>
+            </Button>
+            <SpmStatusBadge status={spm.status} className="text-lg px-4 py-2" />
+          </div>
         </div>
 
         <Tabs defaultValue="info">
