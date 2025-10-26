@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 export interface TaxInfoItem {
   id: string;
   jenis: string;
+  kode: string;
   nama: string;
+  rekening: string;
   tarif: number;
   uraian?: string;
-  kategori?: string;
   is_default: boolean;
 }
 
@@ -28,8 +29,8 @@ export const useJenisSpmTaxInfo = () => {
             kode_pajak,
             nama_pajak,
             jenis_pajak,
+            rekening_pajak,
             tarif_default,
-            kategori,
             deskripsi,
             is_active
           )
@@ -53,10 +54,11 @@ export const useJenisSpmTaxInfo = () => {
           grouped[jenis].push({
             id: item.id,
             jenis: item.master_pajak.jenis_pajak,
+            kode: item.master_pajak.kode_pajak,
             nama: item.master_pajak.nama_pajak,
+            rekening: item.master_pajak.rekening_pajak,
             tarif: item.tarif_khusus || item.master_pajak.tarif_default,
             uraian: item.uraian_template || item.master_pajak.deskripsi,
-            kategori: item.master_pajak.kategori,
             is_default: item.is_default,
           });
         }

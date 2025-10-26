@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Plus, Trash2, Calculator, Info } from "lucide-react";
+import { Plus, Trash2, Calculator, Info, AlertCircle } from "lucide-react";
 import { CurrencyInput } from "./CurrencyInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,7 @@ export const SpmPajakForm = ({
   onNext,
   onBack,
 }: SpmPajakFormProps) => {
+  const navigate = useNavigate();
   const [pajaks, setPajaks] = useState<PajakFormData[]>(potonganPajak || []);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
@@ -228,6 +230,22 @@ export const SpmPajakForm = ({
               Anda dapat mengedit atau menambahkan pajak lain sesuai kebutuhan.
             </AlertDescription>
           </Alert>
+
+          {!isLoadingPajak && pajakOptions.length === 0 && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="flex items-center justify-between">
+                <span>Belum ada Master Pajak aktif. Silakan tambahkan master pajak terlebih dahulu.</span>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/masterdata/pajak')}
+                >
+                  Buka Master Pajak
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
 
           {pajaks.map((pajak, index) => (
             <Card key={index} className="border-2">

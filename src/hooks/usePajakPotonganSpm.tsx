@@ -11,19 +11,17 @@ export const useMasterPajakOptions = () => {
         .from("master_pajak")
         .select("*")
         .eq("is_active", true)
-        .order("kategori")
-        .order("kode_pajak");
+        .order("kode_pajak", { ascending: true });
       
       if (error) throw error;
       
-      // Transform to match format with category grouping
+      // Transform to match format
       return (data || []).map((pajak: any) => ({
         value: pajak.jenis_pajak,
         label: pajak.nama_pajak,
         rekening: pajak.rekening_pajak,
         kode: pajak.kode_pajak,
         tarif_default: pajak.tarif_default,
-        kategori: pajak.kategori || "Lainnya",
       }));
     },
   });
