@@ -12,7 +12,6 @@ import { OpdBreakdownChart } from "./Dashboard/components/OpdBreakdownChart";
 import { Sp2dStatsSection } from "./Dashboard/components/Sp2dStatsSection";
 import { RecentActivityWidget } from "./Dashboard/components/RecentActivityWidget";
 import { FinancialBreakdownChart } from "./Dashboard/components/FinancialBreakdownChart";
-import { AlertWidget } from "./Dashboard/components/AlertWidget";
 import { TopVendorsWidget } from "./Dashboard/components/TopVendorsWidget";
 import { cn } from "@/lib/utils";
 import { Sparkline } from "@/components/Sparkline";
@@ -269,16 +268,6 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Recent Activity & Alerts */}
-        <div className="grid gap-6 md:grid-cols-3">
-          <div className="md:col-span-2">
-            <RecentActivityWidget />
-          </div>
-          <div>
-            <AlertWidget data={stats?.alerts} isLoading={isLoading} />
-          </div>
-        </div>
-
         {/* Charts Section */}
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="md:col-span-2">
@@ -347,10 +336,10 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Financial Breakdown & Top Vendors */}
+        {/* Financial Breakdown & Recent Activity */}
         <div className="grid gap-6 md:grid-cols-2">
           <FinancialBreakdownChart data={stats?.financialBreakdown} isLoading={isLoading} />
-          <TopVendorsWidget data={stats?.topVendors} isLoading={isLoading} />
+          <RecentActivityWidget />
         </div>
 
         {/* SP2D Statistics Section */}
@@ -364,8 +353,11 @@ const Dashboard = () => {
           isLoading={isLoading}
         />
 
-        {/* OPD Breakdown */}
-        <OpdBreakdownChart data={stats?.opdBreakdown || []} isLoading={isLoading} />
+        {/* OPD Breakdown & Top Vendors */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <OpdBreakdownChart data={stats?.opdBreakdown || []} isLoading={isLoading} />
+          <TopVendorsWidget data={stats?.topVendors} isLoading={isLoading} />
+        </div>
 
         {/* Action Items Widget */}
         <ActionItemsWidget />

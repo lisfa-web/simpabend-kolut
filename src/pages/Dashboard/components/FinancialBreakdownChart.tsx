@@ -18,7 +18,7 @@ const JENIS_SPM_LABELS: Record<string, string> = {
   tu: "Tambah Uang (TU)",
 };
 
-const COLORS = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))"];
+const COLORS = ["#3b82f6", "#22c55e", "#f59e0b"]; // Blue, Green, Amber - vibrant colors
 
 export const FinancialBreakdownChart = ({ data, isLoading }: FinancialBreakdownProps) => {
   if (isLoading) {
