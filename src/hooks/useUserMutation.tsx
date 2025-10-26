@@ -26,47 +26,22 @@ export const useUserMutation = () => {
 
   const createUser = useMutation({
     mutationFn: async (data: CreateUserData) => {
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.admin
-        .createUser({
+      // Call edge function to create user with service role
+      const { data: result, error } = await supabase.functions.invoke("create-user", {
+        body: {
           email: data.email,
           password: data.password,
-          email_confirm: true,
-          user_metadata: {
-            full_name: data.full_name,
-          },
-        });
-
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("User creation failed");
-
-      // Update profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
           full_name: data.full_name,
           phone: data.phone,
-        })
-        .eq("id", authData.user.id);
+          roles: data.roles,
+        },
+      });
 
-      if (profileError) throw profileError;
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
+      if (!result?.success) throw new Error("User creation failed");
 
-      // Insert roles
-      if (data.roles.length > 0) {
-        const rolesData = data.roles.map((r) => ({
-          user_id: authData.user.id,
-          role: r.role,
-          opd_id: r.opd_id || null,
-        }));
-
-        const { error: rolesError } = await supabase
-          .from("user_roles")
-          .insert(rolesData);
-
-        if (rolesError) throw rolesError;
-      }
-
-      return authData.user;
+      return result.user;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -127,21 +102,14 @@ export const useUserMutation = () => {
 
   const resetPassword = useMutation({
     mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
-      const { error } = await supabase.auth.admin.updateUserById(userId, {
-        password: newPassword,
+      // Call edge function to reset password with service role
+      const { data: result, error } = await supabase.functions.invoke("reset-user-password", {
+        body: { userId, newPassword },
       });
 
       if (error) throw error;
-
-      // Send WhatsApp notification
-      try {
-        await supabase.functions.invoke("send-password-reset-notification", {
-          body: { userId },
-        });
-      } catch (notifError) {
-        console.error("Error sending notification:", notifError);
-        // Don't fail the whole operation if notification fails
-      }
+      if (result?.error) throw new Error(result.error);
+      if (!result?.success) throw new Error("Password reset failed");
 
       return userId;
     },

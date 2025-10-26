@@ -1,0 +1,145 @@
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+serve(async (req: Request) => {
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+    if (!SUPABASE_URL || !SERVICE_ROLE_KEY) {
+      throw new Error("Missing backend configuration");
+    }
+
+    // Create admin client with service role
+    const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+
+    // Verify the calling user is authenticated and is an admin
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Get the calling user to verify they're an admin
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user: callingUser }, error: authError } = await admin.auth.getUser(token);
+    
+    if (authError || !callingUser) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Check if calling user has admin role
+    const { data: userRoles } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", callingUser.id);
+
+    const isAdmin = userRoles?.some(r => r.role === "administrator" || r.role === "kepala_bkad");
+    if (!isAdmin) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: Admin access required" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Parse request body
+    const { email, password, full_name, phone, roles } = await req.json();
+
+    if (!email || !password || !full_name || !roles || roles.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Create auth user with service role
+    const { data: authData, error: authCreateError } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name,
+      },
+    });
+
+    if (authCreateError) {
+      throw authCreateError;
+    }
+
+    if (!authData.user) {
+      throw new Error("User creation failed");
+    }
+
+    const userId = authData.user.id;
+
+    // Update profile
+    const { error: profileError } = await admin
+      .from("profiles")
+      .update({
+        full_name,
+        phone: phone || null,
+      })
+      .eq("id", userId);
+
+    if (profileError) {
+      throw profileError;
+    }
+
+    // Insert roles
+    const rolesData = roles.map((r: any) => ({
+      user_id: userId,
+      role: r.role,
+      opd_id: r.opd_id || null,
+    }));
+
+    const { error: rolesError } = await admin
+      .from("user_roles")
+      .insert(rolesData);
+
+    if (rolesError) {
+      throw rolesError;
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        user: {
+          id: userId,
+          email: authData.user.email,
+          full_name,
+        }
+      }),
+      { 
+        status: 200, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      }
+    );
+
+  } catch (error: any) {
+    console.error("Error creating user:", error);
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || "Failed to create user" 
+      }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      }
+    );
+  }
+});
