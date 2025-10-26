@@ -8,7 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useMasterPajakOptions, useSuggestedTaxes } from "@/hooks/usePajakPotonganSpm";
+import { usePajakPerJenisSpmList } from "@/hooks/usePajakPerJenisSpmList";
 import { formatCurrency } from "@/lib/currency";
 import { Separator } from "@/components/ui/separator";
 import { terbilangRupiah } from "@/lib/formatHelpers";
@@ -58,9 +60,10 @@ export const SpmPajakForm = ({
   const navigate = useNavigate();
   const [pajaks, setPajaks] = useState<PajakFormData[]>(potonganPajak || []);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [selectedOptionalTaxes, setSelectedOptionalTaxes] = useState<string[]>([]);
   
   // Jenis SPM yang memerlukan pajak
-  const requiresPajak = ['ls_gaji', 'ls_barang_jasa', 'ls_belanja_modal'].includes(jenisSpm);
+  const requiresPajak = ['LS_Gaji', 'LS_Barang_Jasa', 'LS_Belanja_Modal'].includes(jenisSpm);
   
   const { speak } = useSpeechSynthesis();
   
@@ -69,6 +72,13 @@ export const SpmPajakForm = ({
   const { data: suggestedTaxes = [], isLoading: isLoadingSuggested } = useSuggestedTaxes(
     requiresPajak ? jenisSpm : null
   );
+  
+  // Fetch optional taxes for this SPM type
+  const { data: allTaxesForType = [] } = usePajakPerJenisSpmList({ 
+    jenis_spm: requiresPajak ? jenisSpm : undefined 
+  });
+  
+  const optionalTaxes = allTaxesForType.filter(t => !t.is_default);
 
   useEffect(() => {
     // Auto-suggest pajak jika belum ada dan SPM type memerlukan pajak
@@ -90,6 +100,38 @@ export const SpmPajakForm = ({
       setPajaks(initialPajak);
     }
   }, [jenisSpm, nilaiSpm, requiresPajak, pajaks.length, suggestedTaxes]);
+
+  // Handle optional tax selection
+  const handleOptionalTaxToggle = (taxId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedOptionalTaxes(prev => [...prev, taxId]);
+      
+      // Add pajak to list
+      const optionalTax = optionalTaxes.find(t => t.id === taxId);
+      if (optionalTax && optionalTax.master_pajak) {
+        const dasarPengenaan = nilaiSpm;
+        const tarif = optionalTax.tarif_khusus || optionalTax.master_pajak.tarif_default;
+        const jumlahPajak = Math.round((dasarPengenaan * tarif) / 100);
+        
+        setPajaks(prev => [...prev, {
+          jenis_pajak: optionalTax.master_pajak!.jenis_pajak,
+          rekening_pajak: optionalTax.master_pajak!.rekening_pajak,
+          uraian: optionalTax.uraian_template || optionalTax.master_pajak!.nama_pajak,
+          tarif: tarif,
+          dasar_pengenaan: dasarPengenaan,
+          jumlah_pajak: jumlahPajak,
+        }]);
+      }
+    } else {
+      setSelectedOptionalTaxes(prev => prev.filter(id => id !== taxId));
+      
+      // Remove pajak from list
+      const optionalTax = optionalTaxes.find(t => t.id === taxId);
+      if (optionalTax && optionalTax.master_pajak) {
+        setPajaks(prev => prev.filter(p => p.jenis_pajak !== optionalTax.master_pajak!.jenis_pajak));
+      }
+    }
+  };
 
   const totalPotongan = pajaks.reduce((sum, p) => sum + (p.jumlah_pajak || 0), 0);
   const nilaiBersih = nilaiSpm - totalPotongan;
@@ -245,6 +287,48 @@ export const SpmPajakForm = ({
                 </Button>
               </AlertDescription>
             </Alert>
+          )}
+
+          {/* Optional Taxes Selection */}
+          {optionalTaxes.length > 0 && (
+            <Card className="border-2 border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Info className="h-4 w-4" />
+                  Pajak Opsional
+                </CardTitle>
+                <CardDescription>
+                  Pilih pajak tambahan yang ingin dipotong (jika ada)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {optionalTaxes.map((tax) => (
+                  <div key={tax.id} className="flex items-center space-x-3 p-3 rounded-lg bg-background border">
+                    <Checkbox
+                      id={`opt-tax-${tax.id}`}
+                      checked={selectedOptionalTaxes.includes(tax.id)}
+                      onCheckedChange={(checked) => handleOptionalTaxToggle(tax.id, checked as boolean)}
+                    />
+                    <label
+                      htmlFor={`opt-tax-${tax.id}`}
+                      className="flex-1 cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">{tax.master_pajak?.nama_pajak}</p>
+                          {tax.uraian_template && (
+                            <p className="text-xs text-muted-foreground">{tax.uraian_template}</p>
+                          )}
+                        </div>
+                        <span className="font-semibold text-primary">
+                          {tax.tarif_khusus || tax.master_pajak?.tarif_default}%
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           )}
 
           {pajaks.map((pajak, index) => (

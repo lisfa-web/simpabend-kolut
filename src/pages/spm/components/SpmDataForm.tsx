@@ -78,6 +78,13 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
     resolver: zodResolver(spmDataSchema),
     defaultValues: {
       tanggal_ajuan: new Date(),
+      jenis_spm: "" as any,
+      nilai_spm: 0,
+      opd_id: "",
+      program_id: "",
+      kegiatan_id: "",
+      subkegiatan_id: "",
+      uraian: "",
       ...defaultValues,
     },
   });
