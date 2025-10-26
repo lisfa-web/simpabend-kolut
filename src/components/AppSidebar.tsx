@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   FileText,
@@ -17,6 +17,17 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
 type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin';
 
@@ -119,43 +130,55 @@ const menuItems: MenuItem[] = [
   },
 ];
 
-const Sidebar = () => {
+export function AppSidebar() {
   const { roles } = useAuth();
+  const location = useLocation();
+  const { open } = useSidebar();
 
   const canAccessMenu = (menuRoles?: AppRole[]) => {
     if (!menuRoles || menuRoles.length === 0) return true;
     return roles.some((role) => menuRoles.includes(role));
   };
 
+  const isActive = (path: string) => {
+    return location.pathname === path || location.pathname.startsWith(path + "/");
+  };
+
   return (
-    <aside className="w-64 bg-primary min-h-screen flex flex-col text-primary-foreground">
-      <div className="p-6 border-b border-primary/20">
-        <h1 className="text-xl font-bold">SIMPA BEND</h1>
-        <p className="text-xs opacity-80">BKAD Kolaka Utara</p>
-      </div>
+    <Sidebar collapsible="icon" className="border-r">
+      <SidebarHeader className="border-b border-border">
+        <div className="px-4 py-6">
+          {open ? (
+            <>
+              <h1 className="text-xl font-bold text-primary">SIMPA BEND</h1>
+              <p className="text-xs text-muted-foreground">BKAD Kolaka Utara</p>
+            </>
+          ) : (
+            <h1 className="text-lg font-bold text-primary text-center">SB</h1>
+          )}
+        </div>
+      </SidebarHeader>
 
-      <nav className="flex-1 py-4">
-        {menuItems
-          .filter((item) => canAccessMenu(item.roles))
-          .map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-6 py-3 transition-colors ${
-                  isActive
-                    ? "bg-gradient-to-r from-accent to-success text-accent-foreground font-semibold"
-                    : "text-primary-foreground/80 hover:bg-primary/80"
-                }`
-              }
-            >
-              <item.icon className="h-5 w-5" />
-              <span>{item.name}</span>
-            </NavLink>
-          ))}
-      </nav>
-    </aside>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {menuItems
+                .filter((item) => canAccessMenu(item.roles))
+                .map((item) => (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.name}>
+                      <NavLink to={item.path}>
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.name}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
-};
-
-export default Sidebar;
+}

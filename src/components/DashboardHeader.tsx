@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { NotificationPanel } from "@/components/NotificationPanel";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 const DashboardHeader = () => {
   const { user, roles, logout } = useAuth();
@@ -40,9 +41,12 @@ const DashboardHeader = () => {
   return (
     <header className="bg-card border-b border-border px-6 py-4">
       <div className="flex items-center justify-between">
-        <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground">
-          Sistem Monitoring & Validasi Digital
-        </Badge>
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
+          <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground">
+            Sistem Monitoring & Validasi Digital
+          </Badge>
+        </div>
 
         <div className="flex items-center gap-4">
           <NotificationPanel />
