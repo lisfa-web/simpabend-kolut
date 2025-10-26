@@ -21,7 +21,8 @@ import {
   AlertCircle,
   Eye,
   Download,
-  CheckCircle
+  CheckCircle,
+  Printer
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
@@ -32,6 +33,8 @@ import { VerificationDialog } from "../spm/components/VerificationDialog";
 import { useSpmVerification } from "@/hooks/useSpmVerification";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "@/hooks/use-toast";
+import { generateSpmPDF } from "@/lib/spmPdfUtils";
+import { formatJenisSpm } from "@/lib/formatHelpers";
 
 export default function SpmTimelineDetail() {
   const { id: spmId } = useParams();
@@ -73,12 +76,13 @@ export default function SpmTimelineDetail() {
           program:program_id(nama_program, kode_program),
           kegiatan:kegiatan_id(nama_kegiatan, kode_kegiatan),
           subkegiatan:subkegiatan_id(nama_subkegiatan, kode_subkegiatan),
-          vendor:vendor_id(nama_vendor, npwp),
+          vendor:vendor_id(nama_vendor, npwp, nama_bank, nomor_rekening, nama_rekening),
           verified_resepsionis:profiles!verified_by_resepsionis(full_name),
           verified_pbmd:profiles!verified_by_pbmd(full_name),
           verified_akuntansi:profiles!verified_by_akuntansi(full_name),
           verified_perbendaharaan:profiles!verified_by_perbendaharaan(full_name),
-          verified_kepala:profiles!verified_by_kepala_bkad(full_name)
+          verified_kepala:profiles!verified_by_kepala_bkad(full_name),
+          potongan_pajak_spm(*)
         `)
         .eq("id", spmId!)
         .single();
@@ -88,6 +92,54 @@ export default function SpmTimelineDetail() {
     },
     enabled: !!spmId,
   });
+
+  // Query for Kop Surat
+  const { data: kopSurat } = useQuery({
+    queryKey: ["kop-surat-config"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("config_sistem")
+        .select("value")
+        .eq("key", "kop_surat_url")
+        .single();
+      return data?.value || null;
+    },
+  });
+
+  const handlePrintSpm = () => {
+    if (!spm) return;
+
+    const spmPrintData = {
+      nomor_spm: spm.nomor_spm || "DRAFT",
+      tanggal_ajuan: spm.tanggal_ajuan,
+      nilai_spm: spm.nilai_spm,
+      total_potongan: spm.total_potongan,
+      nilai_bersih: spm.nilai_bersih,
+      uraian: spm.uraian,
+      jenis_spm: formatJenisSpm(spm.jenis_spm),
+      nomor_berkas: spm.nomor_berkas,
+      nomor_antrian: spm.nomor_antrian,
+      opd: spm.opd,
+      program: spm.program,
+      kegiatan: spm.kegiatan,
+      subkegiatan: spm.subkegiatan,
+      vendor: spm.vendor,
+      bendahara: spm.bendahara,
+      potongan_pajak_spm: spm.potongan_pajak_spm,
+    };
+
+    generateSpmPDF(
+      spmPrintData,
+      kopSurat,
+      "KEPALA BADAN KEUANGAN DAN ASET DAERAH",
+      ""
+    );
+
+    toast({
+      title: "Mencetak Draft SPM",
+      description: "Dokumen SPM sedang disiapkan untuk dicetak",
+    });
+  };
 
   const handleSubmitVerification = (data: any) => {
     if (!spmId) return;
@@ -194,7 +246,17 @@ export default function SpmTimelineDetail() {
               </p>
             </div>
           </div>
-          {getStatusBadge(spm.status || "draft")}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="outline"
+              onClick={handlePrintSpm}
+              className="gap-2"
+            >
+              <Printer className="h-4 w-4" />
+              Cetak Draft SPM
+            </Button>
+            {getStatusBadge(spm.status || "draft")}
+          </div>
         </div>
 
         {/* Verification Alert */}
