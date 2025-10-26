@@ -259,7 +259,21 @@ const UserForm = () => {
                   )}
                 </div>
 
-                {!isEdit && (
+                {isEdit ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={userData?.email || ""}
+                      disabled
+                      className="bg-muted cursor-not-allowed"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Email tidak dapat diubah
+                    </p>
+                  </div>
+                ) : (
                   <div className="space-y-2">
                     <Label htmlFor="email">
                       Email <span className="text-destructive">*</span>
