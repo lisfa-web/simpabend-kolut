@@ -278,19 +278,11 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     </HoverCardTrigger>
                     <HoverCardContent className="w-80">
                       <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
-                        {taxMapping["up"] && taxMapping["up"].length > 0 ? (
-                          <div className="space-y-1">
-                            {taxMapping["up"].map((tax) => (
-                              <div key={tax.id} className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">{tax.nama}</span>
-                                <span className="font-medium">{tax.tarif}%</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
-                        )}
+                        <h4 className="font-semibold text-sm">Informasi Pajak:</h4>
+                        <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+                          <p className="font-medium text-foreground mb-1">✓ Tidak dikenakan potongan pajak</p>
+                          <p>Uang Persediaan adalah uang muka untuk keperluan operasional, sehingga tidak ada potongan pajak.</p>
+                        </div>
                       </div>
                     </HoverCardContent>
                   </HoverCard>
@@ -308,19 +300,11 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     </HoverCardTrigger>
                     <HoverCardContent className="w-80">
                       <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
-                        {taxMapping["gu"] && taxMapping["gu"].length > 0 ? (
-                          <div className="space-y-1">
-                            {taxMapping["gu"].map((tax) => (
-                              <div key={tax.id} className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">{tax.nama}</span>
-                                <span className="font-medium">{tax.tarif}%</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
-                        )}
+                        <h4 className="font-semibold text-sm">Informasi Pajak:</h4>
+                        <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+                          <p className="font-medium text-foreground mb-1">✓ Tidak dikenakan potongan pajak</p>
+                          <p>Ganti Uang adalah penggantian UP yang telah digunakan. Pajak sudah dipotong saat pengeluaran sebenarnya.</p>
+                        </div>
                       </div>
                     </HoverCardContent>
                   </HoverCard>
@@ -338,19 +322,11 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     </HoverCardTrigger>
                     <HoverCardContent className="w-80">
                       <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
-                        {taxMapping["tu"] && taxMapping["tu"].length > 0 ? (
-                          <div className="space-y-1">
-                            {taxMapping["tu"].map((tax) => (
-                              <div key={tax.id} className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">{tax.nama}</span>
-                                <span className="font-medium">{tax.tarif}%</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
-                        )}
+                        <h4 className="font-semibold text-sm">Informasi Pajak:</h4>
+                        <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+                          <p className="font-medium text-foreground mb-1">✓ Tidak dikenakan potongan pajak</p>
+                          <p>Tambah Uang adalah penambahan UP/TU saat saldo kurang. Tidak ada potongan pajak pada tahap ini.</p>
+                        </div>
                       </div>
                     </HoverCardContent>
                   </HoverCard>
@@ -370,16 +346,19 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                       <div className="space-y-2">
                         <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
                         {taxMapping["ls_gaji"] && taxMapping["ls_gaji"].length > 0 ? (
-                          <div className="space-y-1">
-                            {taxMapping["ls_gaji"].map((tax) => (
-                              <div key={tax.id} className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">{tax.nama}</span>
-                                <span className="font-medium">{tax.tarif}%</span>
+                          <div className="space-y-2">
+                            {taxMapping["ls_gaji"].filter(t => t.is_default).map((tax) => (
+                              <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
+                                <div className="space-y-0.5">
+                                  <span className="text-sm font-medium">{tax.nama}</span>
+                                  {tax.uraian && <p className="text-xs text-muted-foreground">{tax.uraian}</p>}
+                                </div>
+                                <span className="font-semibold text-primary">{tax.tarif}%</span>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                          <p className="text-sm text-muted-foreground">Tidak ada pajak terkonfigurasi</p>
                         )}
                       </div>
                     </HoverCardContent>
@@ -397,19 +376,36 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                       </FormItem>
                     </HoverCardTrigger>
                     <HoverCardContent className="w-80">
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
                         {taxMapping["ls_barang_jasa"] && taxMapping["ls_barang_jasa"].length > 0 ? (
-                          <div className="space-y-1">
-                            {taxMapping["ls_barang_jasa"].map((tax) => (
-                              <div key={tax.id} className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">{tax.nama}</span>
-                                <span className="font-medium">{tax.tarif}%</span>
+                          <>
+                            <div className="space-y-2">
+                              <p className="text-xs text-muted-foreground font-medium">Pajak Default (Otomatis):</p>
+                              {taxMapping["ls_barang_jasa"].filter(t => t.is_default).map((tax) => (
+                                <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
+                                  <div className="space-y-0.5">
+                                    <span className="text-sm font-medium">{tax.nama}</span>
+                                    {tax.uraian && <p className="text-xs text-muted-foreground">{tax.uraian}</p>}
+                                  </div>
+                                  <span className="font-semibold text-primary">{tax.tarif}%</span>
+                                </div>
+                              ))}
+                            </div>
+                            {taxMapping["ls_barang_jasa"].filter(t => !t.is_default).length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-xs text-muted-foreground font-medium">Pajak Opsional (Dapat ditambahkan):</p>
+                                {taxMapping["ls_barang_jasa"].filter(t => !t.is_default).map((tax) => (
+                                  <div key={tax.id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
+                                    <span className="text-sm">{tax.nama}</span>
+                                    <span className="font-medium">{tax.tarif}%</span>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+                            )}
+                          </>
                         ) : (
-                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                          <p className="text-sm text-muted-foreground">Tidak ada pajak terkonfigurasi</p>
                         )}
                       </div>
                     </HoverCardContent>
@@ -427,19 +423,36 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                       </FormItem>
                     </HoverCardTrigger>
                     <HoverCardContent className="w-80">
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
                         {taxMapping["ls_belanja_modal"] && taxMapping["ls_belanja_modal"].length > 0 ? (
-                          <div className="space-y-1">
-                            {taxMapping["ls_belanja_modal"].map((tax) => (
-                              <div key={tax.id} className="flex justify-between text-sm">
-                                <span className="text-muted-foreground">{tax.nama}</span>
-                                <span className="font-medium">{tax.tarif}%</span>
+                          <>
+                            <div className="space-y-2">
+                              <p className="text-xs text-muted-foreground font-medium">Pajak Default (Otomatis):</p>
+                              {taxMapping["ls_belanja_modal"].filter(t => t.is_default).map((tax) => (
+                                <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
+                                  <div className="space-y-0.5">
+                                    <span className="text-sm font-medium">{tax.nama}</span>
+                                    {tax.uraian && <p className="text-xs text-muted-foreground">{tax.uraian}</p>}
+                                  </div>
+                                  <span className="font-semibold text-primary">{tax.tarif}%</span>
+                                </div>
+                              ))}
+                            </div>
+                            {taxMapping["ls_belanja_modal"].filter(t => !t.is_default).length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-xs text-muted-foreground font-medium">Pajak Opsional (Dapat ditambahkan):</p>
+                                {taxMapping["ls_belanja_modal"].filter(t => !t.is_default).map((tax) => (
+                                  <div key={tax.id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
+                                    <span className="text-sm">{tax.nama}</span>
+                                    <span className="font-medium">{tax.tarif}%</span>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
+                            )}
+                          </>
                         ) : (
-                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                          <p className="text-sm text-muted-foreground">Tidak ada pajak terkonfigurasi</p>
                         )}
                       </div>
                     </HoverCardContent>
