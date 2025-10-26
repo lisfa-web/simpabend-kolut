@@ -2,6 +2,36 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Keep backward compatibility exports
+export const JENIS_PAJAK_OPTIONS = [
+  { value: "pph_21", label: "PPh Pasal 21", rekening: "411121" },
+  { value: "pph_22", label: "PPh Pasal 22", rekening: "411122" },
+  { value: "pph_23", label: "PPh Pasal 23", rekening: "411124" },
+  { value: "pph_4_ayat_2", label: "PPh Pasal 4 Ayat 2", rekening: "411128" },
+  { value: "ppn", label: "PPN", rekening: "411211" },
+];
+
+export const getSuggestedTaxes = (jenisSpm: string): Array<{ jenis: string; tarif: number; uraian: string }> => {
+  switch (jenisSpm) {
+    case "ls_gaji":
+      return [
+        { jenis: "pph_21", tarif: 5, uraian: "PPh 21 atas Gaji dan Tunjangan" },
+      ];
+    case "ls_barang_jasa":
+      return [
+        { jenis: "pph_22", tarif: 1.5, uraian: "PPh 22 atas Pembelian Barang" },
+        { jenis: "ppn", tarif: 11, uraian: "PPN atas Pembelian Barang dan Jasa" },
+      ];
+    case "ls_belanja_modal":
+      return [
+        { jenis: "pph_4_ayat_2", tarif: 2.65, uraian: "PPh 4(2) atas Jasa Konstruksi" },
+        { jenis: "ppn", tarif: 11, uraian: "PPN atas Belanja Modal" },
+      ];
+    default:
+      return [];
+  }
+};
+
 export interface PajakPotonganSpm {
   id?: string;
   spm_id: string;
@@ -13,62 +43,6 @@ export interface PajakPotonganSpm {
   jumlah_pajak: number;
 }
 
-// Fetch JENIS_PAJAK_OPTIONS from database
-export const useJenisPajakOptions = () => {
-  return useQuery({
-    queryKey: ["jenis-pajak-options"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("master_pajak")
-        .select("jenis_pajak, nama_pajak, rekening_pajak")
-        .eq("is_active", true)
-        .order("jenis_pajak");
-
-      if (error) throw error;
-      
-      return data.map((p) => ({
-        value: p.jenis_pajak,
-        label: p.nama_pajak,
-        rekening: p.rekening_pajak,
-      }));
-    },
-  });
-};
-
-// Fetch suggested taxes from database based on SPM type
-export const useSuggestedTaxes = (jenisSpm?: string) => {
-  return useQuery({
-    queryKey: ["suggested-taxes", jenisSpm],
-    queryFn: async () => {
-      if (!jenisSpm) return [];
-
-      const { data, error } = await supabase
-        .from("pajak_per_jenis_spm")
-        .select(`
-          *,
-          master_pajak:master_pajak_id (
-            jenis_pajak,
-            nama_pajak,
-            rekening_pajak,
-            tarif_default
-          )
-        `)
-        .eq("jenis_spm", jenisSpm)
-        .eq("is_default", true)
-        .order("urutan");
-
-      if (error) throw error;
-
-      return data.map((item: any) => ({
-        jenis: item.master_pajak.jenis_pajak,
-        tarif: item.tarif_khusus || item.master_pajak.tarif_default,
-        uraian: item.uraian_template,
-        rekening: item.master_pajak.rekening_pajak,
-      }));
-    },
-    enabled: !!jenisSpm,
-  });
-};
 
 export const usePajakPotonganSpm = (spmId?: string) => {
   const queryClient = useQueryClient();
