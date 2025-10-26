@@ -87,9 +87,11 @@ const App = () => (
             
             {/* SPM Routes */}
             <Route path="/input-spm" element={<ProtectedRoute><InputSpmList /></ProtectedRoute>} />
+            <Route path="/input-spm/buat" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
+            <Route path="/input-spm/detail/:id" element={<ProtectedRoute><InputSpmDetail /></ProtectedRoute>} />
+            <Route path="/input-spm/edit/:id" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
             <Route path="/spm/input" element={<ProtectedRoute><InputSpmList /></ProtectedRoute>} />
             <Route path="/spm/input/new" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
-            <Route path="/input-spm/buat" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
             <Route path="/spm/input/:id" element={<ProtectedRoute><InputSpmDetail /></ProtectedRoute>} />
             <Route path="/spm/input/:id/edit" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
             <Route path="/spm/timeline/:id" element={<ProtectedRoute><SpmTimelineDetail /></ProtectedRoute>} />
