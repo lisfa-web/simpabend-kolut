@@ -25,7 +25,8 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const logoUrl = configs?.find(c => c.key === 'logo_bkad_url')?.value;
+  const logoUrl = configs?.find(c => c.key === 'logo_bkad_url')?.value || 
+                  "https://storage.googleapis.com/gpt-engineer-file-uploads/YiG4vutaHxeJX1je6rv0tIwuuYZ2/uploads/1761358201412-Lambang_Kabupaten_Kolaka_Utara.png";
 
   const generateCaptcha = () => {
     const num1 = Math.floor(Math.random() * 10) + 1;
