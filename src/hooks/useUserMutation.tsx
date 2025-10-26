@@ -139,10 +139,34 @@ export const useUserMutation = () => {
     },
   });
 
+  const updateEmail = useMutation({
+    mutationFn: async ({ userId, newEmail }: { userId: string; newEmail: string }) => {
+      // Call edge function to update email with service role
+      const { data: result, error } = await supabase.functions.invoke("update-user-email", {
+        body: { userId, newEmail },
+      });
+
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
+      if (!result?.success) throw new Error("Email update failed");
+
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      toast.success("Email berhasil diubah. User harus login dengan email baru.");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Gagal mengubah email");
+    },
+  });
+
   return {
     createUser,
     updateUser,
     resetPassword,
     toggleUserStatus,
+    updateEmail,
   };
 };

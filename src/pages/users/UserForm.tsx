@@ -10,12 +10,22 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, AlertCircle, CheckCircle2, Mail } from "lucide-react";
 import { useUserMutation } from "@/hooks/useUserMutation";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRoleSelect } from "./components/UserRoleSelect";
 import { Database } from "@/integrations/supabase/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -56,6 +66,8 @@ const UserForm = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
 
   const { data: userData } = useQuery({
     queryKey: ["user", id],
@@ -103,7 +115,7 @@ const UserForm = () => {
     },
   });
 
-  const { createUser, updateUser } = useUserMutation();
+  const { createUser, updateUser, updateEmail } = useUserMutation();
 
   // Password strength calculator
   const passwordStrength = useMemo(() => {
@@ -219,6 +231,20 @@ const UserForm = () => {
     }
   };
 
+  const handleUpdateEmail = () => {
+    if (!newEmail || !id) return;
+    
+    updateEmail.mutate(
+      { userId: id, newEmail },
+      {
+        onSuccess: () => {
+          setShowEmailDialog(false);
+          setNewEmail("");
+        },
+      }
+    );
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -262,15 +288,26 @@ const UserForm = () => {
                 {isEdit ? (
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={userData?.email || ""}
-                      disabled
-                      className="bg-muted cursor-not-allowed"
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="email"
+                        type="email"
+                        value={userData?.email || ""}
+                        disabled
+                        className="bg-muted cursor-not-allowed flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setShowEmailDialog(true)}
+                        title="Edit Email"
+                      >
+                        <Mail className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      Email tidak dapat diubah
+                      Klik ikon untuk mengubah email
                     </p>
                   </div>
                 ) : (
@@ -514,6 +551,57 @@ const UserForm = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Email Update Dialog */}
+      <AlertDialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ubah Email User</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <div className="space-y-2">
+                <p className="text-sm">Email saat ini: <span className="font-semibold">{userData?.email}</span></p>
+                <div className="space-y-2">
+                  <Label htmlFor="new-email">Email Baru</Label>
+                  <Input
+                    id="new-email"
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="email.baru@example.com"
+                  />
+                </div>
+              </div>
+              
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md p-4 space-y-2">
+                <p className="text-sm font-semibold text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  Peringatan Penting
+                </p>
+                <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1 list-disc list-inside">
+                  <li>User akan otomatis logout dari sistem</li>
+                  <li>User harus login dengan email baru</li>
+                  <li>Pastikan email baru sudah benar sebelum menyimpan</li>
+                  <li>Perubahan ini akan dicatat di audit log</li>
+                </ul>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowEmailDialog(false);
+              setNewEmail("");
+            }}>
+              Batal
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleUpdateEmail}
+              disabled={!newEmail || updateEmail.isPending}
+            >
+              {updateEmail.isPending ? "Mengubah..." : "Ubah Email"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DashboardLayout>
   );
 };
