@@ -63,7 +63,8 @@ serve(async (req) => {
           program:program_id(nama_program),
           kegiatan:kegiatan_id(nama_kegiatan),
           subkegiatan:subkegiatan_id(nama_subkegiatan),
-          bendahara:bendahara_id(full_name, phone, email)
+          bendahara:bendahara_id(full_name, phone, email),
+          potongan:potongan_pajak_spm(jumlah_pajak)
         `)
         .eq("id", documentId)
         .single();
@@ -100,7 +101,7 @@ serve(async (req) => {
         recipientIds = resepsionis?.map((r: any) => r.user_id) || [];
         
         // Build message with potongan/netto if available
-        let messageTemplate = `📋 *SPM Baru*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nOPD: ${spm.opd?.nama_opd}\nJenis: ${formatJenisSpm(spm.jenis_spm)}\n\nNilai SPM: ${formatCurrency(spm.nilai_spm)}`;
+        messageTemplate = `📋 *SPM Baru*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nOPD: ${spm.opd?.nama_opd}\nJenis: ${formatJenisSpm(spm.jenis_spm)}\n\nNilai SPM: ${formatCurrency(spm.nilai_spm)}`;
         
         if (spm.total_potongan && spm.total_potongan > 0) {
           const nilaiNetto = spm.nilai_bersih || (spm.nilai_spm - spm.total_potongan);
