@@ -139,7 +139,11 @@ export function AppSidebar() {
   const { open } = useSidebar();
   const { data: activeTemplate } = useSidebarTemplate();
 
-  const theme = SIDEBAR_TEMPLATES[activeTemplate || 'blue-gradient'];
+  // Validate template exists, fallback to blue-gradient if not found
+  const validTemplate = activeTemplate && SIDEBAR_TEMPLATES[activeTemplate] 
+    ? activeTemplate 
+    : 'blue-gradient';
+  const theme = SIDEBAR_TEMPLATES[validTemplate];
 
   const canAccessMenu = (menuRoles?: AppRole[]) => {
     if (!menuRoles || menuRoles.length === 0) return true;
@@ -177,7 +181,7 @@ export function AppSidebar() {
                     style: theme.iconStyle,
                     menuName: item.name,
                     isActive: isActive(item.path),
-                    templateId: activeTemplate || 'blue-gradient',
+                    templateId: validTemplate,
                   });
                   const wrapperClasses = getIconWrapperClasses(theme.iconStyle, item.name);
                   
