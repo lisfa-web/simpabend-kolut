@@ -388,6 +388,43 @@ export const SpmPajakForm = ({
                 
                 <Separator />
                 
+                {/* Rincian Potongan Pajak */}
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-foreground">Rincian Potongan Pajak:</p>
+                  {pajaks.map((pajak, index) => {
+                    const pajakOption = JENIS_PAJAK_OPTIONS.find(opt => opt.value === pajak.jenis_pajak);
+                    return (
+                      <div key={index} className="border rounded-lg p-3 space-y-2 bg-background">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-semibold text-primary">
+                            #{index + 1} {pajakOption?.label || pajak.jenis_pajak}
+                          </span>
+                          <span className="text-sm font-bold text-destructive">
+                            -{formatCurrency(pajak.jumlah_pajak)}
+                          </span>
+                        </div>
+                        
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          <p><span className="font-medium">Uraian:</span> {pajak.uraian}</p>
+                          <p><span className="font-medium">Tarif:</span> {pajak.tarif}%</p>
+                          <p>
+                            <span className="font-medium">Dasar Pengenaan:</span>{' '}
+                            {formatCurrency(pajak.dasar_pengenaan)}
+                          </p>
+                        </div>
+                        
+                        <div className="border-t pt-1">
+                          <p className="text-xs text-muted-foreground italic">
+                            → {terbilangRupiah(pajak.jumlah_pajak)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <Separator />
+                
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium">Total Potongan:</span>
                   <span className="text-base font-bold text-destructive">
