@@ -110,6 +110,8 @@ export const useMenuNotifications = () => {
       return notifications;
     },
     enabled: !!user,
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 2 * 60 * 1000, // Refresh every 2 minutes (optimized dari 30 detik)
+    staleTime: 60 * 1000, // Data fresh selama 1 menit
+    refetchOnWindowFocus: false, // Jangan auto-refetch saat window focus
   });
 };

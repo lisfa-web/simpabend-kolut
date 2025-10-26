@@ -590,5 +590,9 @@ export const useDashboardStats = () => {
       };
     },
     enabled: !!user,
+    staleTime: 5 * 60 * 1000, // Data fresh selama 5 menit
+    gcTime: 10 * 60 * 1000, // Cache disimpan 10 menit
+    refetchOnWindowFocus: false, // Jangan auto-refetch saat window focus
+    refetchOnMount: false, // Jangan auto-refetch saat mount jika data masih fresh
   });
 };

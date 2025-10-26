@@ -17,7 +17,7 @@ export const useDashboardActionItems = () => {
   const { hasRole, isAdmin, roles } = useUserRole();
 
   return useQuery({
-    queryKey: ["dashboardActionItems", user?.id],
+    queryKey: ["dashboardActionItems", user?.id, roles],
     queryFn: async (): Promise<ActionItem[]> => {
       if (!user) {
         console.log("❌ [ActionItems] No user logged in");
@@ -221,5 +221,8 @@ export const useDashboardActionItems = () => {
       }
     },
     enabled: !!user,
+    staleTime: 2 * 60 * 1000, // Data fresh selama 2 menit
+    gcTime: 5 * 60 * 1000, // Cache disimpan 5 menit
+    refetchOnWindowFocus: false,
   });
 };

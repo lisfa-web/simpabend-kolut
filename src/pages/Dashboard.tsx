@@ -43,12 +43,12 @@ const Dashboard = () => {
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Auto-refresh every 30 seconds
+  // Auto-refresh every 5 minutes (optimized dari 30 detik untuk mengurangi beban server)
   useEffect(() => {
     const interval = setInterval(() => {
       refetch();
       setLastRefresh(Date.now());
-    }, 30000); // 30 seconds
+    }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
   }, [refetch]);
