@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
@@ -91,6 +91,13 @@ const App = () => (
             <Route path="/input-spm/detail/:id" element={<ProtectedRoute><InputSpmDetail /></ProtectedRoute>} />
             <Route path="/input-spm/edit/:id" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
             <Route path="/input-spm/timeline/:id" element={<ProtectedRoute><SpmTimelineDetail /></ProtectedRoute>} />
+            
+            {/* Backward compatibility redirects for old /spm/input paths */}
+            <Route path="/spm/input" element={<Navigate to="/input-spm" replace />} />
+            <Route path="/spm/input/new" element={<Navigate to="/input-spm/buat" replace />} />
+            <Route path="/spm/input/detail/:id" element={<Navigate to="/input-spm/detail/:id" replace />} />
+            <Route path="/spm/input/:id/edit" element={<Navigate to="/input-spm/edit/:id" replace />} />
+            <Route path="/spm/timeline/:id" element={<Navigate to="/input-spm/timeline/:id" replace />} />
             
             <Route path="/spm/verifikasi/resepsionis" element={<ProtectedRoute><VerifikasiResepsionis /></ProtectedRoute>} />
             <Route path="/spm/verifikasi/pbmd" element={<ProtectedRoute><VerifikasiPbmd /></ProtectedRoute>} />

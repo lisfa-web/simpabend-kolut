@@ -8,7 +8,7 @@ export const QuickActions = () => {
   return (
     <div className="flex items-center gap-3">
       <Button
-        onClick={() => navigate("/spm/input")}
+        onClick={() => navigate("/input-spm")}
         className="glass hover:scale-105 transition-all shadow-lg"
         size="default"
       >

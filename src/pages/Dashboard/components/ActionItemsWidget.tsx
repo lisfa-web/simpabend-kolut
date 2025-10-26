@@ -91,9 +91,9 @@ export const ActionItemsWidget = () => {
 
   const handleItemClick = (id: string, type: "spm" | "sp2d") => {
     if (type === "spm") {
-      navigate(`/spm/input/detail/${id}`);
+      navigate(`/input-spm/detail/${id}`);
     } else {
-      navigate(`/spm/sp2d/detail/${id}`);
+      navigate(`/sp2d/detail/${id}`);
     }
   };
 

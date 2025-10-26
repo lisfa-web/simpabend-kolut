@@ -136,7 +136,7 @@ const MySpmTable = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => navigate(`/spm/timeline/${spm.id}`)}
+                        onClick={() => navigate(`/input-spm/timeline/${spm.id}`)}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>

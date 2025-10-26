@@ -50,7 +50,7 @@ const menuItems: MenuItem[] = [
   { 
     name: "Input SPM", 
     icon: FileText, 
-    path: "/spm/input",
+    path: "/input-spm",
     roles: ["bendahara_opd", "administrator"]
   },
   { 
@@ -155,7 +155,7 @@ export function AppSidebar() {
   const getNotificationCount = (path: string): number => {
     if (!notifications) return 0;
     const notificationMap: Record<string, number> = {
-      "/spm/input": notifications.inputSpm,
+      "/input-spm": notifications.inputSpm,
       "/spm/verifikasi/resepsionis": notifications.verifikasiResepsionis,
       "/spm/verifikasi/pbmd": notifications.verifikasiPbmd,
       "/spm/verifikasi/akuntansi": notifications.verifikasiAkuntansi,
