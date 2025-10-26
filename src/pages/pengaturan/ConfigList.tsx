@@ -35,6 +35,9 @@ const ConfigList = () => {
     'max_file_size_lainnya' // Auto-sync dari max_file_size
   ];
 
+  // Keys yang merupakan upload file/logo/kop surat
+  const imageKeys = ['logo_bkad_url', 'kop_surat_sp2d_url', 'kop_surat_spm_url'];
+
   const filteredConfigs = configs?.filter(
     (c) =>
       !hiddenKeys.includes(c.key) &&
@@ -52,7 +55,8 @@ const ConfigList = () => {
       setFileUnit(unitConfig?.value || 'MB');
     }
     
-    if (config.key === 'logo_bkad_url' && config.value) {
+    // Set preview untuk semua image keys (logo & kop surat)
+    if (imageKeys.includes(config.key) && config.value) {
       setLogoPreview(config.value);
     }
   };
@@ -75,21 +79,25 @@ const ConfigList = () => {
 
     setUploading(true);
     try {
+      // Tentukan bucket berdasarkan config key
+      const bucketName = editDialog.config?.key === 'logo_bkad_url' ? 'system-logos' : 'kop-surat';
+      const filePrefix = editDialog.config?.key === 'logo_bkad_url' ? 'logo-bkad' : 'kop-surat';
+      
       const fileExt = file.name.split('.').pop();
-      const fileName = `logo-bkad-${Date.now()}.${fileExt}`;
+      const fileName = `${filePrefix}-${Date.now()}.${fileExt}`;
       const filePath = fileName;
 
-      // Delete old logo if exists
+      // Delete old file if exists
       if (editValue) {
         const oldPath = editValue.split('/').pop();
         if (oldPath) {
-          await supabase.storage.from('system-logos').remove([oldPath]);
+          await supabase.storage.from(bucketName).remove([oldPath]);
         }
       }
 
-      // Upload new logo
-      const { error: uploadError, data } = await supabase.storage
-        .from('system-logos')
+      // Upload new file
+      const { error: uploadError } = await supabase.storage
+        .from(bucketName)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false
@@ -99,15 +107,15 @@ const ConfigList = () => {
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('system-logos')
+        .from(bucketName)
         .getPublicUrl(filePath);
 
       setEditValue(publicUrl);
       setLogoPreview(publicUrl);
-      toast.success("Logo berhasil diupload");
+      toast.success(`${filePrefix === 'logo-bkad' ? 'Logo' : 'Kop surat'} berhasil diupload`);
     } catch (error: any) {
       console.error("Upload error:", error);
-      toast.error(error.message || "Gagal upload logo");
+      toast.error(error.message || "Gagal upload file");
     } finally {
       setUploading(false);
     }
@@ -238,7 +246,7 @@ const ConfigList = () => {
             </div>
             <div className="space-y-2">
               <Label>Value</Label>
-              {editDialog.config?.key === 'logo_bkad_url' ? (
+              {imageKeys.includes(editDialog.config?.key || '') ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
                     <Button
@@ -252,7 +260,7 @@ const ConfigList = () => {
                       ) : (
                         <Upload className="mr-2 h-4 w-4" />
                       )}
-                      Upload Logo
+                      {editDialog.config?.key === 'logo_bkad_url' ? 'Upload Logo' : 'Upload Kop Surat'}
                     </Button>
                     <input
                       id="logo-upload"
@@ -267,18 +275,18 @@ const ConfigList = () => {
                   </div>
                   {logoPreview && (
                     <div className="border rounded-lg p-4 bg-muted/50">
-                      <Label className="mb-2 block">Preview Logo:</Label>
+                      <Label className="mb-2 block">Preview:</Label>
                       <img
                         src={logoPreview}
-                        alt="Logo Preview"
-                        className="h-20 object-contain"
+                        alt="Preview"
+                        className="max-h-32 object-contain"
                       />
                     </div>
                   )}
                   <Input
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    placeholder="URL logo (otomatis terisi setelah upload)"
+                    placeholder="URL (otomatis terisi setelah upload)"
                     disabled
                   />
                 </div>

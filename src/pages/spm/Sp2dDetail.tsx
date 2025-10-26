@@ -7,12 +7,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Loader2, CheckCircle2, Printer, Wallet } from "lucide-react";
 import { useSp2dDetail } from "@/hooks/useSp2dDetail";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
+import { useConfigSistem } from "@/hooks/useConfigSistem";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
 import { Sp2dTimeline } from "./components/Sp2dTimeline";
 import { Sp2dVerificationDialog } from "./components/Sp2dVerificationDialog";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useAuth } from "@/hooks/useAuth";
+import { generateSp2dPDF } from "@/lib/sp2dPdfUtils";
 
 const Sp2dDetail = () => {
   const { id } = useParams();
@@ -21,6 +23,7 @@ const Sp2dDetail = () => {
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
 
   const { data: sp2d, isLoading } = useSp2dDetail(id);
+  const { data: configs } = useConfigSistem();
   const { verifyOtp, disburseSp2d } = useSp2dMutation();
 
   const canVerify = roles.some((role) =>
@@ -47,7 +50,13 @@ const Sp2dDetail = () => {
   };
 
   const handlePrint = () => {
-    window.print();
+    if (!sp2d) return;
+    
+    const kopSuratUrl = configs?.find(
+      c => c.key === 'kop_surat_sp2d_url'
+    )?.value;
+    
+    generateSp2dPDF(sp2d, kopSuratUrl);
   };
 
   if (isLoading) {
