@@ -12,6 +12,7 @@ import { OpdBreakdownChart } from "./Dashboard/components/OpdBreakdownChart";
 import { Sp2dStatsSection } from "./Dashboard/components/Sp2dStatsSection";
 import { RecentActivityWidget } from "./Dashboard/components/RecentActivityWidget";
 import { FinancialBreakdownChart } from "./Dashboard/components/FinancialBreakdownChart";
+import { AlertWidget } from "./Dashboard/components/AlertWidget";
 import { TopVendorsWidget } from "./Dashboard/components/TopVendorsWidget";
 import { cn } from "@/lib/utils";
 import { Sparkline } from "@/components/Sparkline";
@@ -358,6 +359,9 @@ const Dashboard = () => {
           <OpdBreakdownChart data={stats?.opdBreakdown || []} isLoading={isLoading} />
           <TopVendorsWidget data={stats?.topVendors} isLoading={isLoading} />
         </div>
+
+        {/* Alert & Peringatan */}
+        <AlertWidget data={stats?.alerts} isLoading={isLoading} />
 
         {/* Action Items Widget */}
         <ActionItemsWidget />
