@@ -1,4 +1,4 @@
-export type SidebarTemplate = 'blue-gradient' | 'emerald-clean' | 'slate-elegant' | 'purple-vibrant' | 'teal-dark' | 'rose-bold';
+export type SidebarTemplate = 'blue-gradient' | 'emerald-clean' | 'purple-vibrant' | 'teal-dark' | 'rose-bold' | 'orange-sunset' | 'deep-indigo' | 'lime-fresh' | 'magenta-bold';
 
 export type IconStyle = 
   | 'standard'           // Default, ikut parent color
@@ -107,22 +107,76 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       logoSubtitle: 'opacity-90',
     },
   },
-  'slate-elegant': {
-    id: 'slate-elegant',
-    name: 'Slate Elegant',
-    description: 'Elegant dan sophisticated dengan accent gold',
-    iconStyle: 'gradient-icon',
+  'orange-sunset': {
+    id: 'orange-sunset',
+    name: 'Orange Sunset',
+    description: 'Energik dan warm dengan kontras orange-amber kuat',
+    iconStyle: 'rounded-background',
     preview: {
-      headerGradient: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-      contentGradient: 'linear-gradient(180deg, #f1f5f9 0%, #ffffff 50%, #f9fafb 100%)',
+      headerGradient: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
+      contentGradient: 'linear-gradient(180deg, #fff7ed 0%, #ffffff 50%, #fef3c7 100%)',
       headerText: '#ffffff',
-      activeMenu: '#e2e8f0',
+      activeMenu: '#fed7aa',
     },
     classes: {
-      header: 'bg-gradient-to-br from-slate-800 to-slate-900 text-white',
-      content: 'bg-gradient-to-b from-slate-100 via-white to-gray-50',
-      activeItem: 'bg-slate-200 shadow-sm',
-      logoSubtitle: 'text-amber-200 opacity-95',
+      header: 'bg-gradient-to-br from-orange-600 to-orange-700 text-white',
+      content: 'bg-gradient-to-b from-orange-50 via-white to-amber-50',
+      activeItem: 'bg-orange-200 border-l-4 border-orange-600 shadow-md',
+      logoSubtitle: 'text-orange-100 opacity-95',
+    },
+  },
+  'deep-indigo': {
+    id: 'deep-indigo',
+    name: 'Deep Indigo',
+    description: 'Professional dan bold dengan indigo gelap kontras tinggi',
+    iconStyle: 'colorful-per-menu',
+    preview: {
+      headerGradient: 'linear-gradient(135deg, #4338ca 0%, #3730a3 100%)',
+      contentGradient: 'linear-gradient(180deg, #e0e7ff 0%, #ffffff 50%, #ddd6fe 100%)',
+      headerText: '#ffffff',
+      activeMenu: '#c7d2fe',
+    },
+    classes: {
+      header: 'bg-gradient-to-br from-indigo-700 to-indigo-900 text-white',
+      content: 'bg-gradient-to-b from-indigo-100 via-white to-violet-50',
+      activeItem: 'bg-indigo-200 border-l-4 border-indigo-700 shadow-md',
+      logoSubtitle: 'text-indigo-100 opacity-95',
+    },
+  },
+  'lime-fresh': {
+    id: 'lime-fresh',
+    name: 'Lime Fresh',
+    description: 'Fresh dan vibrant dengan lime hijau terang kontras kuat',
+    iconStyle: 'gradient-icon',
+    preview: {
+      headerGradient: 'linear-gradient(135deg, #65a30d 0%, #4d7c0f 100%)',
+      contentGradient: 'linear-gradient(180deg, #f7fee7 0%, #ffffff 50%, #ecfccb 100%)',
+      headerText: '#ffffff',
+      activeMenu: '#d9f99d',
+    },
+    classes: {
+      header: 'bg-gradient-to-br from-lime-600 to-lime-800 text-white',
+      content: 'bg-gradient-to-b from-lime-50 via-white to-lime-100',
+      activeItem: 'bg-lime-200 border-l-4 border-lime-700 shadow-md',
+      logoSubtitle: 'text-lime-100 opacity-95',
+    },
+  },
+  'magenta-bold': {
+    id: 'magenta-bold',
+    name: 'Magenta Bold',
+    description: 'Bold dan striking dengan magenta-fuchsia kontras ekstrem',
+    iconStyle: 'colorful-per-menu',
+    preview: {
+      headerGradient: 'linear-gradient(135deg, #c026d3 0%, #a21caf 100%)',
+      contentGradient: 'linear-gradient(180deg, #fae8ff 0%, #ffffff 50%, #fce7f3 100%)',
+      headerText: '#ffffff',
+      activeMenu: '#f5d0fe',
+    },
+    classes: {
+      header: 'bg-gradient-to-br from-fuchsia-600 to-fuchsia-800 text-white',
+      content: 'bg-gradient-to-b from-fuchsia-100 via-white to-pink-50',
+      activeItem: 'bg-fuchsia-200 border-l-4 border-fuchsia-700 shadow-md',
+      logoSubtitle: 'text-fuchsia-100 opacity-95',
     },
   },
   'purple-vibrant': {
