@@ -11,6 +11,17 @@ import { JENIS_PAJAK_OPTIONS, getSuggestedTaxes } from "@/hooks/usePajakPotongan
 import { formatCurrency } from "@/lib/currency";
 import { Separator } from "@/components/ui/separator";
 import { terbilangRupiah } from "@/lib/formatHelpers";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PajakFormData {
   jenis_pajak: string;
@@ -39,9 +50,12 @@ export const SpmPajakForm = ({
   onBack,
 }: SpmPajakFormProps) => {
   const [pajaks, setPajaks] = useState<PajakFormData[]>(potonganPajak || []);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
   // Jenis SPM yang memerlukan pajak
   const requiresPajak = ['ls_gaji', 'ls_barang_jasa', 'ls_belanja_modal'].includes(jenisSpm);
+  
+  const { speak } = useSpeechSynthesis();
 
   useEffect(() => {
     // Auto-suggest pajak jika belum ada dan SPM type memerlukan pajak
@@ -125,8 +139,35 @@ export const SpmPajakForm = ({
       }
     }
 
+    // Bacakan ringkasan perhitungan
+    const terbilangText = `Nilai bruto ${terbilangRupiah(nilaiSpm)}. Total potongan ${terbilangRupiah(totalPotongan)}. Nilai bersih ${terbilangRupiah(nilaiBersih)}`;
+    
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(terbilangText);
+      utterance.lang = 'id-ID';
+      utterance.rate = 0.85;
+      utterance.pitch = 1;
+      
+      utterance.onend = () => {
+        setShowConfirmDialog(true);
+      };
+      
+      window.speechSynthesis.speak(utterance);
+    } else {
+      setShowConfirmDialog(true);
+    }
+  };
+
+  const handleConfirm = () => {
     onPotonganChange(pajaks);
+    setShowConfirmDialog(false);
     onNext();
+  };
+
+  const handleCancel = () => {
+    setShowConfirmDialog(false);
   };
 
   // Jika jenis SPM tidak perlu pajak, tampilkan info dan skip
@@ -323,6 +364,68 @@ export const SpmPajakForm = ({
           Selanjutnya
         </Button>
       </div>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Perhitungan Pajak</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Apakah perhitungan sudah benar?</p>
+              </div>
+              <div className="rounded-lg bg-muted p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Nilai SPM (Bruto):</span>
+                  <span className="text-base font-bold text-foreground">
+                    {formatCurrency(nilaiSpm)}
+                  </span>
+                </div>
+                <div className="border-t pt-2">
+                  <p className="text-xs text-muted-foreground italic">
+                    {terbilangRupiah(nilaiSpm)}
+                  </p>
+                </div>
+                
+                <Separator />
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Total Potongan:</span>
+                  <span className="text-base font-bold text-destructive">
+                    -{formatCurrency(totalPotongan)}
+                  </span>
+                </div>
+                <div className="border-t pt-2">
+                  <p className="text-xs text-muted-foreground italic">
+                    {terbilangRupiah(totalPotongan)}
+                  </p>
+                </div>
+                
+                <Separator />
+                
+                <div className="flex justify-between items-center bg-primary/10 p-3 rounded">
+                  <span className="text-sm font-semibold">Nilai Bersih (Netto):</span>
+                  <span className="text-lg font-bold text-primary">
+                    {formatCurrency(nilaiBersih)}
+                  </span>
+                </div>
+                <div className="border-t pt-2">
+                  <p className="text-xs text-muted-foreground italic font-medium">
+                    {terbilangRupiah(nilaiBersih)}
+                  </p>
+                </div>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancel}>
+              ❌ Tidak, Koreksi
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirm}>
+              ✅ Ya, Benar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
