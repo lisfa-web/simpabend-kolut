@@ -88,6 +88,7 @@ const App = () => (
             {/* SPM Routes */}
             <Route path="/spm/input" element={<ProtectedRoute><InputSpmList /></ProtectedRoute>} />
             <Route path="/spm/input/new" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
+            <Route path="/input-spm/buat" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
             <Route path="/spm/input/:id" element={<ProtectedRoute><InputSpmDetail /></ProtectedRoute>} />
             <Route path="/spm/input/:id/edit" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
             <Route path="/spm/timeline/:id" element={<ProtectedRoute><SpmTimelineDetail /></ProtectedRoute>} />
@@ -101,6 +102,7 @@ const App = () => (
             {/* SP2D Routes */}
             <Route path="/sp2d" element={<ProtectedRoute><Sp2dList /></ProtectedRoute>} />
             <Route path="/sp2d/new" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
+            <Route path="/sp2d/buat" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
             <Route path="/sp2d/:id" element={<ProtectedRoute><Sp2dDetail /></ProtectedRoute>} />
             <Route path="/sp2d/:id/edit" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
             
