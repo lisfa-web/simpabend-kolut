@@ -9,16 +9,38 @@ export const useSpmMutation = () => {
 
   const createSpm = useMutation({
     mutationFn: async (data: any) => {
+      const { potongan_pajak, ...spmData } = data;
+      
       const { data: spm, error } = await supabase
         .from("spm")
         .insert({
-          ...data,
+          ...spmData,
           bendahara_id: user?.id,
         })
         .select()
         .single();
 
       if (error) throw error;
+
+      // Insert pajak if provided
+      if (potongan_pajak && potongan_pajak.length > 0) {
+        const pajakToInsert = potongan_pajak.map((p: any) => ({
+          spm_id: spm.id,
+          jenis_pajak: p.jenis_pajak,
+          rekening_pajak: p.rekening_pajak,
+          uraian: p.uraian,
+          tarif: p.tarif,
+          dasar_pengenaan: p.dasar_pengenaan,
+          jumlah_pajak: p.jumlah_pajak,
+        }));
+
+        const { error: pajakError } = await supabase
+          .from("potongan_pajak_spm")
+          .insert(pajakToInsert);
+
+        if (pajakError) throw pajakError;
+      }
+
       return spm;
     },
     onSuccess: () => {

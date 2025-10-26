@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SpmDataForm } from "./components/SpmDataForm";
+import { SpmPajakForm } from "./components/SpmPajakForm";
 import { SpmLampiranForm } from "./components/SpmLampiranForm";
 import { SpmReviewForm } from "./components/SpmReviewForm";
 import { SpmDataFormValues } from "@/schemas/spmSchema";
@@ -21,6 +22,7 @@ const InputSpmForm = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("data");
   const [formData, setFormData] = useState<SpmDataFormValues | null>(null);
+  const [potonganPajak, setPotonganPajak] = useState<any[]>([]);
   const [files, setFiles] = useState({
     dokumen_spm: [],
     tbk: [],
@@ -91,7 +93,7 @@ const InputSpmForm = () => {
 
   const handleDataSubmit = (data: SpmDataFormValues) => {
     setFormData(data);
-    setActiveTab("lampiran");
+    setActiveTab("pajak");
   };
 
   const handleFinalSubmit = async (isDraft: boolean) => {
@@ -119,6 +121,7 @@ const InputSpmForm = () => {
         vendor_id: formData.vendor_id,
         status: isDraft ? "draft" : "diajukan",
         tanggal_ajuan: isDraft ? null : new Date().toISOString(),
+        potongan_pajak: potonganPajak,
       };
 
       const result = id
@@ -187,7 +190,7 @@ const InputSpmForm = () => {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">{id ? "Edit" : "Buat"} SPM</h1>
           <p className="text-muted-foreground">
-            Lengkapi 3 tahap berikut untuk membuat SPM baru
+            Lengkapi 4 tahap berikut untuk membuat SPM baru
           </p>
         </div>
 
@@ -203,8 +206,17 @@ const InputSpmForm = () => {
           </div>
           <div className={`flex-1 h-0.5 mx-4 ${formData ? "bg-primary" : "bg-muted"}`} />
           <div className="flex items-center gap-2">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === "lampiran" ? "bg-primary text-primary-foreground" : formData ? "bg-muted-foreground/20 text-muted-foreground" : "bg-muted text-muted-foreground"}`}>
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === "pajak" ? "bg-primary text-primary-foreground" : formData ? "bg-muted-foreground/20 text-muted-foreground" : "bg-muted text-muted-foreground"}`}>
               2
+            </div>
+            <span className={`text-sm font-medium ${activeTab === "pajak" ? "text-foreground" : formData ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
+              Potongan Pajak
+            </span>
+          </div>
+          <div className={`flex-1 h-0.5 mx-4 ${potonganPajak.length > 0 || activeTab === "lampiran" || activeTab === "review" ? "bg-primary" : "bg-muted"}`} />
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === "lampiran" ? "bg-primary text-primary-foreground" : formData ? "bg-muted-foreground/20 text-muted-foreground" : "bg-muted text-muted-foreground"}`}>
+              3
             </div>
             <span className={`text-sm font-medium ${activeTab === "lampiran" ? "text-foreground" : formData ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
               Lampiran
@@ -213,7 +225,7 @@ const InputSpmForm = () => {
           <div className={`flex-1 h-0.5 mx-4 ${activeTab === "review" ? "bg-primary" : "bg-muted"}`} />
           <div className="flex items-center gap-2">
             <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === "review" ? "bg-primary text-primary-foreground" : formData ? "bg-muted-foreground/20 text-muted-foreground" : "bg-muted text-muted-foreground"}`}>
-              3
+              4
             </div>
             <span className={`text-sm font-medium ${activeTab === "review" ? "text-foreground" : formData ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
               Review & Submit
@@ -224,6 +236,7 @@ const InputSpmForm = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="hidden">
             <TabsTrigger value="data">Data Dasar</TabsTrigger>
+            <TabsTrigger value="pajak">Potongan Pajak</TabsTrigger>
             <TabsTrigger value="lampiran">Lampiran</TabsTrigger>
             <TabsTrigger value="review">Review & Submit</TabsTrigger>
           </TabsList>
@@ -236,13 +249,26 @@ const InputSpmForm = () => {
             />
           </TabsContent>
 
+          <TabsContent value="pajak" className="mt-6">
+            {formData && (
+              <SpmPajakForm
+                jenisSpm={formData.jenis_spm}
+                nilaiSpm={formData.nilai_spm}
+                potonganPajak={potonganPajak}
+                onPotonganChange={setPotonganPajak}
+                onNext={() => setActiveTab("lampiran")}
+                onBack={() => setActiveTab("data")}
+              />
+            )}
+          </TabsContent>
+
           <TabsContent value="lampiran" className="mt-6">
             <SpmLampiranForm
               jenisSpm={formData?.jenis_spm}
               files={files}
               onFilesChange={setFiles}
               onNext={() => setActiveTab("review")}
-              onBack={() => setActiveTab("data")}
+              onBack={() => setActiveTab("pajak")}
             />
           </TabsContent>
 
@@ -251,6 +277,7 @@ const InputSpmForm = () => {
               <SpmReviewForm
                 formData={formData}
                 files={files}
+                potonganPajak={potonganPajak}
                 opdName={opdName}
                 programName={programName}
                 kegiatanName={kegiatanName}

@@ -178,7 +178,9 @@ const LaporanSpm = () => {
                       <TableHead>Tanggal</TableHead>
                       <TableHead>OPD</TableHead>
                       <TableHead>Jenis</TableHead>
-                      <TableHead className="text-right">Nilai</TableHead>
+                      <TableHead className="text-right">Nilai (Bruto)</TableHead>
+                      <TableHead className="text-right">Potongan</TableHead>
+                      <TableHead className="text-right">Nilai Bersih</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -199,6 +201,12 @@ const LaporanSpm = () => {
                         <TableCell className="uppercase">{spm.jenis_spm}</TableCell>
                         <TableCell className="text-right">
                           {formatCurrency(spm.nilai_spm)}
+                        </TableCell>
+                        <TableCell className="text-right text-destructive">
+                          {spm.total_potongan ? `-${formatCurrency(spm.total_potongan)}` : "-"}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          {formatCurrency(spm.nilai_bersih || spm.nilai_spm)}
                         </TableCell>
                         <TableCell>{getStatusBadge(spm.status)}</TableCell>
                       </TableRow>

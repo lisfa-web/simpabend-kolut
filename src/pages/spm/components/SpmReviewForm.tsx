@@ -5,7 +5,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency } from "@/lib/currency";
 import { formatFileSize } from "@/lib/fileValidation";
 import { SpmDataFormValues } from "@/schemas/spmSchema";
-import { Loader2 } from "lucide-react";
+import { Loader2, Calculator } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Separator } from "@/components/ui/separator";
 
 interface SpmReviewFormProps {
   formData: SpmDataFormValues;
@@ -15,6 +17,7 @@ interface SpmReviewFormProps {
     spj: File[];
     lainnya: File[];
   };
+  potonganPajak?: any[];
   opdName?: string;
   programName?: string;
   kegiatanName?: string;
@@ -28,6 +31,7 @@ interface SpmReviewFormProps {
 export const SpmReviewForm = ({
   formData,
   files,
+  potonganPajak = [],
   opdName,
   programName,
   kegiatanName,
@@ -38,6 +42,9 @@ export const SpmReviewForm = ({
   isSubmitting = false,
 }: SpmReviewFormProps) => {
   const [verified, setVerified] = useState(false);
+
+  const totalPotongan = potonganPajak.reduce((sum, p) => sum + (p.jumlah_pajak || 0), 0);
+  const nilaiBersih = formData.nilai_spm - totalPotongan;
 
   const jenisSpmLabels: Record<string, string> = {
     up: "UP (Uang Persediaan)",
@@ -96,6 +103,56 @@ export const SpmReviewForm = ({
           </div>
         </dl>
       </Card>
+
+      {/* Potongan Pajak */}
+      {potonganPajak && potonganPajak.length > 0 && (
+        <Card className="p-6">
+          <h3 className="font-semibold mb-4 flex items-center gap-2">
+            <Calculator className="h-5 w-5" />
+            Potongan Pajak
+          </h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Jenis Pajak</TableHead>
+                <TableHead>Tarif</TableHead>
+                <TableHead>Dasar Pengenaan</TableHead>
+                <TableHead className="text-right">Jumlah</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {potonganPajak.map((pajak, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="font-medium">{pajak.uraian}</TableCell>
+                  <TableCell>{pajak.tarif}%</TableCell>
+                  <TableCell>{formatCurrency(pajak.dasar_pengenaan)}</TableCell>
+                  <TableCell className="text-right font-semibold">
+                    {formatCurrency(pajak.jumlah_pajak)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+
+          <Separator className="my-4" />
+          
+          <div className="space-y-2 p-4 bg-muted rounded-lg">
+            <div className="flex justify-between">
+              <span>Nilai SPM (Bruto):</span>
+              <span className="font-bold">{formatCurrency(formData.nilai_spm)}</span>
+            </div>
+            <div className="flex justify-between text-destructive">
+              <span>Total Potongan:</span>
+              <span className="font-bold">-{formatCurrency(totalPotongan)}</span>
+            </div>
+            <Separator />
+            <div className="flex justify-between text-lg">
+              <span className="font-semibold">Nilai Bersih (Netto):</span>
+              <span className="font-bold text-primary">{formatCurrency(nilaiBersih)}</span>
+            </div>
+          </div>
+        </Card>
+      )}
 
       <Card className="p-6">
         <h3 className="font-semibold mb-4">Lampiran ({allFiles.length} file)</h3>

@@ -81,7 +81,8 @@ const Sp2dForm = () => {
           program:program_id(nama_program),
           kegiatan:kegiatan_id(nama_kegiatan),
           subkegiatan:subkegiatan_id(nama_subkegiatan),
-          vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening)
+          vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening),
+          potongan_pajak_spm(*)
         `)
         .eq("status", "disetujui")
         .order("created_at", { ascending: false });
@@ -144,26 +145,11 @@ const Sp2dForm = () => {
       const spm = spmList.find((s) => s.id === watchSpmId);
       if (spm) {
         setSelectedSpm(spm);
-        form.setValue("nilai_sp2d", Number(spm.nilai_spm));
         
-        // Auto-suggest taxes based on SPM type
-        const suggestions = getSuggestedTaxes(spm.jenis_spm);
-        if (suggestions.length > 0 && fields.length === 0) {
-          suggestions.forEach((sug) => {
-            const pajakOption = JENIS_PAJAK_OPTIONS.find(
-              (opt) => opt.value === sug.jenis
-            );
-            append({
-              jenis_pajak: sug.jenis,
-              rekening_pajak: pajakOption?.rekening || "",
-              uraian: sug.uraian,
-              tarif: sug.tarif,
-              dasar_pengenaan: Number(spm.nilai_spm),
-              jumlah_pajak: (Number(spm.nilai_spm) * sug.tarif) / 100,
-            });
-          });
-        }
+        // Set nilai SP2D from SPM (use nilai_bersih if exists, otherwise nilai_spm)
+        form.setValue("nilai_sp2d", Number(spm.nilai_bersih || spm.nilai_spm));
         
+        // Auto-fill bank info from vendor
         if (spm.vendor) {
           const vendor = spm.vendor as any;
           form.setValue("nama_bank", vendor.nama_bank || "");
@@ -176,14 +162,12 @@ const Sp2dForm = () => {
         }
       }
     }
-  }, [watchSpmId, spmList, form, append, fields.length]);
+  }, [watchSpmId, spmList, form]);
 
   const onSubmit = async (data: Sp2dFormData) => {
-    if (totalPotongan > data.nilai_sp2d) {
-      toast.error("Total potongan tidak boleh melebihi nilai SP2D");
-      return;
-    }
-
+    // Copy pajak from SPM
+    const pajakFromSpm = selectedSpm?.potongan_pajak_spm || [];
+    
     createSp2d.mutate(
       {
         spm_id: data.spm_id,
@@ -196,9 +180,9 @@ const Sp2dForm = () => {
         catatan: data.catatan || null,
         kuasa_bud_id: user?.id,
         status: "pending" as any,
-        total_potongan: totalPotongan,
-        nilai_diterima: nilaiDiterima,
-        potongan_pajak: data.potongan_pajak,
+        total_potongan: selectedSpm?.total_potongan || 0,
+        nilai_diterima: selectedSpm?.nilai_bersih || data.nilai_sp2d,
+        potongan_pajak: pajakFromSpm,
       },
       {
         onSuccess: () => {

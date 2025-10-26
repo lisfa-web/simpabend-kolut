@@ -8,7 +8,9 @@ import { useSpmDetail } from "@/hooks/useSpmDetail";
 import { SpmStatusBadge } from "./components/SpmStatusBadge";
 import { SpmTimeline } from "./components/SpmTimeline";
 import { formatCurrency } from "@/lib/currency";
-import { ArrowLeft, Download, Loader2, Eye, Edit, AlertCircle } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Eye, Edit, AlertCircle, Calculator } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Separator } from "@/components/ui/separator";
 import { formatFileSize, isImageFile, isPdfFile } from "@/lib/fileValidation";
 import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
@@ -221,14 +223,66 @@ const InputSpmDetail = () => {
                   <div className="col-span-2">
                     <dt className="text-sm text-muted-foreground">Vendor</dt>
                     <dd className="font-medium">{spm.vendor.nama_vendor}</dd>
-                  </div>
-                )}
-                <div className="col-span-2">
-                  <dt className="text-sm text-muted-foreground">Uraian</dt>
-                  <dd className="font-medium">{spm.uraian}</dd>
                 </div>
-              </dl>
+              )}
+              <div className="col-span-2">
+                <dt className="text-sm text-muted-foreground">Uraian</dt>
+                <dd className="font-medium">{spm.uraian}</dd>
+              </div>
+            </dl>
+          </Card>
+
+          {/* Potongan Pajak */}
+          {spm.potongan_pajak_spm && spm.potongan_pajak_spm.length > 0 && (
+            <Card className="p-6">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <Calculator className="h-5 w-5" />
+                Potongan Pajak
+              </h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Jenis Pajak</TableHead>
+                    <TableHead>Rekening</TableHead>
+                    <TableHead>Tarif</TableHead>
+                    <TableHead>Dasar Pengenaan</TableHead>
+                    <TableHead className="text-right">Jumlah</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {spm.potongan_pajak_spm.map((pajak: any) => (
+                    <TableRow key={pajak.id}>
+                      <TableCell className="font-medium">{pajak.uraian}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{pajak.rekening_pajak}</TableCell>
+                      <TableCell>{pajak.tarif}%</TableCell>
+                      <TableCell>{formatCurrency(pajak.dasar_pengenaan)}</TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {formatCurrency(pajak.jumlah_pajak)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              <Separator className="my-4" />
+              
+              <div className="space-y-2 p-4 bg-muted rounded-lg">
+                <div className="flex justify-between">
+                  <span>Nilai SPM (Bruto):</span>
+                  <span className="font-bold">{formatCurrency(spm.nilai_spm)}</span>
+                </div>
+                <div className="flex justify-between text-destructive">
+                  <span>Total Potongan:</span>
+                  <span className="font-bold">-{formatCurrency(spm.total_potongan || 0)}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-lg">
+                  <span className="font-semibold">Nilai Bersih (Netto):</span>
+                  <span className="font-bold text-primary">{formatCurrency(spm.nilai_bersih || spm.nilai_spm)}</span>
+                </div>
+              </div>
             </Card>
+          )}
           </TabsContent>
 
           <TabsContent value="lampiran" className="space-y-4">

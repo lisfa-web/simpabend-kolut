@@ -17,7 +17,8 @@ export const useSpmDetail = (spmId: string | undefined) => {
           subkegiatan:subkegiatan_id(nama_subkegiatan, kode_subkegiatan),
           vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening),
           bendahara:profiles!spm_bendahara_id_fkey(full_name, email),
-          lampiran_spm(*)
+          lampiran_spm(*),
+          potongan_pajak_spm(*)
         `)
         .eq("id", spmId)
         .single();

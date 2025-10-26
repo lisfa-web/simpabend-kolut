@@ -33,7 +33,8 @@ export const useLaporanSpm = (filters?: LaporanSpmFilters) => {
             pbmd:profiles!spm_verified_by_pbmd_fkey(full_name),
             akuntansi:profiles!spm_verified_by_akuntansi_fkey(full_name),
             perbendaharaan:profiles!spm_verified_by_perbendaharaan_fkey(full_name),
-            kepala_bkad:profiles!spm_verified_by_kepala_bkad_fkey(full_name)
+            kepala_bkad:profiles!spm_verified_by_kepala_bkad_fkey(full_name),
+            potongan_pajak_spm(*)
           `)
           .order("tanggal_ajuan", { ascending: false });
 

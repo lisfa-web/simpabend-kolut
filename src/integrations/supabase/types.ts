@@ -557,6 +557,53 @@ export type Database = {
           },
         ]
       }
+      potongan_pajak_spm: {
+        Row: {
+          created_at: string | null
+          dasar_pengenaan: number
+          id: string
+          jenis_pajak: string
+          jumlah_pajak: number
+          rekening_pajak: string | null
+          spm_id: string
+          tarif: number
+          updated_at: string | null
+          uraian: string
+        }
+        Insert: {
+          created_at?: string | null
+          dasar_pengenaan: number
+          id?: string
+          jenis_pajak: string
+          jumlah_pajak: number
+          rekening_pajak?: string | null
+          spm_id: string
+          tarif: number
+          updated_at?: string | null
+          uraian: string
+        }
+        Update: {
+          created_at?: string | null
+          dasar_pengenaan?: number
+          id?: string
+          jenis_pajak?: string
+          jumlah_pajak?: number
+          rekening_pajak?: string | null
+          spm_id?: string
+          tarif?: number
+          updated_at?: string | null
+          uraian?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "potongan_pajak_spm_spm_id_fkey"
+            columns: ["spm_id"]
+            isOneToOne: false
+            referencedRelation: "spm"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -790,6 +837,7 @@ export type Database = {
           id: string
           jenis_spm: Database["public"]["Enums"]["jenis_spm"]
           kegiatan_id: string | null
+          nilai_bersih: number | null
           nilai_spm: number
           nomor_antrian: string | null
           nomor_berkas: string | null
@@ -806,6 +854,7 @@ export type Database = {
           tanggal_pbmd: string | null
           tanggal_perbendaharaan: string | null
           tanggal_resepsionis: string | null
+          total_potongan: number | null
           updated_at: string | null
           uraian: string | null
           vendor_id: string | null
@@ -826,6 +875,7 @@ export type Database = {
           id?: string
           jenis_spm: Database["public"]["Enums"]["jenis_spm"]
           kegiatan_id?: string | null
+          nilai_bersih?: number | null
           nilai_spm: number
           nomor_antrian?: string | null
           nomor_berkas?: string | null
@@ -842,6 +892,7 @@ export type Database = {
           tanggal_pbmd?: string | null
           tanggal_perbendaharaan?: string | null
           tanggal_resepsionis?: string | null
+          total_potongan?: number | null
           updated_at?: string | null
           uraian?: string | null
           vendor_id?: string | null
@@ -862,6 +913,7 @@ export type Database = {
           id?: string
           jenis_spm?: Database["public"]["Enums"]["jenis_spm"]
           kegiatan_id?: string | null
+          nilai_bersih?: number | null
           nilai_spm?: number
           nomor_antrian?: string | null
           nomor_berkas?: string | null
@@ -878,6 +930,7 @@ export type Database = {
           tanggal_pbmd?: string | null
           tanggal_perbendaharaan?: string | null
           tanggal_resepsionis?: string | null
+          total_potongan?: number | null
           updated_at?: string | null
           uraian?: string | null
           vendor_id?: string | null
