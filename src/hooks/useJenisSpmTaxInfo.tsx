@@ -72,17 +72,19 @@ export const useJenisSpmTaxInfo = () => {
 // Helper function to get tax labels
 export const getJenisSpmLabel = (jenis: string): string => {
   const labels: Record<string, string> = {
-    up: "UP (Uang Persediaan)",
-    gu: "GU (Ganti Uang)",
-    tu: "TU (Tambah Uang)",
-    ls_gaji: "LS Gaji",
-    ls_barang: "LS Barang",
-    ls_jasa: "LS Jasa",
-    ls_honorarium: "LS Honorarium",
-    ls_jasa_konstruksi: "LS Jasa Konstruksi",
-    ls_sewa: "LS Sewa",
-    ls_barang_jasa: "LS Barang & Jasa",
-    ls_belanja_modal: "LS Belanja Modal",
+    'UP': 'UP (Uang Persediaan)',
+    'GU': 'GU (Ganti Uang)',
+    'TU': 'TU (Tambah Uang)',
+    'LS_Gaji': 'LS Gaji',
+    'LS_Barang_Jasa': 'LS Barang & Jasa',
+    'LS_Belanja_Modal': 'LS Belanja Modal',
+    // Backward compatibility
+    'up': 'UP (Uang Persediaan)',
+    'gu': 'GU (Ganti Uang)',
+    'tu': 'TU (Tambah Uang)',
+    'ls_gaji': 'LS Gaji',
+    'ls_barang_jasa': 'LS Barang & Jasa',
+    'ls_belanja_modal': 'LS Belanja Modal',
   };
-  return labels[jenis] || jenis.toUpperCase().replace(/_/g, ' ');
+  return labels[jenis] || jenis.replace(/_/g, ' ');
 };

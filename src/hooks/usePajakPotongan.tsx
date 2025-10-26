@@ -71,13 +71,16 @@ export const getSuggestedTaxes = (jenisSpm: string) => {
   const suggestions: Array<{ jenis: string; tarif: number; uraian: string }> = [];
   
   switch (jenisSpm) {
+    case "LS_Gaji":
     case "ls_gaji":
       suggestions.push({ jenis: "pph_21", tarif: 5, uraian: "PPh 21 Gaji Pegawai" });
       break;
+    case "LS_Barang_Jasa":
     case "ls_barang_jasa":
       suggestions.push({ jenis: "pph_22", tarif: 1.5, uraian: "PPh 22 Pembelian Barang" });
       suggestions.push({ jenis: "ppn", tarif: 11, uraian: "PPN 11%" });
       break;
+    case "LS_Belanja_Modal":
     case "ls_belanja_modal":
       suggestions.push({ jenis: "pph_4_ayat_2", tarif: 2.5, uraian: "PPh Final Konstruksi" });
       suggestions.push({ jenis: "ppn", tarif: 11, uraian: "PPN 11%" });

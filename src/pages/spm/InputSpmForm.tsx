@@ -53,28 +53,28 @@ const InputSpmForm = () => {
   // Pre-fill form data saat mode edit
   useEffect(() => {
     if (id && spmDetail && !formData) {
-      const convertDbJenisSpmToFormFormat = (jenis: string): 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang_jasa' | 'ls_belanja_modal' => {
-        const mapping: Record<string, 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang_jasa' | 'ls_belanja_modal'> = {
-          'UP': 'up',
-          'up': 'up',
-          'GU': 'gu',
-          'gu': 'gu',
-          'TU': 'tu',
-          'tu': 'tu',
-          'LS_Gaji': 'ls_gaji',
-          'ls_gaji': 'ls_gaji',
-          'LS_Barang_Jasa': 'ls_barang_jasa',
-          'ls_barang_jasa': 'ls_barang_jasa',
+      const convertDbJenisSpmToFormFormat = (jenis: string): 'UP' | 'GU' | 'TU' | 'LS_Gaji' | 'LS_Barang_Jasa' | 'LS_Belanja_Modal' => {
+        const mapping: Record<string, 'UP' | 'GU' | 'TU' | 'LS_Gaji' | 'LS_Barang_Jasa' | 'LS_Belanja_Modal'> = {
+          'UP': 'UP',
+          'up': 'UP',
+          'GU': 'GU',
+          'gu': 'GU',
+          'TU': 'TU',
+          'tu': 'TU',
+          'LS_Gaji': 'LS_Gaji',
+          'ls_gaji': 'LS_Gaji',
+          'LS_Barang_Jasa': 'LS_Barang_Jasa',
+          'ls_barang_jasa': 'LS_Barang_Jasa',
           // Backward compatibility for granular types
-          'ls_barang': 'ls_barang_jasa',
-          'ls_jasa': 'ls_barang_jasa',
-          'ls_honorarium': 'ls_barang_jasa',
-          'ls_jasa_konstruksi': 'ls_barang_jasa',
-          'ls_sewa': 'ls_barang_jasa',
-          'LS_Belanja_Modal': 'ls_belanja_modal',
-          'ls_belanja_modal': 'ls_belanja_modal',
+          'ls_barang': 'LS_Barang_Jasa',
+          'ls_jasa': 'LS_Barang_Jasa',
+          'ls_honorarium': 'LS_Barang_Jasa',
+          'ls_jasa_konstruksi': 'LS_Barang_Jasa',
+          'ls_sewa': 'LS_Barang_Jasa',
+          'LS_Belanja_Modal': 'LS_Belanja_Modal',
+          'ls_belanja_modal': 'LS_Belanja_Modal',
         };
-        return mapping[jenis] || 'up';
+        return mapping[jenis] || 'UP';
       };
 
       setFormData({
@@ -92,7 +92,7 @@ const InputSpmForm = () => {
   }, [id, spmDetail, formData]);
 
   const convertJenisSpmToDbFormat = (jenis: string): string => {
-    // All values are already in correct DB format (lowercase with underscores)
+    // All values are already in correct DB format (PascalCase)
     return jenis;
   };
 
