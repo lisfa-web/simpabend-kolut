@@ -184,11 +184,11 @@ export function AppSidebar() {
         <div className="px-4 py-6">
           {open ? (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/10 backdrop-blur-sm overflow-hidden">
+              <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-white/10 backdrop-blur-sm overflow-hidden">
                 {logoUrl ? (
                   <img src={logoUrl} alt="Logo BKAD" className="w-full h-full object-contain p-1" />
                 ) : (
-                  <Building2 className="w-6 h-6 text-white" />
+                  <Building2 className="w-7 h-7 text-white" />
                 )}
               </div>
               <div>
@@ -197,11 +197,11 @@ export function AppSidebar() {
               </div>
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/10 mx-auto overflow-hidden">
+            <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-white/10 mx-auto overflow-hidden">
               {logoUrl ? (
                 <img src={logoUrl} alt="Logo BKAD" className="w-full h-full object-contain p-1" />
               ) : (
-                <Building2 className="w-6 h-6 text-white" />
+                <Building2 className="w-7 h-7 text-white" />
               )}
             </div>
           )}
