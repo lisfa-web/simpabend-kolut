@@ -86,6 +86,7 @@ const App = () => (
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             
             {/* SPM Routes */}
+            <Route path="/input-spm" element={<ProtectedRoute><InputSpmList /></ProtectedRoute>} />
             <Route path="/spm/input" element={<ProtectedRoute><InputSpmList /></ProtectedRoute>} />
             <Route path="/spm/input/new" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
             <Route path="/input-spm/buat" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
