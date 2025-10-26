@@ -86,7 +86,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const programId = form.watch("program_id");
   const kegiatanId = form.watch("kegiatan_id");
   const nilaiSpm = form.watch("nilai_spm");
-  const requiresVendor = ['ls_barang_jasa', 'ls_belanja_modal'].includes(jenisSpm);
+  const requiresVendor = ['LS_Barang_Jasa', 'LS_Belanja_Modal'].includes(jenisSpm);
 
   const { speak, isSpeaking } = useSpeechSynthesis();
 
@@ -290,7 +290,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardTrigger asChild>
                       <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
                         <FormControl>
-                          <RadioGroupItem value="up" />
+                          <RadioGroupItem value="UP" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-help flex items-center gap-1">
                           UP (Uang Persediaan)
@@ -312,7 +312,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardTrigger asChild>
                       <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
                         <FormControl>
-                          <RadioGroupItem value="gu" />
+                          <RadioGroupItem value="GU" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-help flex items-center gap-1">
                           GU (Ganti Uang)
@@ -334,7 +334,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardTrigger asChild>
                       <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
                         <FormControl>
-                          <RadioGroupItem value="tu" />
+                          <RadioGroupItem value="TU" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-help flex items-center gap-1">
                           TU (Tambah Uang)
@@ -356,7 +356,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardTrigger asChild>
                       <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
                         <FormControl>
-                          <RadioGroupItem value="ls_gaji" />
+                          <RadioGroupItem value="LS_Gaji" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-help flex items-center gap-1">
                           LS Gaji
@@ -367,9 +367,9 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardContent className="w-80">
                       <div className="space-y-2">
                         <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
-                        {taxMapping["ls_gaji"] && taxMapping["ls_gaji"].length > 0 ? (
+                        {taxMapping["LS_Gaji"] && taxMapping["LS_Gaji"].length > 0 ? (
                           <div className="space-y-2">
-                            {taxMapping["ls_gaji"].filter(t => t.is_default).map((tax) => (
+                            {taxMapping["LS_Gaji"].filter(t => t.is_default).map((tax) => (
                               <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
                                 <div className="space-y-0.5">
                                   <span className="text-sm font-medium">{tax.nama}</span>
@@ -389,7 +389,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardTrigger asChild>
                       <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
                         <FormControl>
-                          <RadioGroupItem value="ls_barang_jasa" />
+                          <RadioGroupItem value="LS_Barang_Jasa" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-help flex items-center gap-1">
                           LS Barang & Jasa
@@ -400,11 +400,11 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardContent className="w-80">
                       <div className="space-y-3">
                         <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
-                        {taxMapping["ls_barang_jasa"] && taxMapping["ls_barang_jasa"].length > 0 ? (
+                        {taxMapping["LS_Barang_Jasa"] && taxMapping["LS_Barang_Jasa"].length > 0 ? (
                           <>
                             <div className="space-y-2">
                               <p className="text-xs text-muted-foreground font-medium">Pajak Default (Otomatis):</p>
-                              {taxMapping["ls_barang_jasa"].filter(t => t.is_default).map((tax) => (
+                              {taxMapping["LS_Barang_Jasa"].filter(t => t.is_default).map((tax) => (
                                 <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
                                   <div className="space-y-0.5">
                                     <span className="text-sm font-medium">{tax.nama}</span>
@@ -414,10 +414,10 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                                 </div>
                               ))}
                             </div>
-                            {taxMapping["ls_barang_jasa"].filter(t => !t.is_default).length > 0 && (
+                            {taxMapping["LS_Barang_Jasa"].filter(t => !t.is_default).length > 0 && (
                               <div className="space-y-2">
                                 <p className="text-xs text-muted-foreground font-medium">Pajak Opsional (Dapat ditambahkan):</p>
-                                {taxMapping["ls_barang_jasa"].filter(t => !t.is_default).map((tax) => (
+                                {taxMapping["LS_Barang_Jasa"].filter(t => !t.is_default).map((tax) => (
                                   <div key={tax.id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
                                     <span className="text-sm">{tax.nama}</span>
                                     <span className="font-medium">{tax.tarif}%</span>
@@ -436,7 +436,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardTrigger asChild>
                       <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
                         <FormControl>
-                          <RadioGroupItem value="ls_belanja_modal" />
+                          <RadioGroupItem value="LS_Belanja_Modal" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-help flex items-center gap-1">
                           LS Belanja Modal
@@ -447,11 +447,11 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardContent className="w-80">
                       <div className="space-y-3">
                         <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
-                        {taxMapping["ls_belanja_modal"] && taxMapping["ls_belanja_modal"].length > 0 ? (
+                        {taxMapping["LS_Belanja_Modal"] && taxMapping["LS_Belanja_Modal"].length > 0 ? (
                           <>
                             <div className="space-y-2">
                               <p className="text-xs text-muted-foreground font-medium">Pajak Default (Otomatis):</p>
-                              {taxMapping["ls_belanja_modal"].filter(t => t.is_default).map((tax) => (
+                              {taxMapping["LS_Belanja_Modal"].filter(t => t.is_default).map((tax) => (
                                 <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
                                   <div className="space-y-0.5">
                                     <span className="text-sm font-medium">{tax.nama}</span>
@@ -461,10 +461,10 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                                 </div>
                               ))}
                             </div>
-                            {taxMapping["ls_belanja_modal"].filter(t => !t.is_default).length > 0 && (
+                            {taxMapping["LS_Belanja_Modal"].filter(t => !t.is_default).length > 0 && (
                               <div className="space-y-2">
                                 <p className="text-xs text-muted-foreground font-medium">Pajak Opsional (Dapat ditambahkan):</p>
-                                {taxMapping["ls_belanja_modal"].filter(t => !t.is_default).map((tax) => (
+                                {taxMapping["LS_Belanja_Modal"].filter(t => !t.is_default).map((tax) => (
                                   <div key={tax.id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
                                     <span className="text-sm">{tax.nama}</span>
                                     <span className="font-medium">{tax.tarif}%</span>
@@ -511,7 +511,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                 <h4 className="font-semibold text-base">Informasi Pajak - {getJenisSpmLabel(jenisSpm)}</h4>
               </div>
               
-              {['up','gu','tu'].includes(jenisSpm) ? (
+              {['UP','GU','TU'].includes(jenisSpm) ? (
                 <AlertDescription className="flex items-center gap-2 text-sm">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                   <span>Tidak dikenakan potongan pajak untuk jenis SPM ini.</span>
