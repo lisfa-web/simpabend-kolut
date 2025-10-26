@@ -10,6 +10,7 @@ import {
   ListTree,
   UserCog,
   Receipt,
+  Link,
 } from "lucide-react";
 
 interface MasterDataCard {
@@ -78,6 +79,14 @@ const masterDataList: MasterDataCard[] = [
     path: "/masterdata/pajak",
     gradient: "from-yellow-500/10 to-amber-500/10",
     iconColor: "text-yellow-600",
+  },
+  {
+    title: "Mapping Pajak SPM",
+    description: "Kelola mapping pajak untuk setiap jenis SPM",
+    icon: Link,
+    path: "/masterdata/pajak/mapping",
+    gradient: "from-teal-500/10 to-cyan-500/10",
+    iconColor: "text-teal-600",
   },
 ];
 

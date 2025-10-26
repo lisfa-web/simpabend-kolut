@@ -37,6 +37,8 @@ import SubkegiatanList from "./pages/masterdata/SubkegiatanList";
 import SubkegiatanForm from "./pages/masterdata/SubkegiatanForm";
 import MasterPajakList from "./pages/masterdata/MasterPajakList";
 import MasterPajakForm from "./pages/masterdata/MasterPajakForm";
+import PajakPerJenisSpmList from "./pages/masterdata/PajakPerJenisSpmList";
+import PajakPerJenisSpmForm from "./pages/masterdata/PajakPerJenisSpmForm";
 import Sp2dList from "./pages/spm/Sp2dList";
 import Sp2dForm from "./pages/spm/Sp2dForm";
 import Sp2dDetail from "./pages/spm/Sp2dDetail";
@@ -152,6 +154,9 @@ const App = () => (
             <Route path="/masterdata/pajak" element={<ProtectedRoute><MasterPajakList /></ProtectedRoute>} />
             <Route path="/masterdata/pajak/tambah" element={<ProtectedRoute><MasterPajakForm /></ProtectedRoute>} />
             <Route path="/masterdata/pajak/edit/:id" element={<ProtectedRoute><MasterPajakForm /></ProtectedRoute>} />
+            <Route path="/masterdata/pajak/mapping" element={<ProtectedRoute><PajakPerJenisSpmList /></ProtectedRoute>} />
+            <Route path="/masterdata/pajak/mapping/tambah" element={<ProtectedRoute><PajakPerJenisSpmForm /></ProtectedRoute>} />
+            <Route path="/masterdata/pajak/mapping/edit/:id" element={<ProtectedRoute><PajakPerJenisSpmForm /></ProtectedRoute>} />
             
             {/* Laporan Routes */}
             <Route path="/laporan" element={<ProtectedRoute><LaporanIndex /></ProtectedRoute>} />

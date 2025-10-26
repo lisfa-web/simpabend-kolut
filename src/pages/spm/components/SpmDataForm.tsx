@@ -22,13 +22,15 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { CurrencyInput } from "./CurrencyInput";
 import { useOpdList } from "@/hooks/useOpdList";
 import { useProgramList } from "@/hooks/useProgramList";
 import { useKegiatanList } from "@/hooks/useKegiatanList";
 import { useSubkegiatanList } from "@/hooks/useSubkegiatanList";
 import { useVendorList } from "@/hooks/useVendorList";
-import { Loader2, Volume2 } from "lucide-react";
+import { useJenisSpmTaxInfo } from "@/hooks/useJenisSpmTaxInfo";
+import { Loader2, Volume2, Info } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,6 +73,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const { data: kegiatanList } = useKegiatanList({ program_id: programId, is_active: true });
   const { data: subkegiatanList } = useSubkegiatanList({ kegiatan_id: kegiatanId, is_active: true });
   const { data: vendorList } = useVendorList({ is_active: true });
+  const { data: taxMapping = {} } = useJenisSpmTaxInfo();
 
   // Reset form dengan defaultValues saat mode edit
   useEffect(() => {
@@ -261,52 +264,186 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                   value={field.value}
                   className="grid grid-cols-2 gap-4"
                 >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="up" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      UP (Uang Persediaan)
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="gu" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      GU (Ganti Uang)
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="tu" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      TU (Tambah Uang)
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="ls_gaji" />
-                    </FormControl>
-                    <FormLabel className="font-normal">LS Gaji</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="ls_barang_jasa" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      LS Barang & Jasa
-                    </FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="ls_belanja_modal" />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      LS Belanja Modal
-                    </FormLabel>
-                  </FormItem>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
+                        <FormControl>
+                          <RadioGroupItem value="up" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
+                          UP (Uang Persediaan)
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </FormLabel>
+                      </FormItem>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
+                        {taxMapping["up"] && taxMapping["up"].length > 0 ? (
+                          <div className="space-y-1">
+                            {taxMapping["up"].map((tax) => (
+                              <div key={tax.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{tax.nama}</span>
+                                <span className="font-medium">{tax.tarif}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                        )}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
+                        <FormControl>
+                          <RadioGroupItem value="gu" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
+                          GU (Ganti Uang)
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </FormLabel>
+                      </FormItem>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
+                        {taxMapping["gu"] && taxMapping["gu"].length > 0 ? (
+                          <div className="space-y-1">
+                            {taxMapping["gu"].map((tax) => (
+                              <div key={tax.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{tax.nama}</span>
+                                <span className="font-medium">{tax.tarif}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                        )}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
+                        <FormControl>
+                          <RadioGroupItem value="tu" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
+                          TU (Tambah Uang)
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </FormLabel>
+                      </FormItem>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
+                        {taxMapping["tu"] && taxMapping["tu"].length > 0 ? (
+                          <div className="space-y-1">
+                            {taxMapping["tu"].map((tax) => (
+                              <div key={tax.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{tax.nama}</span>
+                                <span className="font-medium">{tax.tarif}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                        )}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
+                        <FormControl>
+                          <RadioGroupItem value="ls_gaji" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
+                          LS Gaji
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </FormLabel>
+                      </FormItem>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
+                        {taxMapping["ls_gaji"] && taxMapping["ls_gaji"].length > 0 ? (
+                          <div className="space-y-1">
+                            {taxMapping["ls_gaji"].map((tax) => (
+                              <div key={tax.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{tax.nama}</span>
+                                <span className="font-medium">{tax.tarif}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                        )}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
+                        <FormControl>
+                          <RadioGroupItem value="ls_barang_jasa" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
+                          LS Barang & Jasa
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </FormLabel>
+                      </FormItem>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
+                        {taxMapping["ls_barang_jasa"] && taxMapping["ls_barang_jasa"].length > 0 ? (
+                          <div className="space-y-1">
+                            {taxMapping["ls_barang_jasa"].map((tax) => (
+                              <div key={tax.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{tax.nama}</span>
+                                <span className="font-medium">{tax.tarif}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                        )}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
+                        <FormControl>
+                          <RadioGroupItem value="ls_belanja_modal" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
+                          LS Belanja Modal
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </FormLabel>
+                      </FormItem>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
+                        {taxMapping["ls_belanja_modal"] && taxMapping["ls_belanja_modal"].length > 0 ? (
+                          <div className="space-y-1">
+                            {taxMapping["ls_belanja_modal"].map((tax) => (
+                              <div key={tax.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{tax.nama}</span>
+                                <span className="font-medium">{tax.tarif}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                        )}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
                 </RadioGroup>
               </FormControl>
               <FormMessage />
