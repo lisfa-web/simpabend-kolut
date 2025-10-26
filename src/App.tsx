@@ -64,6 +64,7 @@ import EmergencyMode from "./pages/pengaturan/EmergencyMode";
 import SidebarTemplate from "./pages/pengaturan/SidebarTemplate";
 import PanduanManual from "./pages/panduan/PanduanManual";
 import PanduanManualAdmin from "./pages/panduan/PanduanManualAdmin";
+import ProfilePage from "./pages/profile/ProfilePage";
 
 const queryClient = new QueryClient();
 
@@ -268,6 +269,9 @@ const App = () => (
           {/* Panduan Manual Routes */}
           <Route path="/panduan-manual" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />
           <Route path="/panduan-manual/admin" element={<RoleProtectedRoute allowedRoles={["administrator"]}><PanduanManualAdmin /></RoleProtectedRoute>} />
+
+          {/* Profile Route */}
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
