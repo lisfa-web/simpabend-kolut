@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { JENIS_PAJAK_OPTIONS, getSuggestedTaxes } from "@/hooks/usePajakPotonganSpm";
 import { formatCurrency } from "@/lib/currency";
 import { Separator } from "@/components/ui/separator";
+import { terbilangRupiah } from "@/lib/formatHelpers";
 
 interface PajakFormData {
   jenis_pajak: string;
@@ -255,6 +256,11 @@ export const SpmPajakForm = ({
                       value={pajak.dasar_pengenaan}
                       onChange={(val) => handlePajakChange(index, "dasar_pengenaan", val)}
                     />
+                    {pajak.dasar_pengenaan > 0 && (
+                      <p className="text-xs text-muted-foreground italic">
+                        {terbilangRupiah(pajak.dasar_pengenaan)}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">

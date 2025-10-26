@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { spmDataSchema, SpmDataFormValues } from "@/schemas/spmSchema";
 import { useEffect } from "react";
+import { terbilangRupiah } from "@/lib/formatHelpers";
 import {
   Form,
   FormControl,
@@ -46,6 +47,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const jenisSpm = form.watch("jenis_spm");
   const programId = form.watch("program_id");
   const kegiatanId = form.watch("kegiatan_id");
+  const nilaiSpm = form.watch("nilai_spm");
   const requiresVendor = jenisSpm === 'ls_barang_jasa' || jenisSpm === 'ls_belanja_modal';
 
   const { data: opdList, isLoading: opdLoading } = useOpdList({ is_active: true });
@@ -313,6 +315,11 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                   onChange={field.onChange}
                 />
               </FormControl>
+              {nilaiSpm > 0 && (
+                <p className="text-sm text-muted-foreground italic mt-2">
+                  <span className="font-medium">Terbilang:</span> {terbilangRupiah(nilaiSpm)}
+                </p>
+              )}
               <FormMessage />
             </FormItem>
           )}

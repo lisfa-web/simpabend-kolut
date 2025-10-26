@@ -8,6 +8,7 @@ import { SpmDataFormValues } from "@/schemas/spmSchema";
 import { Loader2, Calculator } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
+import { terbilangRupiah } from "@/lib/formatHelpers";
 
 interface SpmReviewFormProps {
   formData: SpmDataFormValues;
@@ -150,6 +151,9 @@ export const SpmReviewForm = ({
               <span className="font-semibold">Nilai Bersih (Netto):</span>
               <span className="font-bold text-primary">{formatCurrency(nilaiBersih)}</span>
             </div>
+            <p className="text-xs text-muted-foreground italic mt-2">
+              <span className="font-medium">Terbilang:</span> {terbilangRupiah(nilaiBersih)}
+            </p>
           </div>
         </Card>
       )}
