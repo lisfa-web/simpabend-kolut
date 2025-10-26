@@ -19,23 +19,18 @@ const About = () => {
       <Header />
       <main>
         {/* Hero Section */}
-        <section className="relative container py-20 md:py-32 overflow-hidden">
-          {/* Simplified Background */}
+        <section className="relative container py-20 md:py-32">
           <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/5 to-transparent" />
 
-          <div className="max-w-4xl mx-auto text-center animate-fade-in relative z-10">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-primary/10 backdrop-blur-sm border border-primary/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-              </span>
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-primary/10 border border-primary/20">
+              <span className="inline-flex rounded-full h-2 w-2 bg-primary" />
               <span className="text-sm font-medium">Sistem Terpercaya & Aman</span>
             </div>
 
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl mb-6">
               Tentang
-              <span className="block mt-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              <span className="block mt-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 SIMPA BEND BKADKU
               </span>
             </h1>
@@ -49,17 +44,16 @@ const About = () => {
         </section>
 
         {/* Visi & Misi Section */}
-        <section className="container py-16 relative">
+        <section className="container py-16">
           <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            <Card className="group relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-2 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">
-              
-              <CardHeader className="relative z-10">
+            <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border">
+              <CardHeader>
                 <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4 w-fit">
                   <Eye className="h-8 w-8 text-blue-600" />
                 </div>
                 <CardTitle className="text-2xl">Visi</CardTitle>
               </CardHeader>
-              <CardContent className="relative z-10">
+              <CardContent>
                 <p className="text-muted-foreground leading-relaxed">
                   Menjadi sistem informasi terdepan dalam pengelolaan pertanggungjawaban bendahara
                   yang transparan, akuntabel, dan efisien untuk mendukung tata kelola keuangan
@@ -68,15 +62,14 @@ const About = () => {
               </CardContent>
             </Card>
 
-            <Card className="group relative overflow-hidden bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">
-              
-              <CardHeader className="relative z-10">
+            <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border">
+              <CardHeader>
                 <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4 w-fit">
                   <Target className="h-8 w-8 text-purple-600" />
                 </div>
                 <CardTitle className="text-2xl">Misi</CardTitle>
               </CardHeader>
-              <CardContent className="relative z-10">
+              <CardContent>
                 <ul className="space-y-2 text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <CheckCircle className="h-5 w-5 text-accent shrink-0 mt-0.5" />
@@ -102,8 +95,8 @@ const About = () => {
 
         {/* Key Benefits */}
         <section className="container py-16 bg-muted/30">
-          <div className="text-center mb-12 animate-fade-in">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
               Manfaat Utama
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -158,15 +151,15 @@ const About = () => {
             ].map((benefit, index) => (
               <Card
                 key={index}
-                className={`group relative overflow-hidden bg-gradient-to-br ${benefit.gradient} border-2 hover:border-primary/20 transition-all duration-200 hover:-translate-y-1`}
+                className={`bg-gradient-to-br ${benefit.gradient} border`}
               >
-                <CardHeader className="relative z-10">
+                <CardHeader>
                   <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-3 w-fit">
                     <benefit.icon className={`h-6 w-6 ${benefit.iconColor}`} />
                   </div>
                   <CardTitle className="text-lg">{benefit.title}</CardTitle>
                 </CardHeader>
-                <CardContent className="relative z-10">
+                <CardContent>
                   <p className="text-sm text-muted-foreground">{benefit.description}</p>
                 </CardContent>
               </Card>
@@ -175,9 +168,9 @@ const About = () => {
         </section>
 
         {/* User Roles / Stakeholders */}
-        <section className="container py-16 relative">
+        <section className="container py-16">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
               Pengguna Sistem
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -218,9 +211,9 @@ const About = () => {
             ].map((user, index) => (
               <Card
                 key={index}
-                className={`group relative overflow-hidden bg-gradient-to-br ${user.gradient} border-2 hover:border-primary/20 transition-all duration-200`}
+                className={`bg-gradient-to-br ${user.gradient} border`}
               >
-                <CardContent className="pt-6 text-center relative z-10">
+                <CardContent className="pt-6 text-center">
                   <div className="inline-flex p-4 rounded-full bg-primary/10 mb-4">
                     <user.icon className={`h-8 w-8 ${user.iconColor}`} />
                   </div>
@@ -235,7 +228,7 @@ const About = () => {
         {/* Technology Stack */}
         <section className="container py-16 bg-muted/30">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
               Teknologi Modern
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -244,7 +237,7 @@ const About = () => {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <Card className="glass border-2 border-white/20">
+            <Card className="border">
               <CardContent className="pt-6">
                 <div className="grid md:grid-cols-2 gap-8">
                   <div>
@@ -304,7 +297,7 @@ const About = () => {
         {/* FAQ Section */}
         <section className="container py-16">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
               Pertanyaan Umum
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -386,7 +379,7 @@ const About = () => {
         {/* Statistics Impact */}
         <section className="container py-16 bg-muted/30">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
               Dampak & Pencapaian
             </h2>
           </div>
@@ -400,12 +393,10 @@ const About = () => {
             ].map((stat, index) => (
               <Card
                 key={index}
-                className={`group relative overflow-hidden bg-gradient-to-br ${stat.gradient} border-2 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:scale-105`}
+                className={`bg-gradient-to-br ${stat.gradient} border`}
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-xl -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500" />
-                
-                <CardContent className="pt-6 text-center relative z-10">
-                  <div className="inline-flex p-3 rounded-xl bg-white/50 backdrop-blur-sm mb-3 group-hover:scale-110 transition-transform">
+                <CardContent className="pt-6 text-center">
+                  <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-3">
                     <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
                   </div>
                   <div className="text-3xl font-bold mb-1">{stat.value}</div>
@@ -417,35 +408,24 @@ const About = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="container py-20 relative">
-          <div className="absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full">
-              <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
-              <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-accent/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" style={{ animationDelay: "2s" }} />
-            </div>
-          </div>
-
-          <div className="mx-auto max-w-3xl rounded-3xl glass border-2 border-white/20 px-8 py-16 text-center backdrop-blur-xl bg-gradient-to-br from-primary/10 via-accent/5 to-primary/10 shadow-2xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            
-            <div className="relative z-10">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                Siap Bergabung?
-              </h2>
-              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Tingkatkan efisiensi dan transparansi pengelolaan keuangan daerah Anda
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" className="font-semibold group/btn hover:shadow-xl hover:shadow-primary/30 transition-all duration-300" asChild>
-                  <Link to="/dashboard">
-                    Akses Sistem
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover/btn:translate-x-1 transition-transform" />
-                  </Link>
-                </Button>
-                <Button size="lg" variant="outline" className="font-semibold glass hover:bg-primary/5" asChild>
-                  <Link to="/panduan">Lihat Panduan</Link>
-                </Button>
-              </div>
+        <section className="container py-20">
+          <div className="mx-auto max-w-3xl rounded-3xl border px-8 py-16 text-center bg-gradient-to-br from-primary/10 to-accent/5">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
+              Siap Bergabung?
+            </h2>
+            <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Tingkatkan efisiensi dan transparansi pengelolaan keuangan daerah Anda
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="font-semibold" asChild>
+                <Link to="/dashboard">
+                  Akses Sistem
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" className="font-semibold" asChild>
+                <Link to="/panduan">Lihat Panduan</Link>
+              </Button>
             </div>
           </div>
         </section>

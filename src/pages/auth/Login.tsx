@@ -85,38 +85,27 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4">
-      {/* Animated gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
-      <div className="absolute inset-0 bg-grid-white/5" />
-      
-      {/* Glassmorphism card container */}
-      <div className="w-full max-w-md relative z-10">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/5 to-accent/5">
+      <div className="w-full max-w-md">
         {/* Logo and branding */}
-        <div className="flex flex-col items-center mb-8 animate-fade-in">
+        <div className="flex flex-col items-center mb-8">
           {logoUrl ? (
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
-              <img 
-                src={logoUrl} 
-                alt="Logo BKAD" 
-                className="h-24 w-24 object-contain mb-4 relative z-10 drop-shadow-2xl"
-              />
-            </div>
+            <img 
+              src={logoUrl} 
+              alt="Logo BKAD" 
+              className="h-24 w-24 object-contain mb-4"
+            />
           ) : (
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
-              <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/80 mb-4 relative z-10 shadow-lg">
-                <FileText className="h-12 w-12 text-primary-foreground" />
-              </div>
+            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-primary mb-4">
+              <FileText className="h-12 w-12 text-primary-foreground" />
             </div>
           )}
           <h1 className="text-3xl font-bold text-foreground mb-2 text-center">SIMPA BEND BKADKU</h1>
           <p className="text-sm text-muted-foreground font-medium">BKAD Kolaka Utara</p>
         </div>
 
-        {/* Glass card with border glow */}
-        <Card className="border-2 border-border/50 backdrop-blur-xl bg-card/80 shadow-2xl">
+        {/* Card */}
+        <Card className="border">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-2xl font-bold">Selamat Datang</CardTitle>
             <CardDescription className="text-base">
@@ -126,7 +115,7 @@ const Login = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <Alert variant="destructive" className="animate-fade-in">
+                <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
@@ -145,7 +134,7 @@ const Login = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={loading}
                     required
-                    className="pl-10 h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                    className="pl-10 h-11"
                   />
                 </div>
               </div>
@@ -163,12 +152,12 @@ const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
                     required
-                    className="pl-10 pr-10 h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                    className="pl-10 pr-10 h-11"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     disabled={loading}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -185,7 +174,7 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={generateCaptcha}
-                    className="text-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+                    className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
                     disabled={loading}
                   >
                     <RefreshCw className="h-3 w-3" />
@@ -200,13 +189,13 @@ const Login = () => {
                   onChange={(e) => setCaptchaAnswer(e.target.value)}
                   disabled={loading}
                   required
-                  className="h-11 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                  className="h-11"
                 />
               </div>
 
               <Button 
                 type="submit" 
-                className="w-full h-11 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-200" 
+                className="w-full h-11 text-base font-semibold" 
                 disabled={loading}
               >
                 {loading ? (
@@ -222,7 +211,7 @@ const Login = () => {
               <div className="text-center text-sm">
                 <Link 
                   to="/" 
-                  className="text-muted-foreground hover:text-primary transition-colors font-medium inline-flex items-center gap-1"
+                  className="text-muted-foreground hover:text-primary font-medium inline-flex items-center gap-1"
                 >
                   ← Kembali ke Beranda
                 </Link>
