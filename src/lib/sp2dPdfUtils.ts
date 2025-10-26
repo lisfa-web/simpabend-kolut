@@ -9,6 +9,14 @@ interface Sp2dPrintData {
   nama_bank: string;
   nama_rekening: string;
   catatan?: string;
+  total_potongan?: number;
+  nilai_diterima?: number;
+  potongan_pajak?: Array<{
+    jenis_pajak: string;
+    rekening_pajak?: string;
+    uraian: string;
+    jumlah_pajak: number;
+  }>;
   spm?: {
     nomor_spm?: string;
     uraian?: string;
@@ -316,15 +324,27 @@ export const generateSp2dPDF = (
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td class="text-center">-</td>
-              <td>-</td>
-              <td>-</td>
-              <td class="text-right">0</td>
-            </tr>
+            ${sp2dData.potongan_pajak && sp2dData.potongan_pajak.length > 0
+              ? sp2dData.potongan_pajak.map((pajak, index) => `
+                <tr>
+                  <td class="text-center">${index + 1}</td>
+                  <td>${pajak.rekening_pajak || '-'}</td>
+                  <td>${pajak.uraian}</td>
+                  <td class="text-right">${formatAngka(pajak.jumlah_pajak)}</td>
+                </tr>
+              `).join('')
+              : `
+                <tr>
+                  <td class="text-center">-</td>
+                  <td>-</td>
+                  <td>Tidak ada potongan</td>
+                  <td class="text-right">0</td>
+                </tr>
+              `
+            }
             <tr>
               <td colspan="3" class="text-right"><strong>JUMLAH</strong></td>
-              <td class="text-right"><strong>0</strong></td>
+              <td class="text-right"><strong>${formatAngka(sp2dData.total_potongan || 0)}</strong></td>
             </tr>
           </tbody>
         </table>
@@ -359,16 +379,16 @@ export const generateSp2dPDF = (
             </tr>
             <tr>
               <td>Jumlah Potongan</td>
-              <td class="text-right">Rp 0</td>
+              <td class="text-right">Rp ${formatAngka(sp2dData.total_potongan || 0)}</td>
             </tr>
             <tr>
               <td><strong>Jumlah yang Dibayarkan</strong></td>
-              <td class="text-right"><strong>Rp ${formatAngka(sp2dData.nilai_sp2d)}</strong></td>
+              <td class="text-right"><strong>Rp ${formatAngka(sp2dData.nilai_diterima || sp2dData.nilai_sp2d)}</strong></td>
             </tr>
             <tr>
               <td colspan="2">
                 <strong>Uang Sejumlah:</strong><br>
-                <em>${nilaiTerbilang}</em>
+                <em>${terbilangRupiah(sp2dData.nilai_diterima || sp2dData.nilai_sp2d)}</em>
               </td>
             </tr>
           </tbody>

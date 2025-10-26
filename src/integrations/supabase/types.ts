@@ -510,6 +510,53 @@ export type Database = {
           },
         ]
       }
+      potongan_pajak_sp2d: {
+        Row: {
+          created_at: string | null
+          dasar_pengenaan: number
+          id: string
+          jenis_pajak: Database["public"]["Enums"]["jenis_pajak"]
+          jumlah_pajak: number
+          rekening_pajak: string | null
+          sp2d_id: string
+          tarif: number
+          updated_at: string | null
+          uraian: string
+        }
+        Insert: {
+          created_at?: string | null
+          dasar_pengenaan: number
+          id?: string
+          jenis_pajak: Database["public"]["Enums"]["jenis_pajak"]
+          jumlah_pajak: number
+          rekening_pajak?: string | null
+          sp2d_id: string
+          tarif: number
+          updated_at?: string | null
+          uraian: string
+        }
+        Update: {
+          created_at?: string | null
+          dasar_pengenaan?: number
+          id?: string
+          jenis_pajak?: Database["public"]["Enums"]["jenis_pajak"]
+          jumlah_pajak?: number
+          rekening_pajak?: string | null
+          sp2d_id?: string
+          tarif?: number
+          updated_at?: string | null
+          uraian?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "potongan_pajak_sp2d_sp2d_id_fkey"
+            columns: ["sp2d_id"]
+            isOneToOne: false
+            referencedRelation: "sp2d"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -649,6 +696,7 @@ export type Database = {
           kuasa_bud_id: string | null
           nama_bank: string | null
           nama_rekening: string | null
+          nilai_diterima: number | null
           nilai_sp2d: number
           nomor_rekening: string | null
           nomor_sp2d: string
@@ -657,6 +705,7 @@ export type Database = {
           status: Database["public"]["Enums"]["status_sp2d"] | null
           tanggal_cair: string | null
           tanggal_sp2d: string | null
+          total_potongan: number | null
           ttd_digital_url: string | null
           updated_at: string | null
           verified_by: string | null
@@ -669,6 +718,7 @@ export type Database = {
           kuasa_bud_id?: string | null
           nama_bank?: string | null
           nama_rekening?: string | null
+          nilai_diterima?: number | null
           nilai_sp2d: number
           nomor_rekening?: string | null
           nomor_sp2d: string
@@ -677,6 +727,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["status_sp2d"] | null
           tanggal_cair?: string | null
           tanggal_sp2d?: string | null
+          total_potongan?: number | null
           ttd_digital_url?: string | null
           updated_at?: string | null
           verified_by?: string | null
@@ -689,6 +740,7 @@ export type Database = {
           kuasa_bud_id?: string | null
           nama_bank?: string | null
           nama_rekening?: string | null
+          nilai_diterima?: number | null
           nilai_sp2d?: number
           nomor_rekening?: string | null
           nomor_sp2d?: string
@@ -697,6 +749,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["status_sp2d"] | null
           tanggal_cair?: string | null
           tanggal_sp2d?: string | null
+          total_potongan?: number | null
           ttd_digital_url?: string | null
           updated_at?: string | null
           verified_by?: string | null
@@ -1162,6 +1215,7 @@ export type Database = {
         | "sp2d_diterbitkan"
         | "verifikasi_pin"
         | "verifikasi_otp"
+      jenis_pajak: "pph_21" | "pph_22" | "pph_23" | "pph_4_ayat_2" | "ppn"
       jenis_spm:
         | "UP"
         | "GU"
@@ -1330,6 +1384,7 @@ export const Constants = {
         "verifikasi_pin",
         "verifikasi_otp",
       ],
+      jenis_pajak: ["pph_21", "pph_22", "pph_23", "pph_4_ayat_2", "ppn"],
       jenis_spm: [
         "UP",
         "GU",

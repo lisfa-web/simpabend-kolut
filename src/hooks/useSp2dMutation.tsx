@@ -14,10 +14,11 @@ export const useSp2dMutation = () => {
   const { user } = useAuth();
 
   const createSp2d = useMutation({
-    mutationFn: async (data: Sp2dInsert) => {
-      // Add created_by field
+    mutationFn: async (data: Sp2dInsert & { potongan_pajak?: any[] }) => {
+      const { potongan_pajak, ...sp2dData } = data;
+      
       const insertData = {
-        ...data,
+        ...sp2dData,
         created_by: user?.id,
       };
 
@@ -29,6 +30,22 @@ export const useSp2dMutation = () => {
 
       if (error) throw error;
 
+      // Insert tax deductions if any
+      if (potongan_pajak && potongan_pajak.length > 0) {
+        const pajakData = potongan_pajak.map((pajak) => ({
+          sp2d_id: result.id,
+          ...pajak,
+        }));
+        
+        const { error: pajakError } = await supabase
+          .from("potongan_pajak_sp2d")
+          .insert(pajakData);
+          
+        if (pajakError) {
+          console.error("Failed to insert tax deductions:", pajakError);
+        }
+      }
+
       // Send OTP immediately after SP2D creation
       try {
         await supabase.functions.invoke('send-sp2d-otp', {
@@ -39,7 +56,6 @@ export const useSp2dMutation = () => {
         });
       } catch (otpError) {
         console.error('Failed to send OTP:', otpError);
-        // Don't throw - SP2D creation should succeed even if OTP fails
       }
 
       return result;

@@ -8,6 +8,9 @@ import { ArrowLeft, Loader2, CheckCircle2, Printer, Wallet } from "lucide-react"
 import { useSp2dDetail } from "@/hooks/useSp2dDetail";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { useConfigSistem } from "@/hooks/useConfigSistem";
+import { usePajakPotongan } from "@/hooks/usePajakPotongan";
+import { Badge } from "@/components/ui/badge";
+import { formatCurrency } from "@/lib/currency";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
 import { Sp2dTimeline } from "./components/Sp2dTimeline";
 import { Sp2dVerificationDialog } from "./components/Sp2dVerificationDialog";
@@ -25,6 +28,7 @@ const Sp2dDetail = () => {
   const { data: sp2d, isLoading } = useSp2dDetail(id);
   const { data: configs } = useConfigSistem();
   const { verifyOtp, disburseSp2d } = useSp2dMutation();
+  const { potonganList } = usePajakPotongan(id);
 
   const canVerify = roles.some((role) =>
     ["kuasa_bud", "administrator"].includes(role)
@@ -56,7 +60,12 @@ const Sp2dDetail = () => {
       c => c.key === 'kop_surat_sp2d_url'
     )?.value;
     
-    generateSp2dPDF(sp2d, kopSuratUrl);
+    const sp2dWithPajak = {
+      ...sp2d,
+      potongan_pajak: potonganList,
+    };
+    
+    generateSp2dPDF(sp2dWithPajak, kopSuratUrl);
   };
 
   if (isLoading) {
@@ -230,6 +239,67 @@ const Sp2dDetail = () => {
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Ringkasan Nilai SP2D</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between text-lg">
+                  <span className="font-medium">Nilai SP2D:</span>
+                  <span className="font-semibold">
+                    {formatCurrency(Number(sp2d.nilai_sp2d))}
+                  </span>
+                </div>
+                <div className="flex justify-between text-destructive">
+                  <span className="font-medium">Total Potongan:</span>
+                  <span className="font-semibold">
+                    - {formatCurrency(Number(sp2d.total_potongan || 0))}
+                  </span>
+                </div>
+                <div className="flex justify-between text-xl border-t pt-3">
+                  <span className="font-bold">Nilai Diterima:</span>
+                  <span className="font-bold text-primary">
+                    {formatCurrency(Number(sp2d.nilai_diterima || sp2d.nilai_sp2d))}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {potonganList && potonganList.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Potongan Pajak</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {potonganList.map((pajak: any, index: number) => (
+                      <div key={pajak.id} className="flex items-start justify-between p-3 bg-muted rounded-lg">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">
+                              {pajak.jenis_pajak.toUpperCase().replace(/_/g, ' ')}
+                            </Badge>
+                            {pajak.rekening_pajak && (
+                              <span className="text-xs text-muted-foreground">
+                                Rek: {pajak.rekening_pajak}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm font-medium">{pajak.uraian}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Tarif: {pajak.tarif}% × {formatCurrency(Number(pajak.dasar_pengenaan))}
+                          </p>
+                        </div>
+                        <span className="font-semibold text-destructive">
+                          {formatCurrency(Number(pajak.jumlah_pajak))}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {sp2d.catatan && (
               <Card>

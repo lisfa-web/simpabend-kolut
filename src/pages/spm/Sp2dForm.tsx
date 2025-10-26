@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -21,13 +21,26 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Info } from "lucide-react";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { useAuth } from "@/hooks/useAuth";
 import { useGenerateSp2dNumber } from "@/hooks/useGenerateSp2dNumber";
-import { formatCurrency } from "@/lib/currency";
+import { formatCurrency, parseCurrency } from "@/lib/currency";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { JENIS_PAJAK_OPTIONS, getSuggestedTaxes } from "@/hooks/usePajakPotongan";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CurrencyInput } from "./components/CurrencyInput";
+import { toast } from "sonner";
+
+interface PajakFormData {
+  jenis_pajak: string;
+  rekening_pajak: string;
+  uraian: string;
+  tarif: number;
+  dasar_pengenaan: number;
+  jumlah_pajak: number;
+}
 
 interface Sp2dFormData {
   spm_id: string;
@@ -38,6 +51,7 @@ interface Sp2dFormData {
   nomor_rekening: string;
   nama_rekening: string;
   catatan?: string;
+  potongan_pajak: PajakFormData[];
 }
 
 const Sp2dForm = () => {
@@ -98,10 +112,25 @@ const Sp2dForm = () => {
       nomor_rekening: "",
       nama_rekening: "",
       catatan: "",
+      potongan_pajak: [],
     },
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "potongan_pajak",
+  });
+
   const watchSpmId = form.watch("spm_id");
+  const watchPotonganPajak = form.watch("potongan_pajak");
+  const watchNilaiSp2d = form.watch("nilai_sp2d");
+
+  // Calculate totals
+  const totalPotongan = watchPotonganPajak.reduce(
+    (sum, p) => sum + (p.jumlah_pajak || 0),
+    0
+  );
+  const nilaiDiterima = watchNilaiSp2d - totalPotongan;
 
   // Auto-fill nomor SP2D when generated
   useEffect(() => {
@@ -116,22 +145,45 @@ const Sp2dForm = () => {
       if (spm) {
         setSelectedSpm(spm);
         form.setValue("nilai_sp2d", Number(spm.nilai_spm));
+        
+        // Auto-suggest taxes based on SPM type
+        const suggestions = getSuggestedTaxes(spm.jenis_spm);
+        if (suggestions.length > 0 && fields.length === 0) {
+          suggestions.forEach((sug) => {
+            const pajakOption = JENIS_PAJAK_OPTIONS.find(
+              (opt) => opt.value === sug.jenis
+            );
+            append({
+              jenis_pajak: sug.jenis,
+              rekening_pajak: pajakOption?.rekening || "",
+              uraian: sug.uraian,
+              tarif: sug.tarif,
+              dasar_pengenaan: Number(spm.nilai_spm),
+              jumlah_pajak: (Number(spm.nilai_spm) * sug.tarif) / 100,
+            });
+          });
+        }
+        
         if (spm.vendor) {
-          const vendor = spm.vendor as any; // Type assertion for dynamic vendor data
+          const vendor = spm.vendor as any;
           form.setValue("nama_bank", vendor.nama_bank || "");
           form.setValue("nomor_rekening", vendor.nomor_rekening || "");
           form.setValue("nama_rekening", vendor.nama_rekening || "");
         } else {
-          // Clear bank fields if no vendor
           form.setValue("nama_bank", "");
           form.setValue("nomor_rekening", "");
           form.setValue("nama_rekening", "");
         }
       }
     }
-  }, [watchSpmId, spmList, form]);
+  }, [watchSpmId, spmList, form, append, fields.length]);
 
-  const onSubmit = (data: Sp2dFormData) => {
+  const onSubmit = async (data: Sp2dFormData) => {
+    if (totalPotongan > data.nilai_sp2d) {
+      toast.error("Total potongan tidak boleh melebihi nilai SP2D");
+      return;
+    }
+
     createSp2d.mutate(
       {
         spm_id: data.spm_id,
@@ -144,6 +196,9 @@ const Sp2dForm = () => {
         catatan: data.catatan || null,
         kuasa_bud_id: user?.id,
         status: "pending" as any,
+        total_potongan: totalPotongan,
+        nilai_diterima: nilaiDiterima,
+        potongan_pajak: data.potongan_pajak,
       },
       {
         onSuccess: () => {
