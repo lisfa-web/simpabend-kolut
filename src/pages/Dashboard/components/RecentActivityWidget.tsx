@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Activity, CheckCircle2, XCircle, Clock, FileText } from "lucide-react";
+import { Activity, CheckCircle2, XCircle, Clock, FileText, AlertCircle } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
@@ -51,13 +51,30 @@ export const RecentActivityWidget = () => {
   const getActivityIcon = (status: string) => {
     switch (status) {
       case "disetujui":
-        return <CheckCircle2 className="w-4 h-4 text-success" />;
+        return <CheckCircle2 className="w-4 h-4 text-green-600" />;
       case "ditolak":
-        return <XCircle className="w-4 h-4 text-destructive" />;
+        return <XCircle className="w-4 h-4 text-red-600" />;
+      case "perlu_revisi":
+        return <AlertCircle className="w-4 h-4 text-yellow-600" />;
       case "draft":
         return <FileText className="w-4 h-4 text-muted-foreground" />;
       default:
-        return <Clock className="w-4 h-4 text-warning" />;
+        return <Clock className="w-4 h-4 text-orange-600" />;
+    }
+  };
+
+  const getActivityBgColor = (status: string) => {
+    switch (status) {
+      case "disetujui":
+        return "bg-green-50 hover:bg-green-100 border-green-200";
+      case "ditolak":
+        return "bg-red-50 hover:bg-red-100 border-red-200";
+      case "perlu_revisi":
+        return "bg-yellow-50 hover:bg-yellow-100 border-yellow-200";
+      case "draft":
+        return "bg-gray-50 hover:bg-gray-100 border-gray-200";
+      default:
+        return "bg-accent/50 hover:bg-accent";
     }
   };
 
@@ -111,7 +128,7 @@ export const RecentActivityWidget = () => {
             {activities?.map((activity) => (
               <div
                 key={activity.id}
-                className="flex items-start gap-3 p-3 rounded-lg bg-accent/50 hover:bg-accent transition-colors"
+                className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${getActivityBgColor(activity.status)}`}
               >
                 <div className="mt-0.5">{getActivityIcon(activity.status)}</div>
                 <div className="flex-1 min-w-0">
