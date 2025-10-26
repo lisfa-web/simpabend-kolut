@@ -59,6 +59,22 @@ interface DashboardStats {
     total_spm: number;
     total_nilai: number;
   }>;
+  processTimeline: {
+    resepsionis_to_pbmd: number;
+    pbmd_to_akuntansi: number;
+    akuntansi_to_perbendaharaan: number;
+    perbendaharaan_to_kepala: number;
+  };
+  successMetrics: {
+    successRate: number;
+    rejectionRate: number;
+    revisionRate: number;
+    trendVsLastMonth: number;
+  };
+  dailySubmissions: Array<{
+    date: string;
+    count: number;
+  }>;
 }
 
 export const useDashboardStats = () => {
@@ -284,6 +300,79 @@ export const useDashboardStats = () => {
         .sort((a, b) => b.total_nilai - a.total_nilai)
         .slice(0, 5);
 
+      // Process Timeline - Calculate average time between stages
+      const spmWithDates = allSpm?.filter(
+        (s) => s.status === "disetujui" && s.tanggal_resepsionis && s.tanggal_disetujui
+      ) || [];
+
+      const calculateAvgDays = (dateField1: string, dateField2: string) => {
+        const validSpm = spmWithDates.filter(
+          (s) => (s as any)[dateField1] && (s as any)[dateField2]
+        );
+        if (validSpm.length === 0) return 0;
+        
+        return validSpm.reduce((sum, s) => {
+          const start = new Date((s as any)[dateField1]).getTime();
+          const end = new Date((s as any)[dateField2]).getTime();
+          return sum + (end - start) / (1000 * 60 * 60 * 24);
+        }, 0) / validSpm.length;
+      };
+
+      const processTimeline = {
+        resepsionis_to_pbmd: calculateAvgDays("tanggal_resepsionis", "tanggal_pbmd"),
+        pbmd_to_akuntansi: calculateAvgDays("tanggal_pbmd", "tanggal_akuntansi"),
+        akuntansi_to_perbendaharaan: calculateAvgDays("tanggal_akuntansi", "tanggal_perbendaharaan"),
+        perbendaharaan_to_kepala: calculateAvgDays("tanggal_perbendaharaan", "tanggal_kepala_bkad"),
+      };
+
+      // Success Metrics
+      const totalCompleted = approvedSpm + rejectedSpm + revisionSpm || 1;
+      const successRate = (approvedSpm / totalCompleted) * 100;
+      const rejectionRate = (rejectedSpm / totalCompleted) * 100;
+      const revisionRate = (revisionSpm / totalCompleted) * 100;
+
+      // Compare with last month
+      const lastMonthDate = new Date();
+      lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+      const lastMonthStart = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth(), 1);
+      const lastMonthEnd = new Date(lastMonthDate.getFullYear(), lastMonthDate.getMonth() + 1, 0);
+
+      const lastMonthSpm = allSpm?.filter((s) => {
+        const date = new Date(s.tanggal_ajuan || "");
+        return date >= lastMonthStart && date <= lastMonthEnd;
+      }) || [];
+
+      const lastMonthApproved = lastMonthSpm.filter((s) => s.status === "disetujui").length;
+      const lastMonthTotal = lastMonthSpm.filter(
+        (s) => s.status === "disetujui" || s.status === "ditolak" || s.status === "perlu_revisi"
+      ).length || 1;
+      const lastMonthSuccessRate = (lastMonthApproved / lastMonthTotal) * 100;
+      const trendVsLastMonth = successRate - lastMonthSuccessRate;
+
+      // Daily Submissions (last 30 days)
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const dailyMap = new Map<string, number>();
+      for (let i = 0; i < 30; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split("T")[0];
+        dailyMap.set(dateStr, 0);
+      }
+
+      allSpm?.forEach((s) => {
+        const date = new Date(s.tanggal_ajuan || "");
+        if (date >= thirtyDaysAgo) {
+          const dateStr = date.toISOString().split("T")[0];
+          dailyMap.set(dateStr, (dailyMap.get(dateStr) || 0) + 1);
+        }
+      });
+
+      const dailySubmissions = Array.from(dailyMap.entries())
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
       return {
         totalSpm,
         totalSpmValue,
@@ -312,6 +401,14 @@ export const useDashboardStats = () => {
           outlierSpm,
         },
         topVendors,
+        processTimeline,
+        successMetrics: {
+          successRate,
+          rejectionRate,
+          revisionRate,
+          trendVsLastMonth,
+        },
+        dailySubmissions,
       };
     },
     enabled: !!user,

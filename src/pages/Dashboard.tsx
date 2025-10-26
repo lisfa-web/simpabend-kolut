@@ -14,6 +14,9 @@ import { RecentActivityWidget } from "./Dashboard/components/RecentActivityWidge
 import { FinancialBreakdownChart } from "./Dashboard/components/FinancialBreakdownChart";
 import { AlertWidget } from "./Dashboard/components/AlertWidget";
 import { TopVendorsWidget } from "./Dashboard/components/TopVendorsWidget";
+import { ProcessTimelineWidget } from "./Dashboard/components/ProcessTimelineWidget";
+import { SuccessRateWidget } from "./Dashboard/components/SuccessRateWidget";
+import { SubmissionTrendWidget } from "./Dashboard/components/SubmissionTrendWidget";
 import { cn } from "@/lib/utils";
 import { Sparkline } from "@/components/Sparkline";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -267,6 +270,19 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
+        </div>
+
+        {/* Performance Metrics Section */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">Performance Metrics</h2>
+            <Badge variant="outline">Real-time Analytics</Badge>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <SuccessRateWidget data={stats?.successMetrics} isLoading={isLoading} />
+            <ProcessTimelineWidget data={stats?.processTimeline} isLoading={isLoading} />
+            <SubmissionTrendWidget data={stats?.dailySubmissions} isLoading={isLoading} />
+          </div>
         </div>
 
         {/* Charts Section */}
