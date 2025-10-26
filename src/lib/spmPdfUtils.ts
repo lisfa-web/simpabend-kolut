@@ -230,11 +230,7 @@ export const generateSpmPDF = (
           <div class="kop-surat">
             <img src="${kopSuratUrl}" alt="Kop Surat" />
           </div>
-        ` : `
-          <div class="header-title">
-            <h3>PEMERINTAH PROVINSI KALIMANTAN TIMUR</h3>
-          </div>
-        `}
+        ` : ''}
         
         <h2>SURAT PERINTAH PENCAIRAN DANA</h2>
         
