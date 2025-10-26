@@ -2,7 +2,62 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-// Keep backward compatibility exports
+// Hook to fetch master pajak options from database (reuse from usePajakPotonganSpm)
+export const useMasterPajakOptions = () => {
+  return useQuery({
+    queryKey: ["master-pajak-options"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("master_pajak")
+        .select("*")
+        .eq("is_active", true)
+        .order("kode_pajak");
+      
+      if (error) throw error;
+      
+      return (data || []).map(pajak => ({
+        value: pajak.jenis_pajak,
+        label: pajak.nama_pajak,
+        rekening: pajak.rekening_pajak,
+        kode: pajak.kode_pajak,
+        tarif_default: pajak.tarif_default,
+      }));
+    },
+  });
+};
+
+// Hook to get suggested taxes for SP2D based on SPM type
+export const useSuggestedTaxes = (jenisSpm: string | null) => {
+  return useQuery({
+    queryKey: ["suggested-taxes-sp2d", jenisSpm],
+    queryFn: async () => {
+      if (!jenisSpm) return [];
+      
+      const { data, error } = await supabase
+        .from("pajak_per_jenis_spm")
+        .select(`
+          *,
+          master_pajak:master_pajak_id (*)
+        `)
+        .eq("jenis_spm", jenisSpm)
+        .eq("is_default", true)
+        .order("urutan");
+      
+      if (error) throw error;
+      
+      return (data || []).map((item: any) => ({
+        jenis: item.master_pajak.jenis_pajak,
+        tarif: item.tarif_khusus || item.master_pajak.tarif_default,
+        uraian: item.uraian_template || item.master_pajak.nama_pajak,
+        rekening: item.master_pajak.rekening_pajak,
+        kode: item.master_pajak.kode_pajak,
+      }));
+    },
+    enabled: !!jenisSpm,
+  });
+};
+
+// Keep backward compatibility - deprecated, use hooks above instead
 export const JENIS_PAJAK_OPTIONS = [
   { value: "pph_21", label: "PPh Pasal 21 - Gaji/Honorarium", rekening: "4.1.1.01" },
   { value: "pph_22", label: "PPh Pasal 22 - Pembelian Barang", rekening: "4.1.1.02" },
@@ -12,6 +67,7 @@ export const JENIS_PAJAK_OPTIONS = [
 ];
 
 export const getSuggestedTaxes = (jenisSpm: string) => {
+  // Deprecated - use useSuggestedTaxes hook instead
   const suggestions: Array<{ jenis: string; tarif: number; uraian: string }> = [];
   
   switch (jenisSpm) {

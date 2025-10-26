@@ -245,6 +245,45 @@ export type Database = {
           },
         ]
       }
+      master_pajak: {
+        Row: {
+          created_at: string | null
+          deskripsi: string | null
+          id: string
+          is_active: boolean | null
+          jenis_pajak: string
+          kode_pajak: string
+          nama_pajak: string
+          rekening_pajak: string
+          tarif_default: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deskripsi?: string | null
+          id?: string
+          is_active?: boolean | null
+          jenis_pajak: string
+          kode_pajak: string
+          nama_pajak: string
+          rekening_pajak: string
+          tarif_default: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deskripsi?: string | null
+          id?: string
+          is_active?: boolean | null
+          jenis_pajak?: string
+          kode_pajak?: string
+          nama_pajak?: string
+          rekening_pajak?: string
+          tarif_default?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       notifikasi: {
         Row: {
           created_at: string | null
@@ -327,6 +366,50 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      pajak_per_jenis_spm: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          jenis_spm: string
+          master_pajak_id: string
+          tarif_khusus: number | null
+          updated_at: string | null
+          uraian_template: string | null
+          urutan: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          jenis_spm: string
+          master_pajak_id: string
+          tarif_khusus?: number | null
+          updated_at?: string | null
+          uraian_template?: string | null
+          urutan?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          jenis_spm?: string
+          master_pajak_id?: string
+          tarif_khusus?: number | null
+          updated_at?: string | null
+          uraian_template?: string | null
+          urutan?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pajak_per_jenis_spm_master_pajak_id_fkey"
+            columns: ["master_pajak_id"]
+            isOneToOne: false
+            referencedRelation: "master_pajak"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       panduan_manual: {
         Row: {
@@ -1217,6 +1300,10 @@ export type Database = {
         Returns: Json
       }
       check_opd_dependencies: { Args: { opd_id_param: string }; Returns: Json }
+      check_pajak_dependencies: {
+        Args: { pajak_id_param: string }
+        Returns: Json
+      }
       check_pejabat_dependencies: {
         Args: { pejabat_id_param: string }
         Returns: Json
