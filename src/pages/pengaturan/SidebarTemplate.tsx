@@ -81,8 +81,21 @@ const SidebarTemplate = () => {
                         </div>
                       </CardHeader>
                       <CardContent>
-                        {/* Mini Sidebar Preview */}
-                        <div className="border rounded-lg overflow-hidden h-48">
+                        <div className="space-y-3">
+                          {/* Dashboard Header Preview */}
+                          <div className="border rounded-lg p-3 bg-card">
+                            <div className="text-xs text-muted-foreground mb-2 font-medium">
+                              Dashboard Header:
+                            </div>
+                            <div 
+                              className={`inline-flex items-center px-4 py-1.5 rounded-full text-xs font-semibold shadow-sm bg-gradient-to-r ${template.dashboardHeaderGradient} ${template.dashboardHeaderText}`}
+                            >
+                              Sistem Monitoring & Validasi
+                            </div>
+                          </div>
+
+                          {/* Mini Sidebar Preview */}
+                          <div className="border rounded-lg overflow-hidden h-48">
                           {/* Header Preview */}
                           <div
                             className="h-16 p-3 flex flex-col justify-center"
@@ -124,9 +137,10 @@ const SidebarTemplate = () => {
                               <span>Pengaturan</span>
                             </div>
                           </div>
+                        </div>
                           
                           {/* Icon Style Badge */}
-                          <div className="px-3 py-2 bg-gray-50 border-t">
+                          <div className="px-3 py-2 bg-gray-50 border-t mt-3">
                             <div className="text-xs text-gray-600">
                               <span className="font-medium">Icon Style: </span>
                               {template.iconStyle === 'standard' && '● Standard'}

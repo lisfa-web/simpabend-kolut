@@ -16,11 +16,20 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { NotificationPanel } from "@/components/NotificationPanel";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useSidebarTemplate } from "@/hooks/useSidebarTemplate";
+import { SIDEBAR_TEMPLATES } from "@/types/sidebar";
+import { cn } from "@/lib/utils";
 
 const DashboardHeader = () => {
   const { user, roles, logout } = useAuth();
   const { data: profile } = useUserProfile();
   const navigate = useNavigate();
+  const { data: activeTemplate } = useSidebarTemplate();
+  
+  const validTemplate = activeTemplate && SIDEBAR_TEMPLATES[activeTemplate] 
+    ? activeTemplate 
+    : 'blue-gradient';
+  const theme = SIDEBAR_TEMPLATES[validTemplate];
 
   const handleLogout = async () => {
     await logout();
@@ -43,7 +52,13 @@ const DashboardHeader = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <SidebarTrigger />
-          <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground">
+          <Badge 
+            className={cn(
+              "bg-gradient-to-r px-6 py-2 font-semibold text-base shadow-md transition-all duration-300",
+              theme.dashboardHeaderGradient,
+              theme.dashboardHeaderText
+            )}
+          >
             Sistem Monitoring & Validasi Digital
           </Badge>
         </div>

@@ -28,6 +28,8 @@ export interface SidebarThemeConfig {
     activeItem: string;
     logoSubtitle: string;
   };
+  dashboardHeaderGradient: string;
+  dashboardHeaderText: string;
 }
 
 // Icon color mapping untuk colorful-per-menu style
@@ -88,6 +90,8 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       activeItem: 'bg-blue-100 border-l-4 border-blue-600',
       logoSubtitle: 'opacity-90',
     },
+    dashboardHeaderGradient: 'from-blue-600 to-teal-500',
+    dashboardHeaderText: 'text-white',
   },
   'emerald-clean': {
     id: 'emerald-clean',
@@ -106,6 +110,8 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       activeItem: 'bg-emerald-100 border-l-4 border-emerald-600',
       logoSubtitle: 'opacity-90',
     },
+    dashboardHeaderGradient: 'from-emerald-600 to-green-500',
+    dashboardHeaderText: 'text-white',
   },
   'orange-sunset': {
     id: 'orange-sunset',
@@ -124,6 +130,8 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       activeItem: 'bg-orange-200 border-l-4 border-orange-600 shadow-md',
       logoSubtitle: 'text-orange-100 opacity-95',
     },
+    dashboardHeaderGradient: 'from-orange-600 to-amber-500',
+    dashboardHeaderText: 'text-white',
   },
   'deep-indigo': {
     id: 'deep-indigo',
@@ -142,6 +150,8 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       activeItem: 'bg-indigo-200 border-l-4 border-indigo-700 shadow-md',
       logoSubtitle: 'text-indigo-100 opacity-95',
     },
+    dashboardHeaderGradient: 'from-indigo-700 to-blue-600',
+    dashboardHeaderText: 'text-white',
   },
   'lime-fresh': {
     id: 'lime-fresh',
@@ -160,6 +170,8 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       activeItem: 'bg-lime-200 border-l-4 border-lime-700 shadow-md',
       logoSubtitle: 'text-lime-100 opacity-95',
     },
+    dashboardHeaderGradient: 'from-lime-600 to-green-500',
+    dashboardHeaderText: 'text-white',
   },
   'magenta-bold': {
     id: 'magenta-bold',
@@ -178,6 +190,8 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       activeItem: 'bg-fuchsia-200 border-l-4 border-fuchsia-700 shadow-md',
       logoSubtitle: 'text-fuchsia-100 opacity-95',
     },
+    dashboardHeaderGradient: 'from-fuchsia-600 to-pink-500',
+    dashboardHeaderText: 'text-white',
   },
   'purple-vibrant': {
     id: 'purple-vibrant',
@@ -196,6 +210,8 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       activeItem: 'bg-purple-300 border-l-4 border-purple-700',
       logoSubtitle: 'text-purple-100 opacity-95',
     },
+    dashboardHeaderGradient: 'from-purple-600 to-pink-500',
+    dashboardHeaderText: 'text-white',
   },
   'teal-dark': {
     id: 'teal-dark',
@@ -214,6 +230,8 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       activeItem: 'bg-teal-200 border-l-4 border-teal-700',
       logoSubtitle: 'text-cyan-100 opacity-95',
     },
+    dashboardHeaderGradient: 'from-teal-700 to-cyan-600',
+    dashboardHeaderText: 'text-white',
   },
   'rose-bold': {
     id: 'rose-bold',
@@ -232,5 +250,7 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       activeItem: 'bg-rose-300 border-l-4 border-rose-700',
       logoSubtitle: 'text-rose-100 opacity-95',
     },
+    dashboardHeaderGradient: 'from-rose-600 to-orange-500',
+    dashboardHeaderText: 'text-white',
   },
 };
