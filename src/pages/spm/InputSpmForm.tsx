@@ -97,6 +97,14 @@ const InputSpmForm = () => {
     return jenis;
   };
 
+  const handleToggleOptionalTax = (taxId: string, checked: boolean) => {
+    setSelectedOptionalTaxIds(prev => 
+      checked 
+        ? [...prev, taxId]
+        : prev.filter(id => id !== taxId)
+    );
+  };
+
   const handleDataSubmit = (data: SpmDataFormValues) => {
     setFormData(data);
     setActiveTab("pajak");
@@ -252,6 +260,8 @@ const InputSpmForm = () => {
               defaultValues={formData || undefined}
               onSubmit={handleDataSubmit}
               onBack={() => navigate("/input-spm")}
+              selectedOptionalTaxIds={selectedOptionalTaxIds}
+              onToggleOptionalTax={handleToggleOptionalTax}
             />
           </TabsContent>
 
@@ -264,6 +274,7 @@ const InputSpmForm = () => {
                 onPotonganChange={setPotonganPajak}
                 onNext={() => setActiveTab("lampiran")}
                 onBack={() => setActiveTab("data")}
+                initialSelectedOptionalTaxes={selectedOptionalTaxIds}
               />
             )}
           </TabsContent>

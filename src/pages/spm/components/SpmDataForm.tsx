@@ -437,9 +437,16 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack, selectedOptionalT
                               <div className="space-y-2">
                                 <p className="text-xs text-muted-foreground font-medium">Pajak Opsional (Dapat ditambahkan):</p>
                                 {taxMapping["LS_Barang_Jasa"].filter(t => !t.is_default).map((tax) => (
-                                  <div key={tax.id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
-                                    <span className="text-sm">{tax.nama}</span>
-                                    <span className="font-medium">{tax.tarif}%</span>
+                                  <div key={tax.id} className="flex items-center gap-2 rounded-md bg-muted/50 p-2">
+                                    <Checkbox 
+                                      id={`optional-tax-${tax.id}`}
+                                      checked={selectedOptionalTaxIds?.includes(tax.id) || false}
+                                      onCheckedChange={(checked) => onToggleOptionalTax?.(tax.id, checked as boolean)}
+                                    />
+                                    <label htmlFor={`optional-tax-${tax.id}`} className="flex-1 flex items-center justify-between cursor-pointer">
+                                      <span className="text-sm">{tax.nama}</span>
+                                      <span className="font-medium">{tax.tarif}%</span>
+                                    </label>
                                   </div>
                                 ))}
                               </div>
@@ -486,9 +493,16 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack, selectedOptionalT
                               <div className="space-y-2">
                                 <p className="text-xs text-muted-foreground font-medium">Pajak Opsional (Dapat ditambahkan):</p>
                                 {taxMapping["LS_Belanja_Modal"].filter(t => !t.is_default).map((tax) => (
-                                  <div key={tax.id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
-                                    <span className="text-sm">{tax.nama}</span>
-                                    <span className="font-medium">{tax.tarif}%</span>
+                                  <div key={tax.id} className="flex items-center gap-2 rounded-md bg-muted/50 p-2">
+                                    <Checkbox 
+                                      id={`optional-tax-${tax.id}`}
+                                      checked={selectedOptionalTaxIds?.includes(tax.id) || false}
+                                      onCheckedChange={(checked) => onToggleOptionalTax?.(tax.id, checked as boolean)}
+                                    />
+                                    <label htmlFor={`optional-tax-${tax.id}`} className="flex-1 flex items-center justify-between cursor-pointer">
+                                      <span className="text-sm">{tax.nama}</span>
+                                      <span className="font-medium">{tax.tarif}%</span>
+                                    </label>
                                   </div>
                                 ))}
                               </div>
