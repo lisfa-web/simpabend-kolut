@@ -60,6 +60,7 @@ import EmailConfig from "./pages/pengaturan/EmailConfig";
 import PermissionsList from "./pages/pengaturan/PermissionsList";
 import AuditTrail from "./pages/pengaturan/AuditTrail";
 import EmergencyMode from "./pages/pengaturan/EmergencyMode";
+import SidebarTemplate from "./pages/pengaturan/SidebarTemplate";
 import PanduanManual from "./pages/panduan/PanduanManual";
 import PanduanManualAdmin from "./pages/panduan/PanduanManualAdmin";
 
@@ -246,6 +247,7 @@ const App = () => (
           {/* Pengaturan Routes - Super Administrator only */}
           <Route path="/pengaturan" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><PengaturanIndex /></RoleProtectedRoute>} />
           <Route path="/pengaturan/emergency-mode" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><EmergencyMode /></RoleProtectedRoute>} />
+          <Route path="/pengaturan/sidebar-template" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><SidebarTemplate /></RoleProtectedRoute>} />
           <Route path="/pengaturan/config" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><ConfigList /></RoleProtectedRoute>} />
           <Route path="/pengaturan/format-nomor" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><FormatNomorList /></RoleProtectedRoute>} />
           <Route path="/pengaturan/format-nomor/:id/edit" element={<RoleProtectedRoute allowedRoles={["super_admin"] as any}><FormatNomorForm /></RoleProtectedRoute>} />

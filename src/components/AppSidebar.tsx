@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
+import { useSidebarTemplate } from "@/hooks/useSidebarTemplate";
+import { SIDEBAR_TEMPLATES } from "@/types/sidebar";
 import {
   Sidebar,
   SidebarContent,
@@ -134,6 +136,9 @@ export function AppSidebar() {
   const { roles } = useAuth();
   const location = useLocation();
   const { open } = useSidebar();
+  const { data: activeTemplate } = useSidebarTemplate();
+
+  const theme = SIDEBAR_TEMPLATES[activeTemplate || 'blue-gradient'];
 
   const canAccessMenu = (menuRoles?: AppRole[]) => {
     if (!menuRoles || menuRoles.length === 0) return true;
@@ -146,12 +151,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="bg-gradient-to-br from-blue-600 to-blue-700 text-white border-b-0">
+      <SidebarHeader className={`${theme.classes.header} border-b-0`}>
         <div className="px-4 py-6">
           {open ? (
             <>
               <h1 className="text-2xl font-bold">SIMPA BEND</h1>
-              <p className="text-sm opacity-90">BKAD Kolaka Utara</p>
+              <p className={`text-sm ${theme.classes.logoSubtitle}`}>BKAD Kolaka Utara</p>
             </>
           ) : (
             <h1 className="text-xl font-bold text-center">SB</h1>
@@ -159,7 +164,7 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="bg-gradient-to-b from-blue-50 via-white to-gray-50">
+      <SidebarContent className={theme.classes.content}>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
