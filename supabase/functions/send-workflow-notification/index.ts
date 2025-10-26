@@ -16,6 +16,25 @@ interface NotificationRequest {
   notes?: string;
 }
 
+// Helper function to format jenis SPM
+function formatJenisSpm(jenisSpm: string): string {
+  if (!jenisSpm) return '-';
+  return jenisSpm
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+// Helper function to format currency
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -79,24 +98,41 @@ serve(async (req) => {
         }
         
         recipientIds = resepsionis?.map((r: any) => r.user_id) || [];
-        messageTemplate = `📋 *SPM Baru*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nOPD: ${spm.opd?.nama_opd}\nNilai: Rp ${new Intl.NumberFormat('id-ID').format(spm.nilai_spm)}\nBendahara: ${bendaharaName}\n\nSilakan proses verifikasi di sistem.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+        
+        // Build message with potongan/netto if available
+        let messageTemplate = `📋 *SPM Baru*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nOPD: ${spm.opd?.nama_opd}\nJenis: ${formatJenisSpm(spm.jenis_spm)}\n\nNilai SPM: ${formatCurrency(spm.nilai_spm)}`;
+        
+        if (spm.total_potongan && spm.total_potongan > 0) {
+          const nilaiNetto = spm.nilai_bersih || (spm.nilai_spm - spm.total_potongan);
+          messageTemplate += `\nPotongan: ${formatCurrency(spm.total_potongan)}\n💰 Nilai Netto: ${formatCurrency(nilaiNetto)}`;
+        }
+        
+        messageTemplate += `\n\nBendahara: ${bendaharaName}\n\nSilakan proses verifikasi di sistem.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
       
       } else if (action === 'verified') {
         // Notify next stage based on current status
         let nextRole = '';
         
+        // Build base message info
+        const nilaiNetto = spm.nilai_bersih || (spm.nilai_spm - (spm.total_potongan || 0));
+        let baseInfo = `Nomor: ${spm.nomor_spm}\nJenis: ${formatJenisSpm(spm.jenis_spm)}\nOPD: ${spm.opd?.nama_opd}\n\nNilai SPM: ${formatCurrency(spm.nilai_spm)}`;
+        
+        if (spm.total_potongan && spm.total_potongan > 0) {
+          baseInfo += `\nPotongan: ${formatCurrency(spm.total_potongan)}\n💰 Nilai Netto: ${formatCurrency(nilaiNetto)}`;
+        }
+        
         if (spm.status === 'resepsionis_verifikasi') {
           nextRole = 'pbmd';
-          messageTemplate = `✅ *SPM Diverifikasi Resepsionis*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\nNomor Antrian: ${spm.nomor_antrian}\n\nSilakan lanjutkan verifikasi PBMD.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+          messageTemplate = `✅ *SPM Diverifikasi Resepsionis*\n\n${baseInfo}\n\nNomor Berkas: ${spm.nomor_berkas}\nNomor Antrian: ${spm.nomor_antrian}\n\nSilakan lanjutkan verifikasi PBMD.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         } else if (spm.status === 'pbmd_verifikasi') {
           nextRole = 'akuntansi';
-          messageTemplate = `✅ *SPM Diverifikasi PBMD*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\n\nSilakan lanjutkan verifikasi Akuntansi.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+          messageTemplate = `✅ *SPM Diverifikasi PBMD*\n\n${baseInfo}\nNomor Berkas: ${spm.nomor_berkas}\n\nSilakan lanjutkan verifikasi Akuntansi.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         } else if (spm.status === 'akuntansi_validasi') {
           nextRole = 'perbendaharaan';
-          messageTemplate = `✅ *SPM Divalidasi Akuntansi*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\n\nSilakan lanjutkan verifikasi Perbendaharaan.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+          messageTemplate = `✅ *SPM Divalidasi Akuntansi*\n\n${baseInfo}\nNomor Berkas: ${spm.nomor_berkas}\n\nSilakan lanjutkan verifikasi Perbendaharaan.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         } else if (spm.status === 'perbendaharaan_verifikasi') {
           nextRole = 'kepala_bkad';
-          messageTemplate = `✅ *SPM Diverifikasi Perbendaharaan*\n\nNomor: ${spm.nomor_spm}\nNomor Berkas: ${spm.nomor_berkas}\n\nMenunggu review Kepala BKAD.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+          messageTemplate = `✅ *SPM Diverifikasi Perbendaharaan*\n\n${baseInfo}\nNomor Berkas: ${spm.nomor_berkas}\n\nMenunggu review Kepala BKAD.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         }
 
         if (nextRole) {
@@ -114,7 +150,15 @@ serve(async (req) => {
       } else if (action === 'revised') {
         // Notify bendahara about revision
         recipientIds = [spm.bendahara_id];
-        messageTemplate = `⚠️ *SPM Perlu Revisi*\n\nNomor: ${spm.nomor_spm || 'Draft'}\nTahap: ${stage}\nCatatan: ${notes || '-'}\n\nSilakan perbaiki dan ajukan kembali.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+        
+        const nilaiNetto = spm.nilai_bersih || (spm.nilai_spm - (spm.total_potongan || 0));
+        let revisionInfo = `Nomor: ${spm.nomor_spm || 'Draft'}\nJenis: ${formatJenisSpm(spm.jenis_spm)}\n\nNilai SPM: ${formatCurrency(spm.nilai_spm)}`;
+        
+        if (spm.total_potongan && spm.total_potongan > 0) {
+          revisionInfo += `\nPotongan: ${formatCurrency(spm.total_potongan)}\n💰 Nilai Netto: ${formatCurrency(nilaiNetto)}`;
+        }
+        
+        messageTemplate = `⚠️ *SPM Perlu Revisi*\n\n${revisionInfo}\n\nTahap: ${stage}\nCatatan: ${notes || '-'}\n\nSilakan perbaiki dan ajukan kembali.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
       }
 
     } else if (type === 'sp2d') {
