@@ -1,4 +1,4 @@
-export type SidebarTemplate = 'blue-gradient' | 'emerald-clean' | 'slate-elegant';
+export type SidebarTemplate = 'blue-gradient' | 'emerald-clean' | 'slate-elegant' | 'purple-vibrant' | 'teal-dark' | 'rose-bold';
 
 export interface SidebarThemeConfig {
   id: SidebarTemplate;
@@ -68,6 +68,57 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
       content: 'bg-gradient-to-b from-slate-100 via-white to-gray-50',
       activeItem: 'bg-slate-200 shadow-sm',
       logoSubtitle: 'text-amber-200 opacity-95',
+    },
+  },
+  'purple-vibrant': {
+    id: 'purple-vibrant',
+    name: 'Purple Vibrant',
+    description: 'Bold dan energetic dengan gradasi ungu vibrant',
+    preview: {
+      headerGradient: 'linear-gradient(135deg, #7e22ce 0%, #581c87 100%)',
+      contentGradient: 'linear-gradient(180deg, #e9d5ff 0%, #f3e8ff 100%)',
+      headerText: '#ffffff',
+      activeMenu: '#d8b4fe',
+    },
+    classes: {
+      header: 'bg-gradient-to-br from-purple-700 to-purple-900 text-white',
+      content: 'bg-gradient-to-b from-purple-200 to-purple-50',
+      activeItem: 'bg-purple-300 border-l-4 border-purple-700',
+      logoSubtitle: 'text-purple-100 opacity-95',
+    },
+  },
+  'teal-dark': {
+    id: 'teal-dark',
+    name: 'Teal Dark',
+    description: 'Professional dan striking dengan cyan-teal gelap',
+    preview: {
+      headerGradient: 'linear-gradient(135deg, #155e75 0%, #134e4a 100%)',
+      contentGradient: 'linear-gradient(180deg, #99f6e4 0%, #cffafe 100%)',
+      headerText: '#ffffff',
+      activeMenu: '#5eead4',
+    },
+    classes: {
+      header: 'bg-gradient-to-br from-cyan-800 to-teal-900 text-white',
+      content: 'bg-gradient-to-b from-teal-100 to-cyan-50',
+      activeItem: 'bg-teal-200 border-l-4 border-teal-700',
+      logoSubtitle: 'text-cyan-100 opacity-95',
+    },
+  },
+  'rose-bold': {
+    id: 'rose-bold',
+    name: 'Rose Bold',
+    description: 'Warm dan welcoming dengan rose-pink bold',
+    preview: {
+      headerGradient: 'linear-gradient(135deg, #be123c 0%, #9f1239 100%)',
+      contentGradient: 'linear-gradient(180deg, #fecdd3 0%, #fce7f3 100%)',
+      headerText: '#ffffff',
+      activeMenu: '#fda4af',
+    },
+    classes: {
+      header: 'bg-gradient-to-br from-rose-700 to-pink-900 text-white',
+      content: 'bg-gradient-to-b from-rose-200 to-pink-50',
+      activeItem: 'bg-rose-300 border-l-4 border-rose-700',
+      logoSubtitle: 'text-rose-100 opacity-95',
     },
   },
 };

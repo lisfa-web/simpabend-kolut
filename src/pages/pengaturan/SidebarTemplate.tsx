@@ -52,7 +52,7 @@ const SidebarTemplate = () => {
             <RadioGroup
               value={currentTemplate}
               onValueChange={(value) => setSelectedTemplate(value as SidebarTemplateType)}
-              className="grid grid-cols-1 md:grid-cols-3 gap-6"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
               {Object.values(SIDEBAR_TEMPLATES).map((template) => (
                 <div key={template.id} className="relative">
