@@ -17,7 +17,7 @@ export interface JenisSpmTaxMapping {
 }
 
 export const useJenisSpmTaxInfo = () => {
-  return useQuery({
+  const query = useQuery({
     queryKey: ["jenis-spm-tax-info", "v2"],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
@@ -67,6 +67,14 @@ export const useJenisSpmTaxInfo = () => {
       return grouped;
     },
   });
+
+  // Get available jenis_spm from mapping
+  const availableJenisSpm = query.data ? Object.keys(query.data) : [];
+
+  return {
+    ...query,
+    availableJenisSpm,
+  };
 };
 
 // Helper function to get tax labels
