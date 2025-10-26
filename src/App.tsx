@@ -35,6 +35,8 @@ import KegiatanList from "./pages/masterdata/KegiatanList";
 import KegiatanForm from "./pages/masterdata/KegiatanForm";
 import SubkegiatanList from "./pages/masterdata/SubkegiatanList";
 import SubkegiatanForm from "./pages/masterdata/SubkegiatanForm";
+import MasterPajakList from "./pages/masterdata/MasterPajakList";
+import MasterPajakForm from "./pages/masterdata/MasterPajakForm";
 import Sp2dList from "./pages/spm/Sp2dList";
 import Sp2dForm from "./pages/spm/Sp2dForm";
 import Sp2dDetail from "./pages/spm/Sp2dDetail";
@@ -146,6 +148,10 @@ const App = () => (
             <Route path="/masterdata/subkegiatan/new" element={<ProtectedRoute><SubkegiatanForm /></ProtectedRoute>} />
             <Route path="/masterdata/subkegiatan/:id" element={<ProtectedRoute><SubkegiatanForm /></ProtectedRoute>} />
             <Route path="/masterdata/subkegiatan/:id/edit" element={<ProtectedRoute><SubkegiatanForm /></ProtectedRoute>} />
+            
+            <Route path="/masterdata/pajak" element={<ProtectedRoute><MasterPajakList /></ProtectedRoute>} />
+            <Route path="/masterdata/pajak/tambah" element={<ProtectedRoute><MasterPajakForm /></ProtectedRoute>} />
+            <Route path="/masterdata/pajak/edit/:id" element={<ProtectedRoute><MasterPajakForm /></ProtectedRoute>} />
             
             {/* Laporan Routes */}
             <Route path="/laporan" element={<ProtectedRoute><LaporanIndex /></ProtectedRoute>} />

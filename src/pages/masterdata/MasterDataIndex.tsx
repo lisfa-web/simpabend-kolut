@@ -9,6 +9,7 @@ import {
   Layers,
   ListTree,
   UserCog,
+  Receipt,
 } from "lucide-react";
 
 interface MasterDataCard {
@@ -69,6 +70,14 @@ const masterDataList: MasterDataCard[] = [
     path: "/masterdata/pejabat",
     gradient: "from-indigo-500/10 to-violet-500/10",
     iconColor: "text-indigo-600",
+  },
+  {
+    title: "Master Pajak",
+    description: "Kelola data pajak (PPh, PPN) dan tarifnya",
+    icon: Receipt,
+    path: "/masterdata/pajak",
+    gradient: "from-yellow-500/10 to-amber-500/10",
+    iconColor: "text-yellow-600",
   },
 ];
 
