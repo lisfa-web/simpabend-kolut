@@ -28,18 +28,26 @@ const InputSpmDetail = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [loadingPreviews, setLoadingPreviews] = useState<Record<string, boolean>>({});
 
-  // Query untuk kop surat
-  const { data: kopSuratConfig } = useQuery({
-    queryKey: ["kop-surat-config"],
+  // Query untuk logo dan nama instansi
+  const { data: configData } = useQuery({
+    queryKey: ["sistem-config-spm"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("config_sistem")
-        .select("value")
-        .eq("key", "kop_surat_url")
-        .maybeSingle();
+        .select("key, value")
+        .in("key", ["logo_instansi_url", "nama_instansi"]);
       
       if (error) throw error;
-      return data?.value || null;
+      
+      const config: Record<string, string> = {};
+      data?.forEach(item => {
+        config[item.key] = item.value;
+      });
+      
+      return {
+        logoUrl: config.logo_instansi_url || null,
+        namaInstansi: config.nama_instansi || "PEMERINTAH KABUPATEN KOLAKA UTARA"
+      };
     },
   });
 
@@ -152,10 +160,11 @@ const InputSpmDetail = () => {
 
     generateSpmPDF(
       spmData, 
-      kopSuratConfig,
+      configData?.logoUrl,
       "Kuasa Bendahara Umum Daerah",
       "",
-      "Samarinda"
+      "Lasusua",
+      configData?.namaInstansi
     );
 
     toast({

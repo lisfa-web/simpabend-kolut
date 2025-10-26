@@ -51,10 +51,11 @@ interface SpmPrintData {
 
 export const generateSpmPDF = (
   spmData: SpmPrintData,
-  kopSuratUrl?: string | null,
+  logoUrl?: string | null,
   kepalaBkadName: string = "Kuasa Bendahara Umum Daerah",
   kepalaBkadNip: string = "",
-  namaKota: string = "Samarinda"
+  namaKota: string = "Samarinda",
+  namaInstansi: string = "PEMERINTAH KABUPATEN KOLAKA UTARA"
 ) => {
   const printWindow = window.open("", "_blank");
   
@@ -73,56 +74,69 @@ export const generateSpmPDF = (
     <html>
       <head>
         <meta charset="utf-8">
-        <title>Surat Perintah Pencairan Dana - ${spmData.nomor_spm}</title>
+        <title>Surat Perintah Membayar (SPM) - ${spmData.nomor_spm}</title>
         <style>
           @page {
-            size: A4;
-            margin: 1.5cm 2cm;
+            size: legal;
+            margin: 2cm 2.5cm;
           }
           
           body {
             font-family: 'Times New Roman', Times, serif;
             font-size: 11pt;
-            line-height: 1.3;
+            line-height: 1.4;
             color: #000;
             margin: 0;
             padding: 0;
           }
           
-          .kop-surat {
-            text-align: center;
+          .kop-container {
+            border: 2px solid black;
+            display: table;
+            width: 100%;
             margin-bottom: 15px;
           }
           
-          .kop-surat img {
-            max-height: 100px;
-            max-width: 100%;
-          }
-          
-          .header-title {
+          .kop-logo {
+            display: table-cell;
+            width: 100px;
+            vertical-align: middle;
+            padding: 10px;
             text-align: center;
-            margin-bottom: 5px;
           }
           
-          .header-title h3 {
+          .kop-logo img {
+            max-height: 80px;
+            max-width: 90px;
+          }
+          
+          .kop-text {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+            padding: 10px;
+          }
+          
+          .kop-text h2 {
             margin: 0;
-            font-size: 12pt;
+            font-size: 14pt;
             font-weight: bold;
           }
           
-          h2 {
-            text-align: center;
+          .kop-text h3 {
+            margin: 5px 0 0 0;
             font-size: 13pt;
             font-weight: bold;
-            text-transform: uppercase;
-            margin: 5px 0 15px 0;
-            text-decoration: underline;
+          }
+          
+          .info-header-bordered {
+            border: 1px solid black;
+            margin-bottom: 15px;
           }
           
           .info-layout {
             display: table;
             width: 100%;
-            margin-bottom: 15px;
           }
           
           .info-left,
@@ -130,38 +144,44 @@ export const generateSpmPDF = (
             display: table-cell;
             width: 50%;
             vertical-align: top;
-            padding: 0 10px;
+            padding: 8px 12px;
+            border-right: 1px solid black;
+          }
+          
+          .info-right {
+            border-right: none;
           }
           
           .info-row {
-            margin-bottom: 3px;
+            margin-bottom: 4px;
           }
           
           .info-label {
             display: inline-block;
-            width: 120px;
+            width: 130px;
           }
           
           table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
           }
           
           table.bordered {
-            border: 1px solid #000;
+            border: 2px solid black;
           }
           
           table.bordered td,
           table.bordered th {
-            border: 1px solid #000;
-            padding: 4px 6px;
+            border: 1px solid black;
+            padding: 6px 8px;
             vertical-align: top;
           }
           
           table.bordered th {
             font-weight: bold;
             text-align: center;
+            background-color: #f5f5f5;
           }
           
           .text-center {
@@ -178,40 +198,48 @@ export const generateSpmPDF = (
           
           .section-title {
             font-weight: bold;
-            margin: 10px 0 5px 0;
+            margin: 12px 0 6px 0;
           }
           
           .bank-instruction {
-            margin: 10px 0;
-            line-height: 1.5;
+            border: 1px solid black;
+            padding: 10px;
+            margin-bottom: 12px;
+            line-height: 1.6;
           }
           
           .data-penerima {
-            margin: 10px 0;
+            margin: 12px 0;
           }
           
           .data-penerima .row {
-            margin-bottom: 3px;
+            margin-bottom: 4px;
           }
           
           .data-penerima .label {
             display: inline-block;
-            width: 140px;
+            width: 160px;
           }
           
           .footer-notes {
-            margin-top: 15px;
-            font-size: 9pt;
-            line-height: 1.4;
+            margin-top: 20px;
+            font-size: 10pt;
+            line-height: 1.5;
           }
           
           .signature-section {
-            margin-top: 30px;
-            text-align: center;
+            margin-top: 40px;
+            text-align: right;
           }
           
           .signature-space {
-            height: 60px;
+            height: 70px;
+          }
+          
+          .signature-line {
+            border-bottom: 2px solid black;
+            width: 220px;
+            margin: 0 0 2px auto;
           }
           
           @media print {
@@ -219,64 +247,74 @@ export const generateSpmPDF = (
               padding: 0;
             }
             
+            button {
+              display: none !important;
+            }
+            
             @page {
-              margin: 1.5cm 2cm;
+              margin: 2cm 2.5cm;
             }
           }
         </style>
       </head>
       <body>
-        ${kopSuratUrl ? `
-          <div class="kop-surat">
-            <img src="${kopSuratUrl}" alt="Kop Surat" />
+        <!-- Kop Surat dengan Border -->
+        <div class="kop-container">
+          ${logoUrl ? `
+            <div class="kop-logo">
+              <img src="${logoUrl}" alt="Logo" />
+            </div>
+          ` : '<div class="kop-logo"></div>'}
+          <div class="kop-text">
+            <h2>${namaInstansi}</h2>
+            <h3>SURAT PERINTAH MEMBAYAR (SPM)</h3>
           </div>
-        ` : ''}
+        </div>
         
-        <h2>SURAT PERINTAH PENCAIRAN DANA</h2>
-        
-        <!-- Info Header 2 Kolom -->
-        <div class="info-layout">
-          <div class="info-left">
-            <div class="info-row">
-              <span class="info-label">No. SPM</span>
-              <span>: <strong>${spmData.nomor_spm}</strong></span>
+        <!-- Info Header 2 Kolom dengan Border -->
+        <div class="info-header-bordered">
+          <div class="info-layout">
+            <div class="info-left">
+              <div class="info-row">
+                <span class="info-label">No. SPM</span>
+                <span>: <strong>${spmData.nomor_spm}</strong></span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Tanggal</span>
+                <span>: ${tanggalSpm}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">SKPD</span>
+                <span>: ${spmData.opd?.nama_opd || '-'}</span>
+              </div>
             </div>
-            <div class="info-row">
-              <span class="info-label">Tanggal</span>
-              <span>: ${tanggalSpm}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">SKPD</span>
-              <span>: ${spmData.opd?.nama_opd || '-'}</span>
-            </div>
-          </div>
-          <div class="info-right">
-            <div class="info-row">
-              <span class="info-label">Dari</span>
-              <span>: ${kepalaBkadName}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Nomor</span>
-              <span>: ${spmData.nomor_spm}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Tanggal</span>
-              <span>: ${tanggalSpm}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Tahun Anggaran</span>
-              <span>: ${tahunAnggaran}</span>
+            <div class="info-right">
+              <div class="info-row">
+                <span class="info-label">Dari</span>
+                <span>: ${kepalaBkadName}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Nomor</span>
+                <span>: ${spmData.nomor_spm}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Tanggal</span>
+                <span>: ${tanggalSpm}</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">Tahun Anggaran</span>
+                <span>: ${tahunAnggaran}</span>
+              </div>
             </div>
           </div>
         </div>
         
-        <!-- Bank / Pos -->
+        <!-- Bank / Pos dengan Border -->
         <div class="bank-instruction">
-          <strong>Bank / Pos:</strong> ${spmData.vendor?.nama_bank || '[Nama Bank]'}
-          <br>
-          Hendaklah mencairkan/memindahbukukan dari baki Rekening Nomor ${spmData.vendor?.nomor_rekening || '[No Rekening]'} 
+          <strong>Bank / Pos:</strong> ${spmData.vendor?.nama_bank || '[Nama Bank]'}<br>
+          Hendaklah mencairkan/memindahbukukan dari baki Rekening Nomor <strong>${spmData.vendor?.nomor_rekening || '[No Rekening]'}</strong> 
           Uang sebesar <strong>Rp ${formatAngka(nilaiBersih)}</strong> 
-          (${nilaiBersihTerbilang})
+          (Terbilang: <strong>${nilaiBersihTerbilang}</strong>)
         </div>
         
         <!-- Data Penerima -->
@@ -303,13 +341,13 @@ export const generateSpmPDF = (
           </div>
         </div>
         
-        <!-- Tabel Rincian -->
+        <!-- Tabel Rincian dengan Border Tebal -->
         <table class="bordered">
           <thead>
             <tr>
-              <th style="width: 5%;">NO</th>
-              <th style="width: 20%;">REKENING</th>
-              <th style="width: 55%;">URAIAN</th>
+              <th style="width: 5%;">NO.</th>
+              <th style="width: 18%;">REKENING</th>
+              <th style="width: 57%;">URAIAN</th>
               <th style="width: 20%;">JUMLAH</th>
             </tr>
           </thead>
@@ -324,8 +362,8 @@ export const generateSpmPDF = (
               </td>
               <td class="text-right">Rp ${formatAngka(spmData.nilai_spm)}</td>
             </tr>
-            <tr>
-              <td colspan="3" class="text-right"><strong>Jumlah</strong></td>
+            <tr style="background-color: #f5f5f5;">
+              <td colspan="3" class="text-right"><strong>JUMLAH</strong></td>
               <td class="text-right"><strong>Rp ${formatAngka(spmData.nilai_spm)}</strong></td>
             </tr>
           </tbody>
@@ -337,9 +375,9 @@ export const generateSpmPDF = (
         <table class="bordered">
           <thead>
             <tr>
-              <th style="width: 5%;">NO</th>
-              <th style="width: 20%;">REKENING</th>
-              <th style="width: 55%;">URAIAN</th>
+              <th style="width: 5%;">NO.</th>
+              <th style="width: 18%;">REKENING</th>
+              <th style="width: 57%;">URAIAN</th>
               <th style="width: 20%;">JUMLAH</th>
             </tr>
           </thead>
@@ -352,27 +390,37 @@ export const generateSpmPDF = (
                 <td class="text-right">Rp ${formatAngka(pajak.jumlah_pajak)}</td>
               </tr>
             `).join('')}
-            <tr>
-              <td colspan="3" class="text-right"><strong>Jumlah Potongan</strong></td>
+            <tr style="background-color: #f5f5f5;">
+              <td colspan="3" class="text-right"><strong>JUMLAH POTONGAN</strong></td>
               <td class="text-right"><strong>Rp ${formatAngka(spmData.total_potongan || 0)}</strong></td>
             </tr>
           </tbody>
         </table>
         ` : ''}
         
-        <!-- Informasi (SP2D yang Dibayarkan) -->
-        <div class="section-title">Informasi (SP2D yang Dibayarkan):</div>
+        <!-- Informasi (tidak mengurangi jumlah pembayaran SP2D) -->
+        <div class="section-title">Informasi (tidak mengurangi jumlah pembayaran SP2D):</div>
+        <table class="bordered">
+          <tbody>
+            <tr>
+              <td style="width: 100%; height: 30px;"></td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <!-- SP2D yang Dibayarkan (Summary Box) -->
+        <div class="section-title">SP2D yang Dibayarkan:</div>
         <table class="bordered">
           <tbody>
             <tr>
               <td style="width: 70%;"><strong>Jumlah yang diminta</strong></td>
-              <td class="text-right">Rp ${formatAngka(spmData.nilai_spm)}</td>
+              <td class="text-right" style="width: 30%;">Rp ${formatAngka(spmData.nilai_spm)}</td>
             </tr>
             <tr>
               <td><strong>Jumlah Potongan</strong></td>
               <td class="text-right">Rp ${formatAngka(spmData.total_potongan || 0)}</td>
             </tr>
-            <tr>
+            <tr style="background-color: #f5f5f5;">
               <td><strong>Jumlah yang Dibayarkan</strong></td>
               <td class="text-right"><strong>Rp ${formatAngka(nilaiBersih)}</strong></td>
             </tr>
@@ -384,18 +432,19 @@ export const generateSpmPDF = (
         
         <!-- Footer Lembar -->
         <div class="footer-notes">
-          <div>Lembar 1: Bank Yang Ditunjuk</div>
-          <div>Lembar 2: Pengguna Anggaran / Kuasa Pengguna Anggaran</div>
-          <div>Lembar 3: Arsip Kuasa BUD</div>
-          <div>Lembar 4: Pihak Ketiga (*)</div>
+          <div>Lembar 1 : Bank Yang Ditunjuk</div>
+          <div>Lembar 2 : Pengguna Anggaran / Kuasa Pengguna Anggaran</div>
+          <div>Lembar 3 : Arsip Kuasa BUD</div>
+          <div>Lembar 4 : Pihak Ketiga (*)</div>
         </div>
         
-        <!-- Tanda Tangan -->
+        <!-- Tanda Tangan (Kanan Bawah) -->
         <div class="signature-section">
           <div>${namaKota}, ${tanggalSpm}</div>
-          <div><strong>${kepalaBkadName}</strong></div>
+          <div style="margin-top: 5px;"><strong>${kepalaBkadName}</strong></div>
           <div class="signature-space"></div>
-          <div><strong>_______________________</strong></div>
+          <div class="signature-line"></div>
+          <div style="margin-top: 2px;"><strong>${kepalaBkadName}</strong></div>
           ${kepalaBkadNip ? `<div>NIP. ${kepalaBkadNip}</div>` : ''}
         </div>
         
@@ -406,26 +455,19 @@ export const generateSpmPDF = (
             style="
               background-color: #2563eb;
               color: white;
-              padding: 12px 24px;
+              padding: 14px 28px;
               border: none;
-              border-radius: 6px;
-              font-size: 14pt;
+              border-radius: 8px;
+              font-size: 11pt;
               font-weight: bold;
               cursor: pointer;
-              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+              box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+              font-family: 'Times New Roman', Times, serif;
             "
           >
             🖨️ Cetak Dokumen
           </button>
         </div>
-        
-        <style>
-          @media print {
-            button {
-              display: none !important;
-            }
-          }
-        </style>
       </body>
     </html>
   `;
