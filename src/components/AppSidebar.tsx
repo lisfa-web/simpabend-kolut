@@ -50,37 +50,37 @@ const menuItems: MenuItem[] = [
   { 
     name: "Input SPM", 
     icon: FileText, 
-    path: "/input-spm",
+    path: "/spm/input",
     roles: ["bendahara_opd", "administrator"]
   },
   { 
     name: "Verifikasi Resepsionis", 
     icon: CheckSquare, 
-    path: "/verifikasi-resepsionis",
+    path: "/spm/verifikasi/resepsionis",
     roles: ["resepsionis", "administrator"]
   },
   { 
     name: "Verifikasi PBMD", 
     icon: Settings, 
-    path: "/verifikasi-pbmd",
+    path: "/spm/verifikasi/pbmd",
     roles: ["pbmd", "administrator"]
   },
   { 
     name: "Verifikasi Akuntansi", 
     icon: Calculator, 
-    path: "/verifikasi-akuntansi",
+    path: "/spm/verifikasi/akuntansi",
     roles: ["akuntansi", "administrator"]
   },
   { 
     name: "Verifikasi Perbendaharaan", 
     icon: Wallet, 
-    path: "/verifikasi-perbendaharaan",
+    path: "/spm/verifikasi/perbendaharaan",
     roles: ["perbendaharaan", "administrator"]
   },
   { 
     name: "Approval Kepala BKAD", 
     icon: UserCog, 
-    path: "/approval-kepala-bkad",
+    path: "/spm/approval/kepala-bkad",
     roles: ["kepala_bkad", "administrator"]
   },
   { 
@@ -155,12 +155,12 @@ export function AppSidebar() {
   const getNotificationCount = (path: string): number => {
     if (!notifications) return 0;
     const notificationMap: Record<string, number> = {
-      "/input-spm": notifications.inputSpm,
-      "/verifikasi-resepsionis": notifications.verifikasiResepsionis,
-      "/verifikasi-pbmd": notifications.verifikasiPbmd,
-      "/verifikasi-akuntansi": notifications.verifikasiAkuntansi,
-      "/verifikasi-perbendaharaan": notifications.verifikasiPerbendaharaan,
-      "/approval-kepala-bkad": notifications.approvalKepalaBkad,
+      "/spm/input": notifications.inputSpm,
+      "/spm/verifikasi/resepsionis": notifications.verifikasiResepsionis,
+      "/spm/verifikasi/pbmd": notifications.verifikasiPbmd,
+      "/spm/verifikasi/akuntansi": notifications.verifikasiAkuntansi,
+      "/spm/verifikasi/perbendaharaan": notifications.verifikasiPerbendaharaan,
+      "/spm/approval/kepala-bkad": notifications.approvalKepalaBkad,
       "/sp2d": notifications.sp2d,
     };
     return notificationMap[path] || 0;
