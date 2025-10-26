@@ -64,7 +64,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const programId = form.watch("program_id");
   const kegiatanId = form.watch("kegiatan_id");
   const nilaiSpm = form.watch("nilai_spm");
-  const requiresVendor = jenisSpm === 'ls_barang_jasa' || jenisSpm === 'ls_belanja_modal';
+  const requiresVendor = ['ls_barang', 'ls_jasa', 'ls_honorarium', 'ls_jasa_konstruksi', 'ls_sewa', 'ls_belanja_modal'].includes(jenisSpm);
 
   const { speak, isSpeaking } = useSpeechSynthesis();
 
@@ -388,10 +388,10 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardTrigger asChild>
                       <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
                         <FormControl>
-                          <RadioGroupItem value="ls_barang_jasa" />
+                          <RadioGroupItem value="ls_barang" />
                         </FormControl>
                         <FormLabel className="font-normal cursor-help flex items-center gap-1">
-                          LS Barang & Jasa
+                          LS Barang
                           <Info className="h-3 w-3 text-muted-foreground" />
                         </FormLabel>
                       </FormItem>
@@ -399,9 +399,129 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                     <HoverCardContent className="w-80">
                       <div className="space-y-2">
                         <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
-                        {taxMapping["ls_barang_jasa"] && taxMapping["ls_barang_jasa"].length > 0 ? (
+                        {taxMapping["ls_barang"] && taxMapping["ls_barang"].length > 0 ? (
                           <div className="space-y-1">
-                            {taxMapping["ls_barang_jasa"].map((tax) => (
+                            {taxMapping["ls_barang"].map((tax) => (
+                              <div key={tax.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{tax.nama}</span>
+                                <span className="font-medium">{tax.tarif}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                        )}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
+                        <FormControl>
+                          <RadioGroupItem value="ls_jasa" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
+                          LS Jasa
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </FormLabel>
+                      </FormItem>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
+                        {taxMapping["ls_jasa"] && taxMapping["ls_jasa"].length > 0 ? (
+                          <div className="space-y-1">
+                            {taxMapping["ls_jasa"].map((tax) => (
+                              <div key={tax.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{tax.nama}</span>
+                                <span className="font-medium">{tax.tarif}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                        )}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
+                        <FormControl>
+                          <RadioGroupItem value="ls_honorarium" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
+                          LS Honorarium
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </FormLabel>
+                      </FormItem>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
+                        {taxMapping["ls_honorarium"] && taxMapping["ls_honorarium"].length > 0 ? (
+                          <div className="space-y-1">
+                            {taxMapping["ls_honorarium"].map((tax) => (
+                              <div key={tax.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{tax.nama}</span>
+                                <span className="font-medium">{tax.tarif}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                        )}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
+                        <FormControl>
+                          <RadioGroupItem value="ls_jasa_konstruksi" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
+                          LS Jasa Konstruksi
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </FormLabel>
+                      </FormItem>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
+                        {taxMapping["ls_jasa_konstruksi"] && taxMapping["ls_jasa_konstruksi"].length > 0 ? (
+                          <div className="space-y-1">
+                            {taxMapping["ls_jasa_konstruksi"].map((tax) => (
+                              <div key={tax.id} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">{tax.nama}</span>
+                                <span className="font-medium">{tax.tarif}%</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">Belum ada pajak terkonfigurasi</p>
+                        )}
+                      </div>
+                    </HoverCardContent>
+                  </HoverCard>
+                  <HoverCard>
+                    <HoverCardTrigger asChild>
+                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
+                        <FormControl>
+                          <RadioGroupItem value="ls_sewa" />
+                        </FormControl>
+                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
+                          LS Sewa
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </FormLabel>
+                      </FormItem>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-80">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
+                        {taxMapping["ls_sewa"] && taxMapping["ls_sewa"].length > 0 ? (
+                          <div className="space-y-1">
+                            {taxMapping["ls_sewa"].map((tax) => (
                               <div key={tax.id} className="flex justify-between text-sm">
                                 <span className="text-muted-foreground">{tax.nama}</span>
                                 <span className="font-medium">{tax.tarif}%</span>

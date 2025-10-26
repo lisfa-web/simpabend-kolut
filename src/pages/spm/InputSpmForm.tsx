@@ -53,14 +53,30 @@ const InputSpmForm = () => {
   // Pre-fill form data saat mode edit
   useEffect(() => {
     if (id && spmDetail && !formData) {
-      const convertDbJenisSpmToFormFormat = (jenis: string): 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang_jasa' | 'ls_belanja_modal' => {
-        const mapping: Record<string, 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang_jasa' | 'ls_belanja_modal'> = {
+      const convertDbJenisSpmToFormFormat = (jenis: string): 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang' | 'ls_jasa' | 'ls_honorarium' | 'ls_jasa_konstruksi' | 'ls_sewa' | 'ls_belanja_modal' => {
+        const mapping: Record<string, 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang' | 'ls_jasa' | 'ls_honorarium' | 'ls_jasa_konstruksi' | 'ls_sewa' | 'ls_belanja_modal'> = {
           'UP': 'up',
+          'up': 'up',
           'GU': 'gu',
+          'gu': 'gu',
           'TU': 'tu',
+          'tu': 'tu',
           'LS_Gaji': 'ls_gaji',
-          'LS_Barang_Jasa': 'ls_barang_jasa',
-          'LS_Belanja_Modal': 'ls_belanja_modal'
+          'ls_gaji': 'ls_gaji',
+          'LS_Barang': 'ls_barang',
+          'ls_barang': 'ls_barang',
+          'LS_Jasa': 'ls_jasa',
+          'ls_jasa': 'ls_jasa',
+          'LS_Honorarium': 'ls_honorarium',
+          'ls_honorarium': 'ls_honorarium',
+          'LS_Jasa_Konstruksi': 'ls_jasa_konstruksi',
+          'ls_jasa_konstruksi': 'ls_jasa_konstruksi',
+          'LS_Sewa': 'ls_sewa',
+          'ls_sewa': 'ls_sewa',
+          'LS_Belanja_Modal': 'ls_belanja_modal',
+          'ls_belanja_modal': 'ls_belanja_modal',
+          // Backward compatibility for old format
+          'LS_Barang_Jasa': 'ls_barang'
         };
         return mapping[jenis] || 'up';
       };
@@ -81,12 +97,16 @@ const InputSpmForm = () => {
 
   const convertJenisSpmToDbFormat = (jenis: string): string => {
     const mapping: Record<string, string> = {
-      'up': 'UP',
-      'gu': 'GU',
-      'tu': 'TU',
-      'ls_gaji': 'LS_Gaji',
-      'ls_barang_jasa': 'LS_Barang_Jasa',
-      'ls_belanja_modal': 'LS_Belanja_Modal'
+      'up': 'up',
+      'gu': 'gu',
+      'tu': 'tu',
+      'ls_gaji': 'ls_gaji',
+      'ls_barang': 'ls_barang',
+      'ls_jasa': 'ls_jasa',
+      'ls_honorarium': 'ls_honorarium',
+      'ls_jasa_konstruksi': 'ls_jasa_konstruksi',
+      'ls_sewa': 'ls_sewa',
+      'ls_belanja_modal': 'ls_belanja_modal'
     };
     return mapping[jenis] || jenis;
   };
