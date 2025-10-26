@@ -23,6 +23,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, Circle } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import { CurrencyInput } from "./CurrencyInput";
 import { useOpdList } from "@/hooks/useOpdList";
 import { useProgramList } from "@/hooks/useProgramList";
@@ -47,6 +51,24 @@ interface SpmDataFormProps {
   onSubmit: (data: SpmDataFormValues) => void;
   onBack?: () => void;
 }
+
+// Helper function for SPM type labels
+const getJenisSpmLabel = (jenis: string): string => {
+  const labels: Record<string, string> = {
+    up: "UP (Uang Persediaan)",
+    gu: "GU (Ganti Uang)",
+    tu: "TU (Tambah Uang)",
+    ls_gaji: "LS Gaji",
+    ls_barang: "LS Barang",
+    ls_jasa: "LS Jasa",
+    ls_honorarium: "LS Honorarium",
+    ls_jasa_konstruksi: "LS Jasa Konstruksi",
+    ls_sewa: "LS Sewa",
+    ls_barang_jasa: "LS Barang & Jasa",
+    ls_belanja_modal: "LS Belanja Modal",
+  };
+  return labels[jenis] || jenis.toUpperCase().replace(/_/g, ' ');
+};
 
 export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -480,44 +502,102 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
           </div>
         )}
 
-        {/* Inline Tax Details */}
+        {/* Enhanced Tax Information Display */}
         {jenisSpm && (
-          <section className="rounded-lg border border-border bg-card p-4 space-y-3">
-            <h4 className="font-semibold text-sm">Pajak yang akan dipotong</h4>
-            {['up','gu','tu'].includes(jenisSpm) ? (
-              <p className="text-sm text-muted-foreground">Tidak dikenakan potongan pajak untuk jenis SPM ini.</p>
-            ) : (
-              Array.isArray((taxMapping as any)[jenisSpm]) && (taxMapping as any)[jenisSpm].length > 0 ? (
-                <>
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground font-medium">Pajak Default (Otomatis):</p>
-                    {(taxMapping as any)[jenisSpm].filter((t: any) => t.is_default).map((tax: any) => (
-                      <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
-                        <div className="space-y-0.5">
-                          <span className="text-sm font-medium">{tax.nama}</span>
-                          {tax.uraian && <p className="text-xs text-muted-foreground">{tax.uraian}</p>}
-                        </div>
-                        <span className="font-semibold text-primary">{tax.tarif}%</span>
-                      </div>
-                    ))}
-                  </div>
-                  {(taxMapping as any)[jenisSpm].filter((t: any) => !t.is_default).length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-xs text-muted-foreground font-medium">Pajak Opsional (Dapat ditambahkan):</p>
-                      {(taxMapping as any)[jenisSpm].filter((t: any) => !t.is_default).map((tax: any) => (
-                        <div key={tax.id} className="flex items-center justify-between rounded-md bg-muted/50 p-2">
-                          <span className="text-sm">{tax.nama}</span>
-                          <span className="font-medium">{tax.tarif}%</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
+          <Alert className="border-2">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Info className="h-5 w-5 text-primary" />
+                <h4 className="font-semibold text-base">Informasi Pajak - {getJenisSpmLabel(jenisSpm)}</h4>
+              </div>
+              
+              {['up','gu','tu'].includes(jenisSpm) ? (
+                <AlertDescription className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>Tidak dikenakan potongan pajak untuk jenis SPM ini.</span>
+                </AlertDescription>
               ) : (
-                <p className="text-sm text-muted-foreground">Tidak ada pajak terkonfigurasi.</p>
-              )
-            )}
-          </section>
+                Array.isArray((taxMapping as any)[jenisSpm]) && (taxMapping as any)[jenisSpm].length > 0 ? (
+                  <>
+                    {/* Default Taxes */}
+                    {(() => {
+                      const defaultTaxes = (taxMapping as any)[jenisSpm].filter((t: any) => t.is_default);
+                      const optionalTaxes = (taxMapping as any)[jenisSpm].filter((t: any) => !t.is_default);
+                      const totalDefault = defaultTaxes.reduce((sum: number, tax: any) => sum + tax.tarif, 0);
+                      
+                      return (
+                        <>
+                          {defaultTaxes.length > 0 && (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Badge variant="default" className="bg-green-600">Pajak Default</Badge>
+                                <span className="text-xs text-muted-foreground">(Otomatis dipotong)</span>
+                              </div>
+                              <div className="space-y-2">
+                                {defaultTaxes.map((tax: any) => (
+                                  <div key={tax.id} className="flex items-start gap-3 rounded-lg bg-green-50 dark:bg-green-950/20 p-3 border border-green-200 dark:border-green-900">
+                                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                                    <div className="flex-1 space-y-1">
+                                      <div className="flex items-start justify-between gap-2">
+                                        <span className="text-sm font-semibold text-foreground">{tax.nama}</span>
+                                        <span className="text-base font-bold text-green-700 dark:text-green-400">{tax.tarif}%</span>
+                                      </div>
+                                      {tax.uraian && (
+                                        <p className="text-xs text-muted-foreground leading-relaxed">{tax.uraian}</p>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Optional Taxes */}
+                          {optionalTaxes.length > 0 && (
+                            <>
+                              <Separator />
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline">Pajak Opsional</Badge>
+                                  <span className="text-xs text-muted-foreground">(Dapat ditambahkan)</span>
+                                </div>
+                                <div className="space-y-2">
+                                  {optionalTaxes.map((tax: any) => (
+                                    <div key={tax.id} className="flex items-center gap-3 rounded-lg bg-muted/30 p-3 border border-border">
+                                      <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                      <div className="flex-1 flex items-center justify-between gap-2">
+                                        <span className="text-sm font-medium">{tax.nama}</span>
+                                        <span className="text-sm font-semibold">{tax.tarif}%</span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </>
+                          )}
+                          
+                          {/* Estimation */}
+                          {defaultTaxes.length > 0 && (
+                            <>
+                              <Separator />
+                              <AlertDescription className="flex items-center justify-between bg-primary/5 rounded-lg p-3">
+                                <span className="text-sm font-medium">💡 Estimasi Total Potongan Default:</span>
+                                <span className="text-lg font-bold text-primary">{totalDefault.toFixed(1)}%</span>
+                              </AlertDescription>
+                            </>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </>
+                ) : (
+                  <AlertDescription className="text-sm text-muted-foreground">
+                    Tidak ada pajak terkonfigurasi untuk jenis SPM ini.
+                  </AlertDescription>
+                )
+              )}
+            </div>
+          </Alert>
         )}
 
         {requiresVendor && (
