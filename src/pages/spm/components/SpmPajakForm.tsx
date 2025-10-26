@@ -58,7 +58,7 @@ export const SpmPajakForm = ({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   
   // Jenis SPM yang memerlukan pajak
-  const requiresPajak = ['ls_gaji', 'ls_barang', 'ls_jasa', 'ls_honorarium', 'ls_jasa_konstruksi', 'ls_sewa', 'ls_belanja_modal'].includes(jenisSpm);
+  const requiresPajak = ['ls_gaji', 'ls_barang_jasa', 'ls_belanja_modal'].includes(jenisSpm);
   
   const { speak } = useSpeechSynthesis();
   

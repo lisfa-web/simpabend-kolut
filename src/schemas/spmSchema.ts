@@ -5,7 +5,7 @@ export const spmDataSchema = z.object({
   program_id: z.string().uuid('Program harus dipilih'),
   kegiatan_id: z.string().uuid('Kegiatan harus dipilih'),
   subkegiatan_id: z.string().uuid('Sub Kegiatan harus dipilih'),
-  jenis_spm: z.enum(['up', 'gu', 'tu', 'ls_gaji', 'ls_barang', 'ls_jasa', 'ls_honorarium', 'ls_jasa_konstruksi', 'ls_sewa', 'ls_belanja_modal'], {
+  jenis_spm: z.enum(['up', 'gu', 'tu', 'ls_gaji', 'ls_barang_jasa', 'ls_belanja_modal'], {
     errorMap: () => ({ message: 'Jenis SPM harus dipilih' }),
   }),
   nilai_spm: z.number().min(1000, 'Nilai minimal Rp 1.000'),
@@ -17,7 +17,7 @@ export const spmDataSchema = z.object({
   nama_rekening: z.string().optional(),
 }).refine((data) => {
   // Vendor wajib diisi untuk jenis LS tertentu
-  const requiresVendor = ['ls_barang', 'ls_jasa', 'ls_honorarium', 'ls_jasa_konstruksi', 'ls_sewa', 'ls_belanja_modal'];
+  const requiresVendor = ['ls_barang_jasa', 'ls_belanja_modal'];
   if (requiresVendor.includes(data.jenis_spm)) {
     return !!data.vendor_id;
   }

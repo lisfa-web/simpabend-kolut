@@ -3,11 +3,7 @@ export const JENIS_SPM_OPTIONS = [
   { value: 'gu', label: 'GU (Ganti Uang)' },
   { value: 'tu', label: 'TU (Tambah Uang)' },
   { value: 'ls_gaji', label: 'LS Gaji' },
-  { value: 'ls_barang', label: 'LS Barang' },
-  { value: 'ls_jasa', label: 'LS Jasa' },
-  { value: 'ls_honorarium', label: 'LS Honorarium' },
-  { value: 'ls_jasa_konstruksi', label: 'LS Jasa Konstruksi' },
-  { value: 'ls_sewa', label: 'LS Sewa' },
+  { value: 'ls_barang_jasa', label: 'LS Barang & Jasa' },
   { value: 'ls_belanja_modal', label: 'LS Belanja Modal' },
 ] as const;
 

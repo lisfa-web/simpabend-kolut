@@ -53,8 +53,8 @@ const InputSpmForm = () => {
   // Pre-fill form data saat mode edit
   useEffect(() => {
     if (id && spmDetail && !formData) {
-      const convertDbJenisSpmToFormFormat = (jenis: string): 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang' | 'ls_jasa' | 'ls_honorarium' | 'ls_jasa_konstruksi' | 'ls_sewa' | 'ls_belanja_modal' => {
-        const mapping: Record<string, 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang' | 'ls_jasa' | 'ls_honorarium' | 'ls_jasa_konstruksi' | 'ls_sewa' | 'ls_belanja_modal'> = {
+      const convertDbJenisSpmToFormFormat = (jenis: string): 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang_jasa' | 'ls_belanja_modal' => {
+        const mapping: Record<string, 'up' | 'gu' | 'tu' | 'ls_gaji' | 'ls_barang_jasa' | 'ls_belanja_modal'> = {
           'UP': 'up',
           'up': 'up',
           'GU': 'gu',
@@ -63,20 +63,16 @@ const InputSpmForm = () => {
           'tu': 'tu',
           'LS_Gaji': 'ls_gaji',
           'ls_gaji': 'ls_gaji',
-          'LS_Barang': 'ls_barang',
-          'ls_barang': 'ls_barang',
-          'LS_Jasa': 'ls_jasa',
-          'ls_jasa': 'ls_jasa',
-          'LS_Honorarium': 'ls_honorarium',
-          'ls_honorarium': 'ls_honorarium',
-          'LS_Jasa_Konstruksi': 'ls_jasa_konstruksi',
-          'ls_jasa_konstruksi': 'ls_jasa_konstruksi',
-          'LS_Sewa': 'ls_sewa',
-          'ls_sewa': 'ls_sewa',
+          'LS_Barang_Jasa': 'ls_barang_jasa',
+          'ls_barang_jasa': 'ls_barang_jasa',
+          // Backward compatibility for granular types
+          'ls_barang': 'ls_barang_jasa',
+          'ls_jasa': 'ls_barang_jasa',
+          'ls_honorarium': 'ls_barang_jasa',
+          'ls_jasa_konstruksi': 'ls_barang_jasa',
+          'ls_sewa': 'ls_barang_jasa',
           'LS_Belanja_Modal': 'ls_belanja_modal',
           'ls_belanja_modal': 'ls_belanja_modal',
-          // Backward compatibility for old format
-          'LS_Barang_Jasa': 'ls_barang'
         };
         return mapping[jenis] || 'up';
       };
@@ -96,19 +92,8 @@ const InputSpmForm = () => {
   }, [id, spmDetail, formData]);
 
   const convertJenisSpmToDbFormat = (jenis: string): string => {
-    const mapping: Record<string, string> = {
-      'up': 'up',
-      'gu': 'gu',
-      'tu': 'tu',
-      'ls_gaji': 'ls_gaji',
-      'ls_barang': 'ls_barang',
-      'ls_jasa': 'ls_jasa',
-      'ls_honorarium': 'ls_honorarium',
-      'ls_jasa_konstruksi': 'ls_jasa_konstruksi',
-      'ls_sewa': 'ls_sewa',
-      'ls_belanja_modal': 'ls_belanja_modal'
-    };
-    return mapping[jenis] || jenis;
+    // All values are already in correct DB format (lowercase with underscores)
+    return jenis;
   };
 
   const handleDataSubmit = (data: SpmDataFormValues) => {
