@@ -1,6 +1,7 @@
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import LetterPreview from "@/components/surat/LetterPreview";
 import {
   Select,
   SelectContent,
@@ -225,10 +226,12 @@ export default function GenerateSurat() {
               </CardHeader>
               <CardContent>
                 {selectedTemplateId ? (
-                  <div
-                    className="border rounded-lg p-6 bg-white min-h-[600px] print:border-0"
-                    dangerouslySetInnerHTML={{ __html: generateContent() }}
-                  />
+                  <div className="border rounded-lg p-6 bg-white min-h-[600px] print:border-0">
+                    <LetterPreview
+                      kopSuratUrl={selectedTemplate?.kop_surat_url}
+                      content={generateContent()}
+                    />
+                  </div>
                 ) : (
                   <div className="text-center py-12 text-muted-foreground">
                     Pilih template untuk melihat preview

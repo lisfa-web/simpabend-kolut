@@ -2,7 +2,12 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { ArrowLeft, Edit, Copy, Trash2 } from "lucide-react";
+import LetterPreview from "@/components/surat/LetterPreview";
+import { useLetterPreview } from "@/hooks/useLetterPreview";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,6 +28,8 @@ export default function TemplateSuratDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { deleteTemplate, duplicateTemplate } = useTemplateSuratMutation();
+  const { sampleData, replaceVariables } = useLetterPreview();
+  const [showSampleData, setShowSampleData] = useState(false);
 
   const { data: template, isLoading } = useQuery({
     queryKey: ["template_surat", id],
@@ -137,13 +144,27 @@ export default function TemplateSuratDetail() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Preview Konten</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Preview Konten</CardTitle>
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="sample-data"
+                  checked={showSampleData}
+                  onCheckedChange={setShowSampleData}
+                />
+                <Label htmlFor="sample-data" className="cursor-pointer">
+                  Tampilkan Data Contoh
+                </Label>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div
-              className="border rounded-lg p-6 bg-white min-h-[400px]"
-              dangerouslySetInnerHTML={{ __html: template.konten_html }}
-            />
+            <div className="border rounded-lg p-6 bg-white min-h-[400px]">
+              <LetterPreview
+                kopSuratUrl={template.kop_surat_url}
+                content={replaceVariables(template.konten_html, {}, showSampleData)}
+              />
+            </div>
           </CardContent>
         </Card>
 
