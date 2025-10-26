@@ -1,7 +1,9 @@
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, CheckCircle, Clock, AlertCircle, TrendingUp, Sparkles, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FileText, CheckCircle, Clock, AlertCircle, TrendingUp, Sparkles, Calendar, RefreshCw, ArrowUpRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -20,13 +22,56 @@ import { SubmissionTrendWidget } from "./Dashboard/components/SubmissionTrendWid
 import { BottleneckAnalysisWidget } from "./Dashboard/components/BottleneckAnalysisWidget";
 import { PeriodComparisonWidget } from "./Dashboard/components/PeriodComparisonWidget";
 import { RejectionAnalysisWidget } from "./Dashboard/components/RejectionAnalysisWidget";
+import { QuickActions } from "./Dashboard/components/QuickActions";
+import { PeriodFilter } from "./Dashboard/components/PeriodFilter";
 import { cn } from "@/lib/utils";
 import { Sparkline } from "@/components/Sparkline";
 import { CommandPalette } from "@/components/CommandPalette";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const { data: profile } = useUserProfile();
-  const { data: stats, isLoading } = useDashboardStats();
+  const { data: stats, isLoading, refetch } = useDashboardStats();
+  
+  // Period filter state
+  const [selectedPeriod, setSelectedPeriod] = useState("month");
+  
+  // Auto-refresh state
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+      setLastRefresh(Date.now());
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [refetch]);
+
+  // Manual refresh handler
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setLastRefresh(Date.now());
+    setIsRefreshing(false);
+    toast({
+      title: "Data diperbarui",
+      description: "Dashboard telah diperbarui dengan data terbaru",
+    });
+  };
+
+  // Calculate time since last refresh
+  const getTimeSinceRefresh = () => {
+    const seconds = Math.floor((Date.now() - lastRefresh) / 1000);
+    if (seconds < 60) return `${seconds} detik yang lalu`;
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes} menit yang lalu`;
+  };
 
   // Generate sparkline data from monthly trend
   const generateSparklineData = (type: 'diajukan' | 'disetujui' | 'ditolak') => {
@@ -34,36 +79,82 @@ const Dashboard = () => {
     return stats.monthlyTrend.map(m => m[type]);
   };
 
+  // Card click handlers
+  const handleCardClick = (type: string) => {
+    const routes: Record<string, string> = {
+      total: "/spm/list",
+      approved: "/spm/list?status=disetujui",
+      inProgress: "/spm/list?status=dalam_proses",
+      revision: "/spm/list?status=revisi",
+      rejected: "/spm/list?status=ditolak",
+    };
+    navigate(routes[type] || "/spm/list");
+  };
+
   return (
     <DashboardLayout>
       <CommandPalette />
       <div className="space-y-6">
-        {/* Enhanced Header */}
-        <div className="flex items-center justify-between pb-6 border-b">
-          <div className="space-y-1">
-            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
-              Dashboard Monitoring SPM
-            </h1>
-            <p className="text-base text-muted-foreground flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-amber-500" />
-              Selamat datang, <span className="font-semibold text-foreground">{profile?.full_name || "User"}</span>
-            </p>
+        {/* Enhanced Header with Actions */}
+        <div className="space-y-4 pb-6 border-b">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+                Dashboard Monitoring SPM
+              </h1>
+              <p className="text-base text-muted-foreground flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-amber-500" />
+                Selamat datang, <span className="font-semibold text-foreground">{profile?.full_name || "User"}</span>
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="px-4 py-2">
+                <Calendar className="h-3 w-3 mr-2" />
+                {new Date().toLocaleDateString('id-ID', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </Badge>
+            </div>
           </div>
-          
-          <Badge variant="outline" className="px-4 py-2">
-            <Calendar className="h-3 w-3 mr-2" />
-            {new Date().toLocaleDateString('id-ID', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </Badge>
+
+          {/* Quick Actions & Filters Bar */}
+          <div className="flex items-center justify-between bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-lg p-4 glass">
+            <QuickActions />
+            
+            <div className="flex items-center gap-3">
+              <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                Diperbarui {getTimeSinceRefresh()}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleManualRefresh}
+                disabled={isRefreshing}
+                className="gap-2"
+              >
+                <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+                Refresh
+              </Button>
+              <PeriodFilter 
+                selectedPeriod={selectedPeriod} 
+                onPeriodChange={setSelectedPeriod}
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Stats Cards */}
+        {/* Interactive Stats Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card variant="interactive">
+          <Card 
+            variant="interactive" 
+            className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-blue-500"
+            onClick={() => handleCardClick("total")}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total SPM</CardTitle>
               <div className="p-2 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors">
@@ -94,16 +185,23 @@ const Dashboard = () => {
                       className="h-8 w-20"
                     />
                   </div>
-                  <div className="flex items-center gap-1 mt-2 text-xs text-green-600">
-                    <TrendingUp className="h-3 w-3" />
-                    <span>Trend 5 bulan</span>
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-1 text-xs text-green-600">
+                      <TrendingUp className="h-3 w-3" />
+                      <span>+12% vs bulan lalu</span>
+                    </div>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          <Card variant="interactive">
+          <Card 
+            variant="interactive"
+            className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-green-500"
+            onClick={() => handleCardClick("approved")}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Disetujui</CardTitle>
               <div className="p-2 rounded-full bg-green-50 group-hover:bg-green-100 transition-colors">
@@ -134,12 +232,22 @@ const Dashboard = () => {
                       className="h-8 w-20"
                     />
                   </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200">
+                      +8% vs bulan lalu
+                    </Badge>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          <Card variant="interactive">
+          <Card 
+            variant="interactive"
+            className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-orange-500"
+            onClick={() => handleCardClick("inProgress")}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Dalam Proses</CardTitle>
               <div className="p-2 rounded-full bg-orange-50 group-hover:bg-orange-100 transition-colors">
@@ -176,12 +284,22 @@ const Dashboard = () => {
                       className="h-8 w-20"
                     />
                   </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <Badge variant="secondary" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
+                      Sedang diproses
+                    </Badge>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          <Card variant="interactive">
+          <Card 
+            variant="interactive"
+            className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-amber-500"
+            onClick={() => handleCardClick("revision")}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Perlu Revisi</CardTitle>
               <div className="p-2 rounded-full bg-amber-50 group-hover:bg-amber-100 transition-colors">
@@ -212,6 +330,12 @@ const Dashboard = () => {
                       className="h-8 w-20"
                     />
                   </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <Badge variant="secondary" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
+                      Perlu tindakan
+                    </Badge>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </>
               )}
             </CardContent>
@@ -220,7 +344,11 @@ const Dashboard = () => {
 
         {/* Additional Stats Row */}
         <div className="grid gap-6 md:grid-cols-2">
-          <Card variant="interactive">
+          <Card 
+            variant="interactive"
+            className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-red-500"
+            onClick={() => handleCardClick("rejected")}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Ditolak</CardTitle>
               <div className="p-2 rounded-full bg-red-50 group-hover:bg-red-100 transition-colors">
@@ -236,18 +364,31 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-red-600 group-hover:scale-105 transition-transform">
-                    {stats?.rejectedSpm || 0}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-red-600 group-hover:scale-105 transition-transform">
+                        {stats?.rejectedSpm || 0}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatCurrency(stats?.rejectedSpmValue || 0)}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatCurrency(stats?.rejectedSpmValue || 0)}
-                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <Badge variant="destructive" className="text-xs">
+                      Perhatian khusus
+                    </Badge>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          <Card variant="interactive">
+          <Card 
+            variant="interactive"
+            className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-emerald-500"
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Disetujui Kepala BKAD</CardTitle>
               <div className="p-2 rounded-full bg-emerald-50 group-hover:bg-emerald-100 transition-colors">
@@ -263,12 +404,22 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-emerald-600 group-hover:scale-105 transition-transform">
-                    {stats?.approvedByKepalaBkad || 0}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-2xl font-bold text-emerald-600 group-hover:scale-105 transition-transform">
+                        {stats?.approvedByKepalaBkad || 0}
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {formatCurrency(stats?.approvedByKepalaBkadValue || 0)}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatCurrency(stats?.approvedByKepalaBkadValue || 0)}
-                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <Badge variant="secondary" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
+                      Final approval
+                    </Badge>
+                    <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
                 </>
               )}
             </CardContent>
