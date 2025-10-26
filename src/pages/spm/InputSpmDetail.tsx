@@ -206,7 +206,8 @@ const InputSpmDetail = () => {
     
     const status = spm.status;
     
-    if (status === "resepsionis_verifikasi" && hasRole("resepsionis")) {
+    // Resepsionis verifies SPM with status "diajukan" or "resepsionis_verifikasi"
+    if ((status === "diajukan" || status === "resepsionis_verifikasi") && hasRole("resepsionis")) {
       return {
         title: "Verifikasi Resepsionis",
         showNomorAntrian: true,
@@ -249,6 +250,50 @@ const InputSpmDetail = () => {
         showNomorBerkas: false,
         showPin: true,
       };
+    }
+    
+    // Administrator can verify at any stage
+    if (hasRole("administrator")) {
+      if (status === "diajukan" || status === "resepsionis_verifikasi") {
+        return {
+          title: "Verifikasi Resepsionis",
+          showNomorAntrian: true,
+          showNomorBerkas: true,
+          showPin: false,
+        };
+      }
+      if (status === "pbmd_verifikasi") {
+        return {
+          title: "Verifikasi PBMD",
+          showNomorAntrian: false,
+          showNomorBerkas: false,
+          showPin: false,
+        };
+      }
+      if (status === "akuntansi_validasi") {
+        return {
+          title: "Validasi Akuntansi",
+          showNomorAntrian: false,
+          showNomorBerkas: false,
+          showPin: false,
+        };
+      }
+      if (status === "perbendaharaan_verifikasi") {
+        return {
+          title: "Verifikasi Perbendaharaan",
+          showNomorAntrian: false,
+          showNomorBerkas: false,
+          showPin: true,
+        };
+      }
+      if (status === "kepala_bkad_review") {
+        return {
+          title: "Approval Kepala BKAD",
+          showNomorAntrian: false,
+          showNomorBerkas: false,
+          showPin: true,
+        };
+      }
     }
     
     return null;
