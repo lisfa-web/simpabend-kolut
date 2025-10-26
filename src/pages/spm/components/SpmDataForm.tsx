@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { spmDataSchema, SpmDataFormValues } from "@/schemas/spmSchema";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { terbilangRupiah } from "@/lib/formatHelpers";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import {
@@ -29,6 +29,16 @@ import { useKegiatanList } from "@/hooks/useKegiatanList";
 import { useSubkegiatanList } from "@/hooks/useSubkegiatanList";
 import { useVendorList } from "@/hooks/useVendorList";
 import { Loader2, Volume2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface SpmDataFormProps {
   defaultValues?: Partial<SpmDataFormValues>;
@@ -37,6 +47,9 @@ interface SpmDataFormProps {
 }
 
 export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProps) => {
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingData, setPendingData] = useState<SpmDataFormValues | null>(null);
+
   const form = useForm<SpmDataFormValues>({
     resolver: zodResolver(spmDataSchema),
     defaultValues: {
@@ -69,6 +82,44 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
     }
   }, [defaultValues, form]);
 
+  const handleNextClick = (data: SpmDataFormValues) => {
+    setPendingData(data);
+    
+    // Bacakan nilai SPM
+    const terbilang = terbilangRupiah(data.nilai_spm);
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(terbilang);
+      utterance.lang = 'id-ID';
+      utterance.rate = 0.85;
+      utterance.pitch = 1;
+      
+      utterance.onend = () => {
+        // Setelah audio selesai, buka dialog konfirmasi
+        setShowConfirmDialog(true);
+      };
+      
+      window.speechSynthesis.speak(utterance);
+    } else {
+      // Fallback jika browser tidak support TTS
+      setShowConfirmDialog(true);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (pendingData) {
+      onSubmit(pendingData);
+    }
+    setShowConfirmDialog(false);
+    setPendingData(null);
+  };
+
+  const handleCancel = () => {
+    setShowConfirmDialog(false);
+    setPendingData(null);
+  };
+
   if (opdLoading || programLoading) {
     return (
       <div className="flex justify-center p-8">
@@ -79,7 +130,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleNextClick)} className="space-y-6">
         <FormField
           control={form.control}
           name="opd_id"
@@ -369,6 +420,47 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
           </Button>
         </div>
       </form>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Nilai SPM</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <div>
+                <p className="text-sm text-muted-foreground">Apakah nilai SPM sudah benar?</p>
+              </div>
+              {pendingData && (
+                <div className="rounded-lg bg-muted p-4 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Nilai SPM:</span>
+                    <span className="text-lg font-bold text-primary">
+                      {new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        minimumFractionDigits: 0,
+                      }).format(pendingData.nilai_spm)}
+                    </span>
+                  </div>
+                  <div className="border-t pt-2">
+                    <p className="text-xs text-muted-foreground italic">
+                      <span className="font-medium">Terbilang:</span>{' '}
+                      {terbilangRupiah(pendingData.nilai_spm)}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancel}>
+              ❌ Tidak, Koreksi
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirm}>
+              ✅ Ya, Benar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Form>
   );
 };
