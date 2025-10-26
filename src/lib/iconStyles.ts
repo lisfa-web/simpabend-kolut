@@ -43,6 +43,10 @@ export function getIconClasses({
         'purple-vibrant': 'from-purple-600 to-purple-900',
         'teal-dark': 'from-cyan-600 to-teal-900',
         'rose-bold': 'from-rose-600 to-pink-900',
+        'lime-fresh': 'from-lime-700 to-green-800',
+        'magenta-bold': 'from-fuchsia-600 to-pink-900',
+        'deep-indigo': 'from-indigo-600 to-blue-800',
+        'orange-sunset': 'from-orange-600 to-amber-800',
       };
       const gradient = gradientMap[templateId] || 'from-gray-600 to-gray-800';
       

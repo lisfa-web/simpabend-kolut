@@ -157,7 +157,7 @@ export const SIDEBAR_TEMPLATES: Record<SidebarTemplate, SidebarThemeConfig> = {
     id: 'lime-fresh',
     name: 'Lime Fresh',
     description: 'Fresh dan vibrant dengan lime hijau terang kontras kuat',
-    iconStyle: 'gradient-icon',
+    iconStyle: 'standard',
     preview: {
       headerGradient: 'linear-gradient(135deg, #65a30d 0%, #4d7c0f 100%)',
       contentGradient: 'linear-gradient(180deg, #f7fee7 0%, #ffffff 50%, #ecfccb 100%)',
