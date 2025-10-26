@@ -17,6 +17,7 @@ import { formatCurrency } from "@/lib/currency";
 import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import { JENIS_SPM_OPTIONS, getJenisSpmLabel } from "@/lib/jenisSpmOptions";
 
 const LaporanSpm = () => {
   const navigate = useNavigate();
@@ -125,10 +126,11 @@ const LaporanSpm = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Semua Jenis</SelectItem>
-                    <SelectItem value="ls">LS (Langsung)</SelectItem>
-                    <SelectItem value="up">UP (Uang Persediaan)</SelectItem>
-                    <SelectItem value="gu">GU (Ganti Uang)</SelectItem>
-                    <SelectItem value="tu">TU (Tambah Uang)</SelectItem>
+                    {JENIS_SPM_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -198,7 +200,7 @@ const LaporanSpm = () => {
                             : "-"}
                         </TableCell>
                         <TableCell>{spm.opd?.nama_opd || "-"}</TableCell>
-                        <TableCell className="uppercase">{spm.jenis_spm}</TableCell>
+                        <TableCell>{getJenisSpmLabel(spm.jenis_spm)}</TableCell>
                         <TableCell className="text-right">
                           {formatCurrency(spm.nilai_spm)}
                         </TableCell>

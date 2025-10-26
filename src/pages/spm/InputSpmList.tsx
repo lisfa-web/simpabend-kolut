@@ -35,6 +35,7 @@ import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Plus, Eye, Edit, Trash2, Send, Search, Loader2 } from "lucide-react";
+import { JENIS_SPM_OPTIONS, getJenisSpmLabel } from "@/lib/jenisSpmOptions";
 
 const InputSpmList = () => {
   const navigate = useNavigate();
@@ -114,12 +115,11 @@ const InputSpmList = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Semua Jenis</SelectItem>
-              <SelectItem value="UP">UP</SelectItem>
-              <SelectItem value="GU">GU</SelectItem>
-              <SelectItem value="TU">TU</SelectItem>
-              <SelectItem value="LS_Gaji">LS Gaji</SelectItem>
-              <SelectItem value="LS_Barang_Jasa">LS Barang & Jasa</SelectItem>
-              <SelectItem value="LS_Belanja_Modal">LS Belanja Modal</SelectItem>
+              {JENIS_SPM_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -168,7 +168,7 @@ const InputSpmList = () => {
                     <TableCell className="font-medium">
                       {spm.nomor_spm || "-"}
                     </TableCell>
-                    <TableCell>{spm.jenis_spm?.toUpperCase()}</TableCell>
+                    <TableCell>{getJenisSpmLabel(spm.jenis_spm)}</TableCell>
                     <TableCell>{formatCurrency(spm.nilai_spm)}</TableCell>
                     <TableCell>
                       <SpmStatusBadge status={spm.status} />
