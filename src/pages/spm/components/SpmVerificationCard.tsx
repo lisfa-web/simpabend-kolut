@@ -42,8 +42,18 @@ export const SpmVerificationCard = ({ spm, onVerify }: SpmVerificationCardProps)
             </Badge>
           </div>
           <div>
-            <p className="text-muted-foreground">Nilai</p>
-            <p className="font-semibold mt-1">{formatCurrency(spm.nilai_spm)}</p>
+            <p className="text-muted-foreground">Nilai SPM</p>
+            <p className="font-medium mt-1">{formatCurrency(spm.nilai_spm)}</p>
+            {spm.total_potongan > 0 && (
+              <>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Potongan: {formatCurrency(spm.total_potongan)}
+                </p>
+                <p className="text-sm font-semibold text-primary mt-1">
+                  Netto: {formatCurrency(spm.nilai_bersih || (spm.nilai_spm - spm.total_potongan))}
+                </p>
+              </>
+            )}
           </div>
           <div className="col-span-2">
             <p className="text-muted-foreground">Uraian</p>

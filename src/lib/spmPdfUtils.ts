@@ -5,6 +5,8 @@ interface SpmPrintData {
   nomor_spm: string;
   tanggal_ajuan: string;
   nilai_spm: number;
+  total_potongan?: number;
+  nilai_bersih?: number;
   uraian?: string;
   jenis_spm: string;
   nomor_berkas?: string;
@@ -36,6 +38,14 @@ interface SpmPrintData {
     full_name: string;
     email?: string;
   };
+  potongan_pajak_spm?: Array<{
+    jenis_pajak: string;
+    rekening_pajak?: string;
+    uraian: string;
+    tarif: number;
+    dasar_pengenaan: number;
+    jumlah_pajak: number;
+  }>;
 }
 
 export const generateSpmPDF = (
@@ -319,6 +329,49 @@ export const generateSpmPDF = (
             </tr>
           </tbody>
         </table>
+        
+        <!-- Potongan Pajak -->
+        ${spmData.potongan_pajak_spm && spmData.potongan_pajak_spm.length > 0 ? `
+        <table class="bordered mt-4">
+          <thead>
+            <tr>
+              <th colspan="6">POTONGAN PAJAK</th>
+            </tr>
+            <tr style="background-color: #f0f0f0;">
+              <th style="width: 5%;">No</th>
+              <th style="width: 18%;">Jenis Pajak</th>
+              <th style="width: 27%;">Uraian</th>
+              <th style="width: 10%;">Tarif</th>
+              <th style="width: 20%;">Dasar Pengenaan</th>
+              <th style="width: 20%;">Jumlah Pajak</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${spmData.potongan_pajak_spm.map((pajak, index) => `
+              <tr>
+                <td class="text-center">${index + 1}</td>
+                <td>${pajak.jenis_pajak}</td>
+                <td style="font-size: 10pt;">${pajak.uraian}</td>
+                <td class="text-center">${pajak.tarif}%</td>
+                <td class="text-right">Rp ${formatAngka(pajak.dasar_pengenaan)}</td>
+                <td class="text-right">Rp ${formatAngka(pajak.jumlah_pajak)}</td>
+              </tr>
+            `).join('')}
+            <tr style="background-color: #f8f8f8;">
+              <td colspan="5" class="text-right"><strong>Nilai Bruto:</strong></td>
+              <td class="text-right"><strong>Rp ${formatAngka(spmData.nilai_spm)}</strong></td>
+            </tr>
+            <tr style="background-color: #ffe0e0;">
+              <td colspan="5" class="text-right"><strong>Total Potongan:</strong></td>
+              <td class="text-right"><strong>-Rp ${formatAngka(spmData.total_potongan || 0)}</strong></td>
+            </tr>
+            <tr style="background-color: #e0ffe0;">
+              <td colspan="5" class="text-right"><strong>Nilai Netto:</strong></td>
+              <td class="text-right"><strong>Rp ${formatAngka(spmData.nilai_bersih || (spmData.nilai_spm - (spmData.total_potongan || 0)))}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        ` : ''}
         
         <!-- Tanda Tangan -->
         <div class="signature-section">
