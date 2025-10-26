@@ -3,6 +3,7 @@ import { terbilangRupiah, formatTanggalIndonesia, formatAngka } from "./formatHe
 
 interface SpmPrintData {
   nomor_spm: string;
+  tanggal_spm?: string;
   tanggal_ajuan: string;
   nilai_spm: number;
   total_potongan?: number;
@@ -38,10 +39,10 @@ interface SpmPrintData {
     full_name: string;
     email?: string;
   };
-  potongan_pajak_spm?: Array<{
+  potongan_pajak?: Array<{
     jenis_pajak: string;
     rekening_pajak?: string;
-    uraian: string;
+    uraian?: string;
     tarif: number;
     dasar_pengenaan: number;
     jumlah_pajak: number;
@@ -51,8 +52,9 @@ interface SpmPrintData {
 export const generateSpmPDF = (
   spmData: SpmPrintData,
   kopSuratUrl?: string | null,
-  kepalaBkadName: string = "KEPALA BADAN KEUANGAN DAN ASET DAERAH",
-  kepalaBkadNip: string = ""
+  kepalaBkadName: string = "Kuasa Bendahara Umum Daerah",
+  kepalaBkadNip: string = "",
+  namaKota: string = "Samarinda"
 ) => {
   const printWindow = window.open("", "_blank");
   
@@ -61,16 +63,17 @@ export const generateSpmPDF = (
     return;
   }
 
-  const tahunAnggaran = new Date(spmData.tanggal_ajuan).getFullYear();
-  const tanggalCetak = formatTanggalIndonesia(spmData.tanggal_ajuan);
-  const nilaiTerbilang = terbilangRupiah(spmData.nilai_spm);
+  const tahunAnggaran = new Date(spmData.tanggal_spm || spmData.tanggal_ajuan).getFullYear();
+  const tanggalSpm = formatTanggalIndonesia(spmData.tanggal_spm || spmData.tanggal_ajuan);
+  const nilaiBersih = spmData.nilai_bersih || (spmData.nilai_spm - (spmData.total_potongan || 0));
+  const nilaiBersihTerbilang = terbilangRupiah(nilaiBersih);
 
   const htmlContent = `
     <!DOCTYPE html>
     <html>
       <head>
         <meta charset="utf-8">
-        <title>SPM - ${spmData.nomor_spm}</title>
+        <title>Surat Perintah Pencairan Dana - ${spmData.nomor_spm}</title>
         <style>
           @page {
             size: A4;
@@ -80,7 +83,7 @@ export const generateSpmPDF = (
           body {
             font-family: 'Times New Roman', Times, serif;
             font-size: 11pt;
-            line-height: 1.4;
+            line-height: 1.3;
             color: #000;
             margin: 0;
             padding: 0;
@@ -88,12 +91,23 @@ export const generateSpmPDF = (
           
           .kop-surat {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
           }
           
           .kop-surat img {
-            max-height: 120px;
+            max-height: 100px;
             max-width: 100%;
+          }
+          
+          .header-title {
+            text-align: center;
+            margin-bottom: 5px;
+          }
+          
+          .header-title h3 {
+            margin: 0;
+            font-size: 12pt;
+            font-weight: bold;
           }
           
           h2 {
@@ -101,7 +115,31 @@ export const generateSpmPDF = (
             font-size: 13pt;
             font-weight: bold;
             text-transform: uppercase;
-            margin: 10px 0 20px 0;
+            margin: 5px 0 15px 0;
+            text-decoration: underline;
+          }
+          
+          .info-layout {
+            display: table;
+            width: 100%;
+            margin-bottom: 15px;
+          }
+          
+          .info-left,
+          .info-right {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+            padding: 0 10px;
+          }
+          
+          .info-row {
+            margin-bottom: 3px;
+          }
+          
+          .info-label {
+            display: inline-block;
+            width: 120px;
           }
           
           table {
@@ -117,13 +155,13 @@ export const generateSpmPDF = (
           table.bordered td,
           table.bordered th {
             border: 1px solid #000;
-            padding: 6px 8px;
+            padding: 4px 6px;
             vertical-align: top;
           }
           
           table.bordered th {
             font-weight: bold;
-            background-color: #f0f0f0;
+            text-align: center;
           }
           
           .text-center {
@@ -138,29 +176,42 @@ export const generateSpmPDF = (
             font-weight: bold;
           }
           
-          .uppercase {
-            text-transform: uppercase;
+          .section-title {
+            font-weight: bold;
+            margin: 10px 0 5px 0;
           }
           
-          .mt-2 {
-            margin-top: 8px;
+          .bank-instruction {
+            margin: 10px 0;
+            line-height: 1.5;
           }
           
-          .mt-4 {
-            margin-top: 16px;
+          .data-penerima {
+            margin: 10px 0;
           }
           
-          p {
-            margin: 8px 0;
+          .data-penerima .row {
+            margin-bottom: 3px;
+          }
+          
+          .data-penerima .label {
+            display: inline-block;
+            width: 140px;
+          }
+          
+          .footer-notes {
+            margin-top: 15px;
+            font-size: 9pt;
+            line-height: 1.4;
           }
           
           .signature-section {
-            margin-top: 40px;
-            text-align: right;
+            margin-top: 30px;
+            text-align: center;
           }
           
           .signature-space {
-            height: 80px;
+            height: 60px;
           }
           
           @media print {
@@ -179,207 +230,177 @@ export const generateSpmPDF = (
           <div class="kop-surat">
             <img src="${kopSuratUrl}" alt="Kop Surat" />
           </div>
-        ` : ''}
+        ` : `
+          <div class="header-title">
+            <h3>PEMERINTAH PROVINSI KALIMANTAN TIMUR</h3>
+          </div>
+        `}
         
-        <h2>SURAT PERINTAH MEMBAYAR (SPM)</h2>
+        <h2>SURAT PERINTAH PENCAIRAN DANA</h2>
         
-        <!-- Info Header -->
-        <table class="mt-2">
-          <tr>
-            <td style="width: 150px;">Nomor SPM</td>
-            <td style="width: 10px;">:</td>
-            <td><strong>${spmData.nomor_spm}</strong></td>
-          </tr>
-          <tr>
-            <td>Tanggal</td>
-            <td>:</td>
-            <td>${tanggalCetak}</td>
-          </tr>
-          <tr>
-            <td>Tahun Anggaran</td>
-            <td>:</td>
-            <td>${tahunAnggaran}</td>
-          </tr>
-          <tr>
-            <td>Jenis SPM</td>
-            <td>:</td>
-            <td class="uppercase">${spmData.jenis_spm.replace('_', ' ')}</td>
-          </tr>
-          ${spmData.nomor_berkas ? `
-          <tr>
-            <td>Nomor Berkas</td>
-            <td>:</td>
-            <td>${spmData.nomor_berkas}</td>
-          </tr>
-          ` : ''}
-        </table>
+        <!-- Info Header 2 Kolom -->
+        <div class="info-layout">
+          <div class="info-left">
+            <div class="info-row">
+              <span class="info-label">No. SPM</span>
+              <span>: <strong>${spmData.nomor_spm}</strong></span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tanggal</span>
+              <span>: ${tanggalSpm}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">SKPD</span>
+              <span>: ${spmData.opd?.nama_opd || '-'}</span>
+            </div>
+          </div>
+          <div class="info-right">
+            <div class="info-row">
+              <span class="info-label">Dari</span>
+              <span>: ${kepalaBkadName}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Nomor</span>
+              <span>: ${spmData.nomor_spm}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tanggal</span>
+              <span>: ${tanggalSpm}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Tahun Anggaran</span>
+              <span>: ${tahunAnggaran}</span>
+            </div>
+          </div>
+        </div>
         
-        <!-- Data OPD -->
-        <table class="bordered mt-4">
-          <thead>
-            <tr>
-              <th colspan="2">DATA ORGANISASI PERANGKAT DAERAH</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="width: 200px;"><strong>Nama SKPD</strong></td>
-              <td>${spmData.opd?.nama_opd || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Kode SKPD</strong></td>
-              <td>${spmData.opd?.kode_opd || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Bendahara</strong></td>
-              <td>${spmData.bendahara?.full_name || '-'}</td>
-            </tr>
-          </tbody>
-        </table>
-        
-        <!-- Data Program/Kegiatan -->
-        <table class="bordered mt-4">
-          <thead>
-            <tr>
-              <th colspan="2">DATA PROGRAM DAN KEGIATAN</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="width: 200px;"><strong>Program</strong></td>
-              <td>${spmData.program?.nama_program || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Kode Program</strong></td>
-              <td>${spmData.program?.kode_program || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Kegiatan</strong></td>
-              <td>${spmData.kegiatan?.nama_kegiatan || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Kode Kegiatan</strong></td>
-              <td>${spmData.kegiatan?.kode_kegiatan || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Sub Kegiatan</strong></td>
-              <td>${spmData.subkegiatan?.nama_subkegiatan || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Kode Sub Kegiatan</strong></td>
-              <td>${spmData.subkegiatan?.kode_subkegiatan || '-'}</td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- Bank / Pos -->
+        <div class="bank-instruction">
+          <strong>Bank / Pos:</strong> ${spmData.vendor?.nama_bank || '[Nama Bank]'}
+          <br>
+          Hendaklah mencairkan/memindahbukukan dari baki Rekening Nomor ${spmData.vendor?.nomor_rekening || '[No Rekening]'} 
+          Uang sebesar <strong>Rp ${formatAngka(nilaiBersih)}</strong> 
+          (${nilaiBersihTerbilang})
+        </div>
         
         <!-- Data Penerima -->
-        ${spmData.vendor ? `
-        <table class="bordered mt-4">
-          <thead>
-            <tr>
-              <th colspan="2">DATA PENERIMA</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="width: 200px;"><strong>Nama Penerima</strong></td>
-              <td>${spmData.vendor.nama_vendor || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>NPWP</strong></td>
-              <td>${spmData.vendor.npwp || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Nama Bank</strong></td>
-              <td>${spmData.vendor.nama_bank || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Nomor Rekening</strong></td>
-              <td>${spmData.vendor.nomor_rekening || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Nama Rekening</strong></td>
-              <td>${spmData.vendor.nama_rekening || '-'}</td>
-            </tr>
-          </tbody>
-        </table>
-        ` : ''}
+        <div class="data-penerima">
+          <div class="row">
+            <span class="label"><strong>Kepada</strong></span>
+            <span>: ${spmData.vendor?.nama_vendor || '-'}</span>
+          </div>
+          <div class="row">
+            <span class="label"><strong>NPWP</strong></span>
+            <span>: ${spmData.vendor?.npwp || '-'}</span>
+          </div>
+          <div class="row">
+            <span class="label"><strong>No. Rekening Bank</strong></span>
+            <span>: ${spmData.vendor?.nomor_rekening || '-'}</span>
+          </div>
+          <div class="row">
+            <span class="label"><strong>Bank / Pos</strong></span>
+            <span>: ${spmData.vendor?.nama_bank || '-'}</span>
+          </div>
+          <div class="row">
+            <span class="label"><strong>Keperluan Untuk</strong></span>
+            <span>: ${spmData.uraian || '-'}</span>
+          </div>
+        </div>
         
-        <!-- Uraian & Nilai -->
-        <table class="bordered mt-4">
+        <!-- Tabel Rincian -->
+        <table class="bordered">
           <thead>
             <tr>
-              <th colspan="2">URAIAN DAN NILAI SPM</th>
+              <th style="width: 5%;">NO</th>
+              <th style="width: 20%;">REKENING</th>
+              <th style="width: 55%;">URAIAN</th>
+              <th style="width: 20%;">JUMLAH</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td style="width: 200px;"><strong>Uraian</strong></td>
-              <td>${spmData.uraian || '-'}</td>
-            </tr>
-            <tr>
-              <td><strong>Nilai SPM</strong></td>
-              <td><strong>Rp ${formatAngka(spmData.nilai_spm)}</strong></td>
-            </tr>
-            <tr>
-              <td colspan="2">
-                <strong>Terbilang:</strong><br>
-                <em>${nilaiTerbilang}</em>
+              <td class="text-center">1</td>
+              <td>${spmData.program?.kode_program || '-'}.${spmData.kegiatan?.kode_kegiatan || '-'}.${spmData.subkegiatan?.kode_subkegiatan || '-'}</td>
+              <td>
+                <strong>Program:</strong> ${spmData.program?.nama_program || '-'}<br>
+                <strong>Kegiatan:</strong> ${spmData.kegiatan?.nama_kegiatan || '-'}<br>
+                <strong>Sub Kegiatan:</strong> ${spmData.subkegiatan?.nama_subkegiatan || '-'}
               </td>
+              <td class="text-right">Rp ${formatAngka(spmData.nilai_spm)}</td>
+            </tr>
+            <tr>
+              <td colspan="3" class="text-right"><strong>Jumlah</strong></td>
+              <td class="text-right"><strong>Rp ${formatAngka(spmData.nilai_spm)}</strong></td>
             </tr>
           </tbody>
         </table>
         
-        <!-- Potongan Pajak -->
-        ${spmData.potongan_pajak_spm && spmData.potongan_pajak_spm.length > 0 ? `
-        <table class="bordered mt-4">
+        <!-- Potongan-Potongan -->
+        ${spmData.potongan_pajak && spmData.potongan_pajak.length > 0 ? `
+        <div class="section-title">Potongan-Potongan:</div>
+        <table class="bordered">
           <thead>
             <tr>
-              <th colspan="6">POTONGAN PAJAK</th>
-            </tr>
-            <tr style="background-color: #f0f0f0;">
-              <th style="width: 5%;">No</th>
-              <th style="width: 18%;">Jenis Pajak</th>
-              <th style="width: 27%;">Uraian</th>
-              <th style="width: 10%;">Tarif</th>
-              <th style="width: 20%;">Dasar Pengenaan</th>
-              <th style="width: 20%;">Jumlah Pajak</th>
+              <th style="width: 5%;">NO</th>
+              <th style="width: 20%;">REKENING</th>
+              <th style="width: 55%;">URAIAN</th>
+              <th style="width: 20%;">JUMLAH</th>
             </tr>
           </thead>
           <tbody>
-            ${spmData.potongan_pajak_spm.map((pajak, index) => `
+            ${spmData.potongan_pajak.map((pajak, index) => `
               <tr>
                 <td class="text-center">${index + 1}</td>
-                <td>${pajak.jenis_pajak}</td>
-                <td style="font-size: 10pt;">${pajak.uraian}</td>
-                <td class="text-center">${pajak.tarif}%</td>
-                <td class="text-right">Rp ${formatAngka(pajak.dasar_pengenaan)}</td>
+                <td>${pajak.rekening_pajak || '-'}</td>
+                <td>${pajak.jenis_pajak} - ${pajak.uraian || ''} (${pajak.tarif}%)</td>
                 <td class="text-right">Rp ${formatAngka(pajak.jumlah_pajak)}</td>
               </tr>
             `).join('')}
-            <tr style="background-color: #f8f8f8;">
-              <td colspan="5" class="text-right"><strong>Nilai Bruto:</strong></td>
-              <td class="text-right"><strong>Rp ${formatAngka(spmData.nilai_spm)}</strong></td>
-            </tr>
-            <tr style="background-color: #ffe0e0;">
-              <td colspan="5" class="text-right"><strong>Total Potongan:</strong></td>
-              <td class="text-right"><strong>-Rp ${formatAngka(spmData.total_potongan || 0)}</strong></td>
-            </tr>
-            <tr style="background-color: #e0ffe0;">
-              <td colspan="5" class="text-right"><strong>Nilai Netto:</strong></td>
-              <td class="text-right"><strong>Rp ${formatAngka(spmData.nilai_bersih || (spmData.nilai_spm - (spmData.total_potongan || 0)))}</strong></td>
+            <tr>
+              <td colspan="3" class="text-right"><strong>Jumlah Potongan</strong></td>
+              <td class="text-right"><strong>Rp ${formatAngka(spmData.total_potongan || 0)}</strong></td>
             </tr>
           </tbody>
         </table>
         ` : ''}
         
+        <!-- Informasi (SP2D yang Dibayarkan) -->
+        <div class="section-title">Informasi (SP2D yang Dibayarkan):</div>
+        <table class="bordered">
+          <tbody>
+            <tr>
+              <td style="width: 70%;"><strong>Jumlah yang diminta</strong></td>
+              <td class="text-right">Rp ${formatAngka(spmData.nilai_spm)}</td>
+            </tr>
+            <tr>
+              <td><strong>Jumlah Potongan</strong></td>
+              <td class="text-right">Rp ${formatAngka(spmData.total_potongan || 0)}</td>
+            </tr>
+            <tr>
+              <td><strong>Jumlah yang Dibayarkan</strong></td>
+              <td class="text-right"><strong>Rp ${formatAngka(nilaiBersih)}</strong></td>
+            </tr>
+            <tr>
+              <td colspan="2"><strong>Uang Sejumlah:</strong> ${nilaiBersihTerbilang}</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <!-- Footer Lembar -->
+        <div class="footer-notes">
+          <div>Lembar 1: Bank Yang Ditunjuk</div>
+          <div>Lembar 2: Pengguna Anggaran / Kuasa Pengguna Anggaran</div>
+          <div>Lembar 3: Arsip Kuasa BUD</div>
+          <div>Lembar 4: Pihak Ketiga (*)</div>
+        </div>
+        
         <!-- Tanda Tangan -->
         <div class="signature-section">
-          <p>${tanggalCetak}</p>
-          <p><strong class="uppercase">${kepalaBkadName}</strong></p>
+          <div>${namaKota}, ${tanggalSpm}</div>
+          <div><strong>${kepalaBkadName}</strong></div>
           <div class="signature-space"></div>
-          <p><strong>_______________________</strong></p>
-          ${kepalaBkadNip ? `<p>NIP. ${kepalaBkadNip}</p>` : ''}
+          <div><strong>_______________________</strong></div>
+          ${kepalaBkadNip ? `<div>NIP. ${kepalaBkadNip}</div>` : ''}
         </div>
         
         <script>

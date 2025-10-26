@@ -131,6 +131,7 @@ const InputSpmDetail = () => {
       },
       vendor: spm.vendor ? {
         nama_vendor: spm.vendor.nama_vendor,
+        npwp: (spm.vendor as any).npwp || "-",
         nama_bank: spm.vendor.nama_bank || "-",
         nomor_rekening: spm.vendor.nomor_rekening || "-",
         nama_rekening: spm.vendor.nama_rekening || "-",
@@ -138,8 +139,9 @@ const InputSpmDetail = () => {
       uraian: spm.uraian || "-",
       nilai_spm: spm.nilai_spm,
       potongan_pajak: spm.potongan_pajak_spm?.map((pajak: any) => ({
-        jenis_pajak: pajak.uraian,
+        jenis_pajak: pajak.jenis_pajak || pajak.uraian,
         rekening_pajak: pajak.rekening_pajak || "-",
+        uraian: pajak.uraian || "",
         tarif: pajak.tarif,
         dasar_pengenaan: pajak.dasar_pengenaan,
         jumlah_pajak: pajak.jumlah_pajak,
@@ -148,7 +150,13 @@ const InputSpmDetail = () => {
       nilai_bersih: spm.nilai_bersih || spm.nilai_spm,
     };
 
-    generateSpmPDF(spmData, kopSuratConfig);
+    generateSpmPDF(
+      spmData, 
+      kopSuratConfig,
+      "Kuasa Bendahara Umum Daerah",
+      "",
+      "Samarinda"
+    );
 
     toast({
       title: "Mencetak Draft SPM",
