@@ -40,9 +40,9 @@ export const SpmVerificationCard = ({ spm, onVerify }: SpmVerificationCardProps)
           
           {/* SPM Number and OPD Info */}
           <div className="space-y-1">
-            <CardTitle className="text-xl font-bold flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary flex-shrink-0" />
-              <span className="truncate">{spm.nomor_spm || "Draft"}</span>
+            <CardTitle className="text-xl font-bold flex items-start gap-2">
+              <FileText className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <span className="break-words leading-tight flex-1">{spm.nomor_spm || "Draft"}</span>
             </CardTitle>
             <div className="flex items-start gap-2 text-sm text-muted-foreground">
               <Building2 className="h-4 w-4 flex-shrink-0 mt-0.5" />
