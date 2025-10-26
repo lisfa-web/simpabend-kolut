@@ -23,6 +23,7 @@ import { useSidebarTemplate } from "@/hooks/useSidebarTemplate";
 import { SIDEBAR_TEMPLATES } from "@/types/sidebar";
 import { getIconClasses, getIconWrapperClasses } from "@/lib/iconStyles";
 import { useMenuNotifications } from "@/hooks/useMenuNotifications";
+import { useConfigSistem } from "@/hooks/useConfigSistem";
 import {
   Sidebar,
   SidebarContent,
@@ -142,6 +143,7 @@ export function AppSidebar() {
   const { open } = useSidebar();
   const { data: activeTemplate } = useSidebarTemplate();
   const { data: notifications } = useMenuNotifications();
+  const { data: configs } = useConfigSistem();
 
   // Validate template exists, fallback to blue-gradient if not found
   const validTemplate = activeTemplate && SIDEBAR_TEMPLATES[activeTemplate] 
@@ -173,14 +175,21 @@ export function AppSidebar() {
     return location.pathname === path || location.pathname.startsWith(path + "/");
   };
 
+  // Get logo URL from config
+  const logoUrl = configs?.find(c => c.key === 'logo_bkad_url')?.value;
+
   return (
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className={`${theme.classes.header} border-b`}>
         <div className="px-4 py-6">
           {open ? (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/10 backdrop-blur-sm">
-                <Building2 className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/10 backdrop-blur-sm overflow-hidden">
+                {logoUrl ? (
+                  <img src={logoUrl} alt="Logo BKAD" className="w-full h-full object-contain p-1" />
+                ) : (
+                  <Building2 className="w-6 h-6 text-white" />
+                )}
               </div>
               <div>
                 <h2 className="font-bold text-white text-sm">SIMPA BEND</h2>
@@ -188,8 +197,12 @@ export function AppSidebar() {
               </div>
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/10 mx-auto">
-              <Building2 className="w-6 h-6 text-white" />
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/10 mx-auto overflow-hidden">
+              {logoUrl ? (
+                <img src={logoUrl} alt="Logo BKAD" className="w-full h-full object-contain p-1" />
+              ) : (
+                <Building2 className="w-6 h-6 text-white" />
+              )}
             </div>
           )}
         </div>
