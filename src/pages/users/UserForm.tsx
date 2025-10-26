@@ -276,32 +276,6 @@ const UserForm = () => {
                   </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telepon</Label>
-                  <Controller
-                    name="phone"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        id="phone"
-                        value={field.value || ""}
-                        onChange={(e) => {
-                          let value = e.target.value;
-                          // Auto-convert 0 prefix to 62
-                          if (value.startsWith("0")) {
-                            value = "62" + value.slice(1);
-                          }
-                          field.onChange(value);
-                        }}
-                        placeholder="62812xxxxxxxx"
-                      />
-                    )}
-                  />
-                  {errors.phone && (
-                    <p className="text-sm text-destructive">{errors.phone.message}</p>
-                  )}
-                </div>
-
                 {!isEdit && (
                   <>
                     <div className="space-y-2">
@@ -434,6 +408,32 @@ const UserForm = () => {
                     </div>
                   </>
                 )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Telepon</Label>
+                  <Controller
+                    name="phone"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        id="phone"
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          let value = e.target.value;
+                          // Auto-convert 0 prefix to 62
+                          if (value.startsWith("0")) {
+                            value = "62" + value.slice(1);
+                          }
+                          field.onChange(value);
+                        }}
+                        placeholder="62812xxxxxxxx"
+                      />
+                    )}
+                  />
+                  {errors.phone && (
+                    <p className="text-sm text-destructive">{errors.phone.message}</p>
+                  )}
+                </div>
 
                 {isEdit && (
                   <div className="space-y-2">
