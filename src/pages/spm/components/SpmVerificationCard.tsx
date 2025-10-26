@@ -25,24 +25,29 @@ export const SpmVerificationCard = ({ spm, onVerify }: SpmVerificationCardProps)
       "animate-fade-in"
     )}>
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1 flex-1 min-w-0">
+        <div className="space-y-3">
+          {/* Status Badge - Centered at Top */}
+          <div className="flex justify-center">
+            <SpmStatusBadge 
+              status={spm.status} 
+              className={cn(
+                "text-xs font-semibold",
+                spm.status === 'diajukan' && "animate-pulse"
+              )}
+            />
+          </div>
+          
+          {/* SPM Number and OPD Info */}
+          <div className="space-y-1">
             <CardTitle className="text-xl font-bold flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary flex-shrink-0" />
               <span className="truncate">{spm.nomor_spm || "Draft"}</span>
             </CardTitle>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Building2 className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{spm.opd?.nama_opd}</span>
+            <div className="flex items-start gap-2 text-sm text-muted-foreground">
+              <Building2 className="h-4 w-4 flex-shrink-0 mt-0.5" />
+              <span className="break-words leading-tight flex-1">{spm.opd?.nama_opd}</span>
             </div>
           </div>
-          <SpmStatusBadge 
-            status={spm.status} 
-            className={cn(
-              "text-xs font-semibold flex-shrink-0",
-              spm.status === 'diajukan' && "animate-pulse"
-            )}
-          />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
