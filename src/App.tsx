@@ -148,6 +148,7 @@ const App = () => (
             <Route path="/surat/pejabat/:id/edit" element={<ProtectedRoute><PejabatForm /></ProtectedRoute>} />
             <Route path="/surat/template" element={<ProtectedRoute><TemplateSuratList /></ProtectedRoute>} />
             <Route path="/surat/template/new" element={<ProtectedRoute><TemplateSuratForm /></ProtectedRoute>} />
+            <Route path="/surat/template/buat" element={<ProtectedRoute><TemplateSuratForm /></ProtectedRoute>} />
             <Route path="/surat/template/:id" element={<ProtectedRoute><TemplateSuratDetail /></ProtectedRoute>} />
             <Route path="/surat/template/:id/edit" element={<ProtectedRoute><TemplateSuratForm /></ProtectedRoute>} />
             <Route path="/surat/generate" element={<ProtectedRoute><GenerateSurat /></ProtectedRoute>} />
