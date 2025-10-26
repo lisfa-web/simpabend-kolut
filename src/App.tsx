@@ -109,6 +109,7 @@ const App = () => (
             {/* User Management Routes */}
             <Route path="/users" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserList /></RoleProtectedRoute>} />
             <Route path="/users/new" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserForm /></RoleProtectedRoute>} />
+            <Route path="/users/create" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserForm /></RoleProtectedRoute>} />
             <Route path="/users/:id" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserDetail /></RoleProtectedRoute>} />
             <Route path="/users/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserForm /></RoleProtectedRoute>} />
             
@@ -117,10 +118,12 @@ const App = () => (
             
             <Route path="/masterdata/opd" element={<ProtectedRoute><OpdList /></ProtectedRoute>} />
             <Route path="/masterdata/opd/new" element={<ProtectedRoute><OpdForm /></ProtectedRoute>} />
+            <Route path="/masterdata/opd/create" element={<ProtectedRoute><OpdForm /></ProtectedRoute>} />
             <Route path="/masterdata/opd/:id/edit" element={<ProtectedRoute><OpdForm /></ProtectedRoute>} />
             
             <Route path="/masterdata/vendor" element={<ProtectedRoute><VendorList /></ProtectedRoute>} />
             <Route path="/masterdata/vendor/new" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
+            <Route path="/masterdata/vendor/create" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
             <Route path="/masterdata/vendor/:id/edit" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
             
             <Route path="/masterdata/program" element={<ProtectedRoute><ProgramList /></ProtectedRoute>} />
@@ -146,6 +149,7 @@ const App = () => (
             <Route path="/surat" element={<ProtectedRoute><SuratIndex /></ProtectedRoute>} />
             <Route path="/surat/pejabat" element={<ProtectedRoute><PejabatList /></ProtectedRoute>} />
             <Route path="/surat/pejabat/new" element={<ProtectedRoute><PejabatForm /></ProtectedRoute>} />
+            <Route path="/surat/pejabat/buat" element={<ProtectedRoute><PejabatForm /></ProtectedRoute>} />
             <Route path="/surat/pejabat/:id" element={<ProtectedRoute><PejabatDetail /></ProtectedRoute>} />
             <Route path="/surat/pejabat/:id/edit" element={<ProtectedRoute><PejabatForm /></ProtectedRoute>} />
             <Route path="/surat/template" element={<ProtectedRoute><TemplateSuratList /></ProtectedRoute>} />
