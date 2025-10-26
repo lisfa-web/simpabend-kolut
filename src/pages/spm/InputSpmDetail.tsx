@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,8 +7,9 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useSpmDetail } from "@/hooks/useSpmDetail";
 import { SpmStatusBadge } from "./components/SpmStatusBadge";
 import { SpmTimeline } from "./components/SpmTimeline";
+import { VerificationDialog } from "./components/VerificationDialog";
 import { formatCurrency } from "@/lib/currency";
-import { ArrowLeft, Download, Loader2, Eye, Edit, AlertCircle, Calculator, Printer } from "lucide-react";
+import { ArrowLeft, Download, Loader2, Eye, Edit, AlertCircle, Calculator, CheckCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { formatFileSize, isImageFile, isPdfFile } from "@/lib/fileValidation";
@@ -18,15 +19,41 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { generateSpmPDF } from "@/lib/spmPdfUtils";
 import { getJenisSpmLabel } from "@/lib/jenisSpmOptions";
+import { useAuth } from "@/hooks/useAuth";
+import { useSpmVerification } from "@/hooks/useSpmVerification";
+import { useRequestPin } from "@/hooks/useRequestPin";
 
 const InputSpmDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { hasRole, user } = useAuth();
   const { data: spm, isLoading } = useSpmDetail(id);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [loadingPreviews, setLoadingPreviews] = useState<Record<string, boolean>>({});
+  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
+  
+  // Check if verification action is requested
+  const actionParam = searchParams.get("action");
+  const shouldShowVerification = actionParam === "verify";
+  
+  // Determine user's verification role
+  const getUserRole = () => {
+    if (hasRole("resepsionis")) return "resepsionis";
+    if (hasRole("pbmd")) return "pbmd";
+    if (hasRole("akuntansi")) return "akuntansi";
+    if (hasRole("perbendaharaan")) return "perbendaharaan";
+    if (hasRole("kepala_bkad")) return "kepala_bkad";
+    return null;
+  };
+  
+  const userRole = getUserRole();
+  
+  // Verification hooks - only initialize if user has a verification role
+  const { verifySpm } = useSpmVerification(userRole || "");
+  const requestPinMutation = useRequestPin();
 
   // Query untuk logo dan nama instansi
   const { data: configData } = useQuery({
@@ -173,6 +200,103 @@ const InputSpmDetail = () => {
     });
   };
 
+  // Determine verification type and title based on user role and SPM status
+  const getVerificationConfig = () => {
+    if (!spm) return null;
+    
+    const status = spm.status;
+    
+    if (status === "resepsionis_verifikasi" && hasRole("resepsionis")) {
+      return {
+        title: "Verifikasi Resepsionis",
+        showNomorAntrian: true,
+        showNomorBerkas: true,
+        showPin: false,
+      };
+    }
+    
+    if (status === "pbmd_verifikasi" && hasRole("pbmd")) {
+      return {
+        title: "Verifikasi PBMD",
+        showNomorAntrian: false,
+        showNomorBerkas: false,
+        showPin: false,
+      };
+    }
+    
+    if (status === "akuntansi_validasi" && hasRole("akuntansi")) {
+      return {
+        title: "Validasi Akuntansi",
+        showNomorAntrian: false,
+        showNomorBerkas: false,
+        showPin: false,
+      };
+    }
+    
+    if (status === "perbendaharaan_verifikasi" && hasRole("perbendaharaan")) {
+      return {
+        title: "Verifikasi Perbendaharaan",
+        showNomorAntrian: false,
+        showNomorBerkas: false,
+        showPin: true,
+      };
+    }
+    
+    if (status === "kepala_bkad_review" && hasRole("kepala_bkad")) {
+      return {
+        title: "Approval Kepala BKAD",
+        showNomorAntrian: false,
+        showNomorBerkas: false,
+        showPin: true,
+      };
+    }
+    
+    return null;
+  };
+
+  const verificationConfig = getVerificationConfig();
+  const canVerify = shouldShowVerification && verificationConfig !== null;
+
+  const handleRequestPin = async () => {
+    if (!id || !user?.id) return;
+    await requestPinMutation.mutateAsync({
+      userId: user.id,
+      spmId: id,
+    });
+  };
+
+  const handleVerification = async (data: {
+    action: "approve" | "reject" | "revise";
+    catatan?: string;
+    nomorAntrian?: string;
+    nomorBerkas?: string;
+    pin?: string;
+  }) => {
+    if (!id) return;
+
+    await verifySpm.mutateAsync(
+      {
+        spmId: id,
+        ...data,
+      },
+      {
+        onSuccess: () => {
+          setShowVerifyDialog(false);
+          toast({
+            title: "Berhasil",
+            description: "Verifikasi SPM berhasil diproses",
+          });
+          // Navigate back to verification list
+          if (hasRole("resepsionis")) navigate("/verifikasi-resepsionis");
+          else if (hasRole("pbmd")) navigate("/verifikasi-pbmd");
+          else if (hasRole("akuntansi")) navigate("/verifikasi-akuntansi");
+          else if (hasRole("perbendaharaan")) navigate("/verifikasi-perbendaharaan");
+          else if (hasRole("kepala_bkad")) navigate("/approval-kepala-bkad");
+        },
+      }
+    );
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -209,6 +333,15 @@ const InputSpmDetail = () => {
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <SpmStatusBadge status={spm.status} className="text-lg px-4 py-2" />
+            {canVerify && (
+              <Button
+                onClick={() => setShowVerifyDialog(true)}
+                className="gap-2"
+              >
+                <CheckCircle className="h-4 w-4" />
+                Verifikasi
+              </Button>
+            )}
           </div>
         </div>
 
@@ -460,6 +593,22 @@ const InputSpmDetail = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Verification Dialog */}
+      {verificationConfig && (
+        <VerificationDialog
+          open={showVerifyDialog}
+          onOpenChange={setShowVerifyDialog}
+          onSubmit={handleVerification}
+          title={verificationConfig.title}
+          showNomorAntrian={verificationConfig.showNomorAntrian}
+          showNomorBerkas={verificationConfig.showNomorBerkas}
+          showPin={verificationConfig.showPin}
+          isLoading={verifySpm.isPending}
+          onRequestPin={verificationConfig.showPin ? handleRequestPin : undefined}
+          isRequestingPin={requestPinMutation.isPending}
+        />
+      )}
     </DashboardLayout>
   );
 };
