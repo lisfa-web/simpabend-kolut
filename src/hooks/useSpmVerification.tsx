@@ -179,7 +179,13 @@ export const useSpmVerification = (role: string) => {
           body: {
             type: 'spm',
             documentId: data.spmId,
-            action: data.action === "approve" ? "verified" : data.action === "reject" ? "rejected" : "revised",
+            action: data.action === "approve" && role === "kepala_bkad" && nextStatus === "disetujui" 
+              ? "approved" 
+              : data.action === "reject" 
+              ? "rejected" 
+              : data.action === "revise"
+              ? "revised"
+              : "verified",
             stage: role,
             verifiedBy: user?.id,
             notes: data.catatan || "",

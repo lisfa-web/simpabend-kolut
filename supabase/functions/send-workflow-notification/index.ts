@@ -148,6 +148,44 @@ serve(async (req) => {
         // Also notify bendahara about progress
         recipientIds.push(spm.bendahara_id);
       
+      } else if (action === 'approved') {
+        // SPM approved by Kepala BKAD - notify bendahara and Kuasa BUD
+        recipientIds = [spm.bendahara_id];
+        
+        // Also notify Kuasa BUD for SP2D creation
+        const { data: kuasaBud } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "kuasa_bud");
+        
+        if (kuasaBud && kuasaBud.length > 0) {
+          recipientIds.push(...kuasaBud.map((k: any) => k.user_id));
+        }
+        
+        const nilaiNetto = spm.nilai_bersih || (spm.nilai_spm - (spm.total_potongan || 0));
+        let approvalInfo = `Nomor: ${spm.nomor_spm}\nJenis: ${formatJenisSpm(spm.jenis_spm)}\nOPD: ${spm.opd?.nama_opd}\n\nNilai SPM: ${formatCurrency(spm.nilai_spm)}`;
+        
+        if (spm.total_potongan && spm.total_potongan > 0) {
+          approvalInfo += `\nPotongan: ${formatCurrency(spm.total_potongan)}\n💰 Nilai Netto: ${formatCurrency(nilaiNetto)}`;
+        }
+        
+        approvalInfo += `\nNomor Berkas: ${spm.nomor_berkas}`;
+        
+        messageTemplate = `🎉 *SPM Disetujui Kepala BKAD*\n\n${approvalInfo}\n\nSPM telah disetujui dan siap diproses SP2D.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+      
+      } else if (action === 'rejected') {
+        // SPM rejected - notify bendahara
+        recipientIds = [spm.bendahara_id];
+        
+        const nilaiNetto = spm.nilai_bersih || (spm.nilai_spm - (spm.total_potongan || 0));
+        let rejectionInfo = `Nomor: ${spm.nomor_spm || 'Draft'}\nJenis: ${formatJenisSpm(spm.jenis_spm)}\n\nNilai SPM: ${formatCurrency(spm.nilai_spm)}`;
+        
+        if (spm.total_potongan && spm.total_potongan > 0) {
+          rejectionInfo += `\nPotongan: ${formatCurrency(spm.total_potongan)}\n💰 Nilai Netto: ${formatCurrency(nilaiNetto)}`;
+        }
+        
+        messageTemplate = `❌ *SPM Ditolak*\n\n${rejectionInfo}\n\nTahap: ${stage}\nCatatan: ${notes || '-'}\n\nSilakan perbaiki dan ajukan kembali.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+      
       } else if (action === 'revised') {
         // Notify bendahara about revision
         recipientIds = [spm.bendahara_id];
