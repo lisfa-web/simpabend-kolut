@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { formatJenisSpm } from "@/lib/formatHelpers";
 import { SpmStatusBadge } from "./SpmStatusBadge";
-import { Calendar, FileText, Building2, Eye, CheckCircle } from "lucide-react";
+import { Calendar, FileText, Building2, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
@@ -99,20 +99,11 @@ export const SpmVerificationCard = ({ spm }: SpmVerificationCardProps) => {
           <span>Diajukan: {format(new Date(spm.tanggal_ajuan), "dd MMM yyyy HH:mm", { locale: localeId })}</span>
         </div>
 
-        {/* Section 6: Action Buttons */}
-        <div className="flex gap-2 pt-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={() => navigate(`/input-spm/detail/${spm.id}`)}
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            Lihat Detail
-          </Button>
+        {/* Section 6: Action Button */}
+        <div className="pt-2">
           <Button
             size="sm"
-            className="flex-1 bg-primary hover:bg-primary/90 shadow-md"
+            className="w-full bg-primary hover:bg-primary/90 shadow-md"
             onClick={() => navigate(`/input-spm/detail/${spm.id}?action=verify`)}
           >
             <CheckCircle className="h-4 w-4 mr-2" />
