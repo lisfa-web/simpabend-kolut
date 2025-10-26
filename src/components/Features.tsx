@@ -54,13 +54,8 @@ const features = [
 
 const Features = () => {
   return (
-    <section className="container py-20 bg-muted/30 relative">
-      {/* Background blur */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="text-center mb-16 animate-fade-in">
+    <section className="container py-20 bg-muted/30">
+      <div className="text-center mb-16">
         <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           Fitur Unggulan Sistem
         </h2>
@@ -73,16 +68,13 @@ const Features = () => {
         {features.map((feature, index) => (
           <Card
             key={index}
-            className={`group relative overflow-hidden bg-gradient-to-br ${feature.gradient} border-2 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 hover:-translate-y-2 animate-fade-in`}
-            style={{ animationDelay: `${index * 100}ms` }}
+            className={`group relative overflow-hidden bg-gradient-to-br ${feature.gradient} border-2 hover:border-primary/20 transition-all duration-200`}
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
-            
-            <CardContent className="pt-6 relative z-10">
-              <div className={`inline-flex p-4 rounded-2xl bg-white/50 backdrop-blur-sm mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg`}>
+            <CardContent className="pt-6">
+              <div className={`inline-flex p-4 rounded-2xl bg-primary/10 mb-4`}>
                 <feature.icon className={`h-8 w-8 ${feature.iconColor}`} />
               </div>
-              <h3 className="text-xl font-semibold mb-3 group-hover:text-primary transition-colors">
+              <h3 className="text-xl font-semibold mb-3">
                 {feature.title}
               </h3>
               <p className="text-muted-foreground leading-relaxed">

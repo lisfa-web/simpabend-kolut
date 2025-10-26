@@ -54,13 +54,8 @@ const steps = [
 
 const Workflow = () => {
   return (
-    <section className="container py-20 relative">
-      {/* Background elements */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="text-center mb-16 animate-fade-in">
+    <section className="container py-20">
+      <div className="text-center mb-16">
         <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           Alur Kerja Sistem
         </h2>
@@ -73,18 +68,15 @@ const Workflow = () => {
       <div className="hidden lg:block max-w-7xl mx-auto">
         <div className="relative">
           {/* Progress Line */}
-          <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 -translate-y-1/2" />
-          <div className="absolute top-1/2 left-0 h-1 bg-gradient-to-r from-primary to-accent -translate-y-1/2 w-full animate-pulse" style={{ width: "100%" }} />
+          <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-primary/20 to-accent/20 -translate-y-1/2" />
 
           <div className="grid grid-cols-6 gap-4">
             {steps.map((step, index) => (
-              <div key={index} className="relative animate-fade-in" style={{ animationDelay: `${index * 150}ms` }}>
-                <Card className={`group relative overflow-hidden bg-gradient-to-br ${step.gradient} border-2 hover:border-primary/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-2`}>
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-xl -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500" />
-                  
-                  <CardContent className="p-4 relative z-10">
+              <div key={index} className="relative">
+                <Card className={`bg-gradient-to-br ${step.gradient} border-2 hover:border-primary/30 transition-all duration-200`}>
+                  <CardContent className="p-4">
                     <div className="flex flex-col items-center text-center space-y-3">
-                      <div className={`p-3 rounded-xl bg-white/50 backdrop-blur-sm group-hover:scale-110 transition-transform duration-300`}>
+                      <div className={`p-3 rounded-xl bg-primary/10`}>
                         <step.icon className={`h-6 w-6 ${step.iconColor}`} />
                       </div>
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-sm">
@@ -106,12 +98,10 @@ const Workflow = () => {
         {steps.map((step, index) => (
           <Card
             key={index}
-            className={`group relative overflow-hidden bg-gradient-to-br ${step.gradient} border-l-4 border-l-primary hover:shadow-xl transition-all duration-300 hover:-translate-x-2`}
+            className={`bg-gradient-to-br ${step.gradient} border-l-4 border-l-primary transition-all duration-200`}
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
-            
-            <CardContent className="flex items-start gap-4 p-6 relative z-10">
-              <div className={`p-3 rounded-xl bg-white/50 backdrop-blur-sm shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+            <CardContent className="flex items-start gap-4 p-6">
+              <div className={`p-3 rounded-xl bg-primary/10 shrink-0`}>
                 <step.icon className={`h-6 w-6 ${step.iconColor}`} />
               </div>
               <div className="flex-1">

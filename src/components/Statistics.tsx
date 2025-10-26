@@ -33,11 +33,9 @@ const StatItem = ({ icon: Icon, value, suffix = "", label, gradient, iconColor }
   }, [value]);
 
   return (
-    <div className={`group relative overflow-hidden bg-gradient-to-br ${gradient} p-6 rounded-2xl glass border-2 border-white/20 hover:border-primary/30 transition-all duration-300 hover:scale-105`}>
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/30 to-transparent rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
-      
-      <div className="relative z-10">
-        <div className={`inline-flex p-3 rounded-xl bg-white/50 backdrop-blur-sm mb-4 group-hover:scale-110 transition-transform duration-300`}>
+    <div className={`bg-gradient-to-br ${gradient} p-6 rounded-2xl border-2 border-white/20`}>
+      <div>
+        <div className={`inline-flex p-3 rounded-xl bg-primary/10 mb-4`}>
           <Icon className={`h-8 w-8 ${iconColor}`} />
         </div>
         <div className="text-4xl font-bold mb-2">
@@ -88,12 +86,7 @@ const Statistics = () => {
   ];
 
   return (
-    <section className="container py-20 relative">
-      {/* Background blur elements */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-blob" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-blob" style={{ animationDelay: "2s" }} />
-      </div>
+    <section className="container py-20">
 
       <div className="text-center mb-16">
         <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
