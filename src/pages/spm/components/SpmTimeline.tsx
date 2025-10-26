@@ -10,6 +10,7 @@ interface TimelineStep {
   label: string;
   timestamp?: string | null;
   catatan?: string | null;
+  verifiedBy?: string | null;
 }
 
 interface SpmTimelineProps {
@@ -19,14 +20,49 @@ interface SpmTimelineProps {
 
 export const SpmTimeline = ({ currentStatus, spm }: SpmTimelineProps) => {
   const steps: TimelineStep[] = [
-    { status: "draft", label: "Draft", timestamp: spm.created_at },
-    { status: "diajukan", label: "Diajukan", timestamp: spm.tanggal_ajuan },
-    { status: "resepsionis_verifikasi", label: "Resepsionis", timestamp: spm.tanggal_resepsionis, catatan: spm.catatan_resepsionis },
-    { status: "pbmd_verifikasi", label: "PBMD", timestamp: spm.tanggal_pbmd, catatan: spm.catatan_pbmd },
-    { status: "akuntansi_validasi", label: "Akuntansi", timestamp: spm.tanggal_akuntansi, catatan: spm.catatan_akuntansi },
-    { status: "perbendaharaan_verifikasi", label: "Perbendaharaan", timestamp: spm.tanggal_perbendaharaan, catatan: spm.catatan_perbendaharaan },
-    { status: "kepala_bkad_review", label: "Kepala BKAD", timestamp: spm.tanggal_kepala_bkad, catatan: spm.catatan_kepala_bkad },
-    { status: "disetujui", label: "Disetujui", timestamp: spm.tanggal_disetujui },
+    { status: "draft", label: "Draft", timestamp: spm.created_at, verifiedBy: spm.bendahara?.full_name },
+    { status: "diajukan", label: "Diajukan", timestamp: spm.tanggal_ajuan, verifiedBy: spm.bendahara?.full_name },
+    { 
+      status: "resepsionis_verifikasi", 
+      label: "Resepsionis", 
+      timestamp: spm.tanggal_resepsionis, 
+      catatan: spm.catatan_resepsionis,
+      verifiedBy: spm.verified_resepsionis?.full_name
+    },
+    { 
+      status: "pbmd_verifikasi", 
+      label: "PBMD", 
+      timestamp: spm.tanggal_pbmd, 
+      catatan: spm.catatan_pbmd,
+      verifiedBy: spm.verified_pbmd?.full_name
+    },
+    { 
+      status: "akuntansi_validasi", 
+      label: "Akuntansi", 
+      timestamp: spm.tanggal_akuntansi, 
+      catatan: spm.catatan_akuntansi,
+      verifiedBy: spm.verified_akuntansi?.full_name
+    },
+    { 
+      status: "perbendaharaan_verifikasi", 
+      label: "Perbendaharaan", 
+      timestamp: spm.tanggal_perbendaharaan, 
+      catatan: spm.catatan_perbendaharaan,
+      verifiedBy: spm.verified_perbendaharaan?.full_name
+    },
+    { 
+      status: "kepala_bkad_review", 
+      label: "Kepala BKAD", 
+      timestamp: spm.tanggal_kepala_bkad, 
+      catatan: spm.catatan_kepala_bkad,
+      verifiedBy: spm.verified_kepala?.full_name
+    },
+    { 
+      status: "disetujui", 
+      label: "Disetujui", 
+      timestamp: spm.tanggal_disetujui,
+      verifiedBy: spm.verified_kepala?.full_name
+    },
   ];
 
   const statusOrder: StatusSpm[] = [
@@ -98,6 +134,18 @@ export const SpmTimeline = ({ currentStatus, spm }: SpmTimelineProps) => {
                 <p className="text-sm text-muted-foreground">
                   {format(new Date(step.timestamp), "dd MMM yyyy HH:mm", { locale: id })}
                 </p>
+              )}
+              {step.verifiedBy && stepStatus !== "pending" && (
+                <div className="mt-1 flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-xs font-semibold text-primary">
+                      {step.verifiedBy.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-primary font-medium">
+                    {step.verifiedBy}
+                  </p>
+                </div>
               )}
               {step.catatan && (
                 <div className="mt-2 text-sm bg-destructive/10 text-destructive p-3 rounded-md border border-destructive/20">
