@@ -38,6 +38,7 @@ import SubkegiatanForm from "./pages/masterdata/SubkegiatanForm";
 import Sp2dList from "./pages/spm/Sp2dList";
 import Sp2dForm from "./pages/spm/Sp2dForm";
 import Sp2dDetail from "./pages/spm/Sp2dDetail";
+import SpmTimelineDetail from "./pages/spm/SpmTimelineDetail";
 import LaporanIndex from "./pages/laporan/LaporanIndex";
 import LaporanSpm from "./pages/laporan/LaporanSpm";
 import LaporanSp2d from "./pages/laporan/LaporanSp2d";
@@ -121,6 +122,14 @@ const App = () => (
                 <RoleProtectedRoute allowedRoles={['bendahara_opd', 'administrator']}>
                   <InputSpmDetail />
                 </RoleProtectedRoute>
+              }
+            />
+            <Route
+              path="/spm/timeline/:id"
+              element={
+                <ProtectedRoute>
+                  <SpmTimelineDetail />
+                </ProtectedRoute>
               }
             />
             <Route

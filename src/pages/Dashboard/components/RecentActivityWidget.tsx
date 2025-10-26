@@ -6,6 +6,7 @@ import { formatDistanceToNow } from "date-fns";
 import { id } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Link } from "react-router-dom";
 
 interface ActivityItem {
   id: string;
@@ -29,7 +30,7 @@ export const RecentActivityWidget = () => {
           status,
           nilai_spm,
           updated_at,
-          bendahara:bendahara_id(full_name)
+          bendahara:profiles!bendahara_id(full_name)
         `)
         .order("updated_at", { ascending: false })
         .limit(10);
@@ -126,9 +127,10 @@ export const RecentActivityWidget = () => {
         <ScrollArea className="h-[400px] pr-4">
           <div className="space-y-3">
             {activities?.map((activity) => (
-              <div
+              <Link
                 key={activity.id}
-                className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${getActivityBgColor(activity.status)}`}
+                to={`/spm/timeline/${activity.id}`}
+                className={`flex items-start gap-3 p-3 rounded-lg border transition-all hover:shadow-md cursor-pointer ${getActivityBgColor(activity.status)}`}
               >
                 <div className="mt-0.5">{getActivityIcon(activity.status)}</div>
                 <div className="flex-1 min-w-0">
@@ -153,7 +155,7 @@ export const RecentActivityWidget = () => {
                     maximumFractionDigits: 1,
                   }).format(activity.nilai_spm)}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </ScrollArea>
