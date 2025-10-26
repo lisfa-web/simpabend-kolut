@@ -85,16 +85,12 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             
-            {/* SPM Routes */}
+            {/* SPM Routes - Standardized under /input-spm */}
             <Route path="/input-spm" element={<ProtectedRoute><InputSpmList /></ProtectedRoute>} />
             <Route path="/input-spm/buat" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
             <Route path="/input-spm/detail/:id" element={<ProtectedRoute><InputSpmDetail /></ProtectedRoute>} />
             <Route path="/input-spm/edit/:id" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
-            <Route path="/spm/input" element={<ProtectedRoute><InputSpmList /></ProtectedRoute>} />
-            <Route path="/spm/input/new" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
-            <Route path="/spm/input/:id" element={<ProtectedRoute><InputSpmDetail /></ProtectedRoute>} />
-            <Route path="/spm/input/:id/edit" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
-            <Route path="/spm/timeline/:id" element={<ProtectedRoute><SpmTimelineDetail /></ProtectedRoute>} />
+            <Route path="/input-spm/timeline/:id" element={<ProtectedRoute><SpmTimelineDetail /></ProtectedRoute>} />
             
             <Route path="/spm/verifikasi/resepsionis" element={<ProtectedRoute><VerifikasiResepsionis /></ProtectedRoute>} />
             <Route path="/spm/verifikasi/pbmd" element={<ProtectedRoute><VerifikasiPbmd /></ProtectedRoute>} />
@@ -131,14 +127,17 @@ const App = () => (
             
             <Route path="/masterdata/program" element={<ProtectedRoute><ProgramList /></ProtectedRoute>} />
             <Route path="/masterdata/program/new" element={<ProtectedRoute><ProgramForm /></ProtectedRoute>} />
+            <Route path="/masterdata/program/:id" element={<ProtectedRoute><ProgramForm /></ProtectedRoute>} />
             <Route path="/masterdata/program/:id/edit" element={<ProtectedRoute><ProgramForm /></ProtectedRoute>} />
             
             <Route path="/masterdata/kegiatan" element={<ProtectedRoute><KegiatanList /></ProtectedRoute>} />
             <Route path="/masterdata/kegiatan/new" element={<ProtectedRoute><KegiatanForm /></ProtectedRoute>} />
+            <Route path="/masterdata/kegiatan/:id" element={<ProtectedRoute><KegiatanForm /></ProtectedRoute>} />
             <Route path="/masterdata/kegiatan/:id/edit" element={<ProtectedRoute><KegiatanForm /></ProtectedRoute>} />
             
             <Route path="/masterdata/subkegiatan" element={<ProtectedRoute><SubkegiatanList /></ProtectedRoute>} />
             <Route path="/masterdata/subkegiatan/new" element={<ProtectedRoute><SubkegiatanForm /></ProtectedRoute>} />
+            <Route path="/masterdata/subkegiatan/:id" element={<ProtectedRoute><SubkegiatanForm /></ProtectedRoute>} />
             <Route path="/masterdata/subkegiatan/:id/edit" element={<ProtectedRoute><SubkegiatanForm /></ProtectedRoute>} />
             
             {/* Laporan Routes */}
