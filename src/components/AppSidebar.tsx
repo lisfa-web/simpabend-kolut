@@ -14,6 +14,7 @@ import {
   Database as DatabaseIcon,
   ScrollText,
   BookOpen,
+  Building2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Database } from "@/integrations/supabase/types";
@@ -156,15 +157,22 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className={`${theme.classes.header} border-b-0`}>
+      <SidebarHeader className={`${theme.classes.header} border-b`}>
         <div className="px-4 py-6">
           {open ? (
-            <>
-              <h1 className="text-2xl font-bold">SIMPA BEND</h1>
-              <p className={`text-sm ${theme.classes.logoSubtitle}`}>BKAD Kolaka Utara</p>
-            </>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/10 backdrop-blur-sm">
+                <Building2 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="font-bold text-white text-sm">SIMPA BEND</h2>
+                <p className="text-xs text-white/70">BKAD Kolaka Utara</p>
+              </div>
+            </div>
           ) : (
-            <h1 className="text-xl font-bold text-center">SB</h1>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/10 mx-auto">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
           )}
         </div>
       </SidebarHeader>

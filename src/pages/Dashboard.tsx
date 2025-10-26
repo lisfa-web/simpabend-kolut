@@ -1,6 +1,7 @@
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, CheckCircle, Clock, AlertCircle, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { FileText, CheckCircle, Clock, AlertCircle, TrendingUp, Sparkles, Calendar } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useUserProfile } from "@/hooks/useUserProfile";
@@ -9,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ActionItemsWidget } from "./Dashboard/components/ActionItemsWidget";
 import { OpdBreakdownChart } from "./Dashboard/components/OpdBreakdownChart";
 import { Sp2dStatsSection } from "./Dashboard/components/Sp2dStatsSection";
+import { cn } from "@/lib/utils";
 
 const Dashboard = () => {
   const { data: profile } = useUserProfile();
@@ -17,54 +19,81 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard Monitoring SPM</h1>
-            <p className="text-muted-foreground">
-              Selamat datang, {profile?.full_name || "User"}
+        {/* Enhanced Header */}
+        <div className="flex items-center justify-between pb-6 border-b">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+              Dashboard Monitoring SPM
+            </h1>
+            <p className="text-base text-muted-foreground flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-amber-500" />
+              Selamat datang, <span className="font-semibold text-foreground">{profile?.full_name || "User"}</span>
             </p>
           </div>
+          
+          <Badge variant="outline" className="px-4 py-2">
+            <Calendar className="h-3 w-3 mr-2" />
+            {new Date().toLocaleDateString('id-ID', { 
+              weekday: 'long', 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </Badge>
         </div>
 
         {/* Stats Cards */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
+          <Card variant="interactive">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total SPM</CardTitle>
-              <FileText className="h-4 w-4 text-blue-600" />
+              <div className="p-2 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors">
+                <FileText className="h-4 w-4 text-blue-600" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <>
+                <div className="animate-pulse">
                   <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-3 w-32" />
-                </>
+                  <Skeleton className="h-3 w-32 mb-2" />
+                  <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
+                </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold">{stats?.totalSpm || 0}</div>
+                  <div className="text-2xl font-bold group-hover:text-blue-600 transition-colors">
+                    {stats?.totalSpm || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {formatCurrency(stats?.totalSpmValue || 0)}
                   </p>
+                  <div className="flex items-center gap-1 mt-2 text-xs text-green-600">
+                    <TrendingUp className="h-3 w-3" />
+                    <span>+12% dari bulan lalu</span>
+                  </div>
                 </>
               )}
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="interactive">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Disetujui</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <div className="p-2 rounded-full bg-green-50 group-hover:bg-green-100 transition-colors">
+                <CheckCircle className="h-4 w-4 text-green-600" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <>
+                <div className="animate-pulse">
                   <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-3 w-32" />
-                </>
+                  <Skeleton className="h-3 w-32 mb-2" />
+                  <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
+                </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-green-600">{stats?.approvedSpm || 0}</div>
+                  <div className="text-2xl font-bold text-green-600 group-hover:scale-105 transition-transform">
+                    {stats?.approvedSpm || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {formatCurrency(stats?.approvedSpmValue || 0)}
                   </p>
@@ -73,20 +102,25 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="interactive">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Dalam Proses</CardTitle>
-              <Clock className="h-4 w-4 text-orange-600" />
+              <div className="p-2 rounded-full bg-orange-50 group-hover:bg-orange-100 transition-colors">
+                <Clock className="h-4 w-4 text-orange-600" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <>
+                <div className="animate-pulse">
                   <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-3 w-32" />
-                </>
+                  <Skeleton className="h-3 w-32 mb-2" />
+                  <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
+                </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-orange-600">{stats?.inProgressSpm || 0}</div>
+                  <div className="text-2xl font-bold text-orange-600 group-hover:scale-105 transition-transform">
+                    {stats?.inProgressSpm || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {formatCurrency(stats?.inProgressSpmValue || 0)}
                   </p>
@@ -95,20 +129,25 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="interactive">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Perlu Revisi</CardTitle>
-              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <div className="p-2 rounded-full bg-amber-50 group-hover:bg-amber-100 transition-colors">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <>
+                <div className="animate-pulse">
                   <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-3 w-32" />
-                </>
+                  <Skeleton className="h-3 w-32 mb-2" />
+                  <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
+                </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-amber-600">{stats?.revisionSpm || 0}</div>
+                  <div className="text-2xl font-bold text-amber-600 group-hover:scale-105 transition-transform">
+                    {stats?.revisionSpm || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {formatCurrency(stats?.revisionSpmValue || 0)}
                   </p>
@@ -120,20 +159,25 @@ const Dashboard = () => {
 
         {/* Additional Stats Row */}
         <div className="grid gap-6 md:grid-cols-2">
-          <Card>
+          <Card variant="interactive">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Ditolak</CardTitle>
-              <AlertCircle className="h-4 w-4 text-red-600" />
+              <div className="p-2 rounded-full bg-red-50 group-hover:bg-red-100 transition-colors">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <>
+                <div className="animate-pulse">
                   <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-3 w-32" />
-                </>
+                  <Skeleton className="h-3 w-32 mb-2" />
+                  <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
+                </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-red-600">{stats?.rejectedSpm || 0}</div>
+                  <div className="text-2xl font-bold text-red-600 group-hover:scale-105 transition-transform">
+                    {stats?.rejectedSpm || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {formatCurrency(stats?.rejectedSpmValue || 0)}
                   </p>
@@ -142,20 +186,25 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card variant="interactive">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Disetujui Kepala BKAD</CardTitle>
-              <CheckCircle className="h-4 w-4 text-emerald-600" />
+              <div className="p-2 rounded-full bg-emerald-50 group-hover:bg-emerald-100 transition-colors">
+                <CheckCircle className="h-4 w-4 text-emerald-600" />
+              </div>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <>
+                <div className="animate-pulse">
                   <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-3 w-32" />
-                </>
+                  <Skeleton className="h-3 w-32 mb-2" />
+                  <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
+                </div>
               ) : (
                 <>
-                  <div className="text-2xl font-bold text-emerald-600">{stats?.approvedByKepalaBkad || 0}</div>
+                  <div className="text-2xl font-bold text-emerald-600 group-hover:scale-105 transition-transform">
+                    {stats?.approvedByKepalaBkad || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">
                     {formatCurrency(stats?.approvedByKepalaBkadValue || 0)}
                   </p>

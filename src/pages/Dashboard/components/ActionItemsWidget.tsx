@@ -1,13 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, ArrowRight, UserCircle, FileText, ClipboardCheck, Calculator, Wallet, Shield, Briefcase } from "lucide-react";
+import { AlertCircle, ArrowRight, UserCircle, FileText, ClipboardCheck, Calculator, Wallet, Shield, Briefcase, Calendar } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { useNavigate } from "react-router-dom";
 import { useDashboardActionItems } from "@/hooks/useDashboardActionItems";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getRoleDisplayName } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 const getRoleIcon = (role: string) => {
   const icons: Record<string, any> = {
@@ -138,17 +139,34 @@ export const ActionItemsWidget = () => {
           <CardTitle className="text-base">Tindakan Diperlukan</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8">
-            <IconComponent className="h-12 w-12 mx-auto mb-3 text-muted-foreground/30" />
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Badge variant="outline" className="text-xs">
-                {roles && roles.length > 0 ? getRoleDisplayName(roles[0].role) : "Tidak Ada Role"}
-              </Badge>
+          <div className="text-center py-12">
+            {/* Animated Icon with Gradient Background */}
+            <div className="relative w-20 h-20 mx-auto mb-4">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-teal-100 rounded-full animate-pulse" />
+              <div className="relative flex items-center justify-center w-full h-full">
+                <IconComponent className="h-10 w-10 text-blue-600" />
+              </div>
             </div>
-            <p className="text-sm font-medium text-foreground mb-1">{roleInfo.title}</p>
-            <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+
+            {/* Role Badge */}
+            <Badge variant="outline" className="mb-3">
+              {roles && roles.length > 0 
+                ? getRoleDisplayName(roles[0].role) 
+                : "Tidak Ada Role"}
+            </Badge>
+
+            {/* Title & Description */}
+            <h3 className="text-base font-semibold text-foreground mb-2">
+              {roleInfo.title}
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto leading-relaxed mb-4">
               {roleInfo.description}
             </p>
+
+            {/* Optional CTA */}
+            <Button variant="outline" size="sm" onClick={() => navigate('/input-spm')}>
+              Lihat Semua SPM
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -164,19 +182,50 @@ export const ActionItemsWidget = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <div
             key={item.id}
-            className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent cursor-pointer transition-colors"
+            className={cn(
+              "group relative flex items-center justify-between p-4 border-l-4 rounded-lg",
+              "hover:bg-accent cursor-pointer transition-all duration-200",
+              "hover:shadow-md hover:translate-x-1",
+              // Dynamic border color based on type
+              item.type === "spm" ? "border-l-blue-500" : "border-l-green-500",
+              // Stagger animation
+              "animate-fade-in"
+            )}
+            style={{ animationDelay: `${index * 100}ms` }}
             onClick={() => handleItemClick(item.id, item.type)}
           >
-            <div className="flex-1">
-              <p className="text-sm font-medium">{item.title}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatCurrency(item.amount)} • {new Date(item.date).toLocaleDateString("id-ID")}
-              </p>
+            {/* Priority indicator */}
+            <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-red-500 group-hover:scale-110 transition-transform" />
+            
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold group-hover:text-primary transition-colors">
+                  {item.title}
+                </p>
+                <Badge variant="outline" className="text-xs">
+                  {item.type.toUpperCase()}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span className="font-medium text-blue-600">
+                  {formatCurrency(item.amount)}
+                </span>
+                <span>•</span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {new Date(item.date).toLocaleDateString("id-ID")}
+                </span>
+              </div>
             </div>
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
+            >
               <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
