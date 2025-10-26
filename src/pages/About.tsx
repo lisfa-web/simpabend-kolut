@@ -20,12 +20,8 @@ const About = () => {
       <main>
         {/* Hero Section */}
         <section className="relative container py-20 md:py-32 overflow-hidden">
-          {/* Animated Background */}
-          <div className="absolute inset-0 -z-10">
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
-            <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-accent/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" style={{ animationDelay: "2s" }} />
-            <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-300/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" style={{ animationDelay: "4s" }} />
-          </div>
+          {/* Simplified Background */}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/5 to-transparent" />
 
           <div className="max-w-4xl mx-auto text-center animate-fade-in relative z-10">
             {/* Badge */}
@@ -53,17 +49,13 @@ const About = () => {
         </section>
 
         {/* Visi & Misi Section */}
-        <section className="container py-16 relative">
-          <div className="absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-          </div>
+        <section className="container py-16 relative">{/* Removed unnecessary background */}
 
           <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            <Card className="group relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-2 hover:border-primary/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
+            <Card className="group relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-2 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">{/* Removed heavy blur */}
               
               <CardHeader className="relative z-10">
-                <div className="inline-flex p-3 rounded-xl bg-white/50 backdrop-blur-sm mb-4 w-fit group-hover:scale-110 transition-transform">
+                <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4 w-fit">
                   <Eye className="h-8 w-8 text-blue-600" />
                 </div>
                 <CardTitle className="text-2xl">Visi</CardTitle>
@@ -77,11 +69,10 @@ const About = () => {
               </CardContent>
             </Card>
 
-            <Card className="group relative overflow-hidden bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 hover:border-primary/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
+            <Card className="group relative overflow-hidden bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">{/* Removed heavy blur */}
               
               <CardHeader className="relative z-10">
-                <div className="inline-flex p-3 rounded-xl bg-white/50 backdrop-blur-sm mb-4 w-fit group-hover:scale-110 transition-transform">
+                <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4 w-fit">
                   <Target className="h-8 w-8 text-purple-600" />
                 </div>
                 <CardTitle className="text-2xl">Misi</CardTitle>
@@ -168,13 +159,10 @@ const About = () => {
             ].map((benefit, index) => (
               <Card
                 key={index}
-                className={`group relative overflow-hidden bg-gradient-to-br ${benefit.gradient} border-2 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 animate-fade-in`}
-                style={{ animationDelay: `${index * 100}ms` }}
+                className={`group relative overflow-hidden bg-gradient-to-br ${benefit.gradient} border-2 hover:border-primary/20 transition-all duration-200 hover:-translate-y-1`}
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-2xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-500" />
-                
                 <CardHeader className="relative z-10">
-                  <div className="inline-flex p-3 rounded-xl bg-white/50 backdrop-blur-sm mb-3 w-fit group-hover:scale-110 transition-transform">
+                  <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-3 w-fit">
                     <benefit.icon className={`h-6 w-6 ${benefit.iconColor}`} />
                   </div>
                   <CardTitle className="text-lg">{benefit.title}</CardTitle>
@@ -231,12 +219,10 @@ const About = () => {
             ].map((user, index) => (
               <Card
                 key={index}
-                className={`group relative overflow-hidden bg-gradient-to-br ${user.gradient} border-2 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:scale-105`}
+                className={`group relative overflow-hidden bg-gradient-to-br ${user.gradient} border-2 hover:border-primary/20 transition-all duration-200`}
               >
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-xl -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-500" />
-                
                 <CardContent className="pt-6 text-center relative z-10">
-                  <div className="inline-flex p-4 rounded-full bg-white/50 backdrop-blur-sm mb-4 group-hover:scale-110 transition-transform">
+                  <div className="inline-flex p-4 rounded-full bg-primary/10 mb-4">
                     <user.icon className={`h-8 w-8 ${user.iconColor}`} />
                   </div>
                   <h3 className="font-semibold text-lg mb-2">{user.role}</h3>
