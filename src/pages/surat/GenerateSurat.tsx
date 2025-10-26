@@ -2,6 +2,7 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LetterPreview from "@/components/surat/LetterPreview";
+import { generatePDF } from "@/lib/pdfUtils";
 import {
   Select,
   SelectContent,
@@ -89,8 +90,10 @@ export default function GenerateSurat() {
     return content;
   };
 
-  const handlePrint = () => {
-    window.print();
+  const handlePreviewPDF = () => {
+    const content = generateContent();
+    const filename = `surat-${variables.nomor_surat || Date.now()}`;
+    generatePDF(content, selectedTemplate?.kop_surat_url, filename);
   };
 
   const handleDownload = () => {
@@ -208,9 +211,9 @@ export default function GenerateSurat() {
             )}
 
             <div className="flex gap-4">
-              <Button onClick={handlePrint} disabled={!selectedTemplateId}>
+              <Button onClick={handlePreviewPDF} disabled={!selectedTemplateId}>
                 <Printer className="mr-2 h-4 w-4" />
-                Print
+                Preview & Print PDF
               </Button>
               <Button variant="outline" onClick={handleDownload} disabled={!selectedTemplateId}>
                 <Download className="mr-2 h-4 w-4" />

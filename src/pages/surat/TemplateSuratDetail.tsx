@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Edit, Copy, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit, Copy, Trash2, FileText } from "lucide-react";
 import LetterPreview from "@/components/surat/LetterPreview";
 import { useLetterPreview } from "@/hooks/useLetterPreview";
+import { generatePDF } from "@/lib/pdfUtils";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -58,6 +59,12 @@ export default function TemplateSuratDetail() {
     }
   };
 
+  const handlePreviewPDF = () => {
+    if (!template) return;
+    const content = replaceVariables(template.konten_html, {}, showSampleData);
+    generatePDF(content, template.kop_surat_url, template.nama_template);
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -88,6 +95,10 @@ export default function TemplateSuratDetail() {
             </div>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" onClick={handlePreviewPDF}>
+              <FileText className="mr-2 h-4 w-4" />
+              Preview PDF
+            </Button>
             <Button variant="outline" onClick={() => navigate(`/surat/template/${id}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
               Edit

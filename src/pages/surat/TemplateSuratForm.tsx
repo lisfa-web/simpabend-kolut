@@ -2,9 +2,11 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import LetterPreview from "@/components/surat/LetterPreview";
+import { useLetterPreview } from "@/hooks/useLetterPreview";
 import {
   Select,
   SelectContent,
@@ -177,9 +179,13 @@ export default function TemplateSuratForm() {
     }
   };
 
+  const { sampleData, replaceVariables } = useLetterPreview();
+  const kontenHtmlValue = form.watch("konten_html");
+  const kopSuratUrlValue = form.watch("kop_surat_url");
+  
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">
             {isEdit ? "Edit Template" : "Tambah Template"}
@@ -190,167 +196,209 @@ export default function TemplateSuratForm() {
         </div>
 
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Informasi Template</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="nama_template"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Template</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Contoh: Template Pengantar SPM UP" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+        <ResizablePanelGroup direction="horizontal" className="min-h-screen rounded-lg border">
+          {/* Left Panel - Form Editor */}
+          <ResizablePanel defaultSize={50} minSize={30}>
+            <div className="h-full overflow-y-auto p-6">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Informasi Template</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="nama_template"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nama Template</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Contoh: Template Pengantar SPM UP" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                <FormField
-                  control={form.control}
-                  name="jenis_surat"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jenis Surat</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih jenis surat" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {jenisSuratOptions.map((jenis) => (
-                            <SelectItem key={jenis} value={jenis}>
-                              {jenis}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      <FormField
+                        control={form.control}
+                        name="jenis_surat"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Jenis Surat</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Pilih jenis surat" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {jenisSuratOptions.map((jenis) => (
+                                  <SelectItem key={jenis} value={jenis}>
+                                    {jenis}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-            <FormField
-              control={form.control}
-              name="kop_surat_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Kop Surat</FormLabel>
-                  <FormControl>
-                    <div className="space-y-4">
-                      {/* File Input */}
-                      <div className="flex items-center gap-4">
-                        <Input
-                          type="file"
-                          accept="image/png,image/jpeg,image/jpg,application/pdf"
-                          onChange={handleFileChange}
-                          className="cursor-pointer"
-                        />
-                        {isUploading && <Loader2 className="h-4 w-4 animate-spin" />}
-                      </div>
-                      
-                      {/* Preview */}
-                      {(kopSuratPreview || field.value) && (
-                        <div className="border rounded-lg p-4 space-y-2">
-                          <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium">Preview Kop Surat:</p>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={handleRemoveKopSurat}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                          {(field.value || kopSuratPreview)?.endsWith('.pdf') ? (
-                            <div className="flex items-center gap-2 p-4 bg-muted rounded">
-                              <FileText className="h-8 w-8" />
-                              <span className="text-sm">File PDF</span>
+                      <FormField
+                        control={form.control}
+                        name="kop_surat_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Kop Surat</FormLabel>
+                            <FormControl>
+                              <div className="space-y-4">
+                                <div className="flex items-center gap-4">
+                                  <Input
+                                    type="file"
+                                    accept="image/png,image/jpeg,image/jpg,application/pdf"
+                                    onChange={handleFileChange}
+                                    className="cursor-pointer"
+                                  />
+                                  {isUploading && <Loader2 className="h-4 w-4 animate-spin" />}
+                                </div>
+                                
+                                {(kopSuratPreview || field.value) && (
+                                  <div className="border rounded-lg p-4 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <p className="text-sm font-medium">Preview:</p>
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={handleRemoveKopSurat}
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                    {(field.value || kopSuratPreview)?.endsWith('.pdf') ? (
+                                      <div className="flex items-center gap-2 p-4 bg-muted rounded">
+                                        <FileText className="h-8 w-8" />
+                                        <span className="text-sm">File PDF</span>
+                                      </div>
+                                    ) : (
+                                      <img
+                                        src={kopSuratPreview || field.value}
+                                        alt="Preview Kop Surat"
+                                        className="max-h-32 mx-auto object-contain border rounded"
+                                      />
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormDescription>
+                              Upload kop surat (PNG, JPG, PDF). Max 2MB
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="is_active"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base">Status Aktif</FormLabel>
+                              <FormDescription>
+                                Template aktif dapat digunakan
+                              </FormDescription>
                             </div>
-                          ) : (
-                            <img
-                              src={kopSuratPreview || field.value}
-                              alt="Preview Kop Surat"
-                              className="max-h-48 mx-auto object-contain border rounded"
-                            />
-                          )}
-                        </div>
+                            <FormControl>
+                              <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Konten Template</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <FormField
+                        control={form.control}
+                        name="konten_html"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <RichTextEditor
+                                value={field.value}
+                                onChange={field.onChange}
+                                placeholder="Mulai mengetik konten template surat..."
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Gunakan toolbar dan klik variable untuk memasukkan data dinamis
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <div className="flex gap-4">
+                    <Button type="submit" disabled={createTemplate.isPending || updateTemplate.isPending || isUploading}>
+                      {createTemplate.isPending || updateTemplate.isPending || isUploading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          {isUploading ? "Uploading..." : "Menyimpan..."}
+                        </>
+                      ) : (
+                        "Simpan"
                       )}
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Upload file kop surat (PNG, JPG, atau PDF). Max 2MB
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="konten_html"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Konten Template</FormLabel>
-                  <FormControl>
-                    <RichTextEditor
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="Mulai mengetik konten template surat..."
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Gunakan toolbar untuk format text dan klik tombol variable untuk memasukkan data dinamis.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-                <FormField
-                  control={form.control}
-                  name="is_active"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Status Aktif</FormLabel>
-                        <FormDescription>
-                          Template aktif dapat digunakan untuk generate surat
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch checked={field.value} onCheckedChange={field.onChange} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-
-            <div className="flex gap-4">
-              <Button type="submit" disabled={createTemplate.isPending || updateTemplate.isPending || isUploading}>
-                {createTemplate.isPending || updateTemplate.isPending || isUploading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {isUploading ? "Uploading..." : "Menyimpan..."}
-                  </>
-                ) : (
-                  "Simpan"
-                )}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => navigate("/surat/template")}>
-                Batal
-              </Button>
+                    </Button>
+                    <Button type="button" variant="outline" onClick={() => navigate("/surat/template")}>
+                      Batal
+                    </Button>
+                  </div>
+                </form>
+              </Form>
             </div>
-          </form>
-        </Form>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          {/* Right Panel - Live Preview */}
+          <ResizablePanel defaultSize={50} minSize={30}>
+            <div className="h-full overflow-y-auto p-6 bg-muted/30">
+              <Card className="sticky top-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                    Live Preview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {kontenHtmlValue ? (
+                    <div className="border rounded-lg p-6 bg-white min-h-[600px]">
+                      <LetterPreview
+                        kopSuratUrl={kopSuratUrlValue || kopSuratPreview}
+                        content={replaceVariables(kontenHtmlValue, {}, true)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 text-muted-foreground">
+                      <p>Preview akan muncul saat Anda mulai mengetik</p>
+                      <p className="text-sm mt-2">Data contoh akan otomatis ditampilkan</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
     </DashboardLayout>
   );
