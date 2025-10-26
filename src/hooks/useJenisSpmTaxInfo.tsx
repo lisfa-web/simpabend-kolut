@@ -73,8 +73,13 @@ export const getJenisSpmLabel = (jenis: string): string => {
     gu: "GU (Ganti Uang)",
     tu: "TU (Tambah Uang)",
     ls_gaji: "LS Gaji",
+    ls_barang: "LS Barang",
+    ls_jasa: "LS Jasa",
+    ls_honorarium: "LS Honorarium",
+    ls_jasa_konstruksi: "LS Jasa Konstruksi",
+    ls_sewa: "LS Sewa",
     ls_barang_jasa: "LS Barang & Jasa",
     ls_belanja_modal: "LS Belanja Modal",
   };
-  return labels[jenis] || jenis;
+  return labels[jenis] || jenis.toUpperCase().replace(/_/g, ' ');
 };

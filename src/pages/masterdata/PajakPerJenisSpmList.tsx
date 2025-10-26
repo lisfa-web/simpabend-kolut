@@ -44,9 +44,11 @@ const kategoriColors: Record<string, string> = {
 const PajakPerJenisSpmList = () => {
   const navigate = useNavigate();
   const [filterJenisSpm, setFilterJenisSpm] = useState<string>("all");
-  const { data: mappingList = [], isLoading } = usePajakPerJenisSpmList(
-    filterJenisSpm !== "all" ? { jenis_spm: filterJenisSpm } : undefined
-  );
+  
+  // Pass filter to hook
+  const filters = filterJenisSpm !== "all" ? { jenis_spm: filterJenisSpm } : undefined;
+  const { data: mappingList = [], isLoading } = usePajakPerJenisSpmList(filters);
+  
   const { deleteMapping } = usePajakPerJenisSpmMutation();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
@@ -98,7 +100,11 @@ const PajakPerJenisSpmList = () => {
                   <SelectItem value="gu">GU (Ganti Uang)</SelectItem>
                   <SelectItem value="tu">TU (Tambah Uang)</SelectItem>
                   <SelectItem value="ls_gaji">LS Gaji</SelectItem>
-                  <SelectItem value="ls_barang_jasa">LS Barang & Jasa</SelectItem>
+                  <SelectItem value="ls_barang">LS Barang</SelectItem>
+                  <SelectItem value="ls_jasa">LS Jasa</SelectItem>
+                  <SelectItem value="ls_honorarium">LS Honorarium</SelectItem>
+                  <SelectItem value="ls_jasa_konstruksi">LS Jasa Konstruksi</SelectItem>
+                  <SelectItem value="ls_sewa">LS Sewa</SelectItem>
                   <SelectItem value="ls_belanja_modal">LS Belanja Modal</SelectItem>
                 </SelectContent>
               </Select>

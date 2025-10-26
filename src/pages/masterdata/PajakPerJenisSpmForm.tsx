@@ -155,9 +155,11 @@ const PajakPerJenisSpmForm = () => {
                           <SelectItem value="gu">GU (Ganti Uang)</SelectItem>
                           <SelectItem value="tu">TU (Tambah Uang)</SelectItem>
                           <SelectItem value="ls_gaji">LS Gaji</SelectItem>
-                          <SelectItem value="ls_barang_jasa">
-                            LS Barang & Jasa
-                          </SelectItem>
+                          <SelectItem value="ls_barang">LS Barang</SelectItem>
+                          <SelectItem value="ls_jasa">LS Jasa</SelectItem>
+                          <SelectItem value="ls_honorarium">LS Honorarium</SelectItem>
+                          <SelectItem value="ls_jasa_konstruksi">LS Jasa Konstruksi</SelectItem>
+                          <SelectItem value="ls_sewa">LS Sewa</SelectItem>
                           <SelectItem value="ls_belanja_modal">
                             LS Belanja Modal
                           </SelectItem>
