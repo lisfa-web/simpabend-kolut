@@ -166,7 +166,7 @@ const InputSpmDetail = () => {
       },
       vendor: spm.vendor ? {
         nama_vendor: spm.vendor.nama_vendor,
-        npwp: (spm.vendor as any).npwp || "-",
+        npwp: spm.vendor.npwp || "-",
         nama_bank: spm.vendor.nama_bank || "-",
         nomor_rekening: spm.vendor.nomor_rekening || "-",
         nama_rekening: spm.vendor.nama_rekening || "-",
