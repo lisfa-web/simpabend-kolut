@@ -228,34 +228,37 @@ export default function SpmTimelineDetail() {
     <DashboardLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/dashboard")}
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">
-                Detail Timeline SPM
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {spm.nomor_spm || "Draft - Belum ada nomor"}
-              </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/dashboard")}
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">
+                  Detail Timeline SPM
+                </h1>
+                <p className="text-muted-foreground mt-1">
+                  {spm.nomor_spm || "Draft - Belum ada nomor"}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={handlePrintSpm}
-              className="gap-2"
-            >
-              <Printer className="h-4 w-4" />
-              Cetak Draft SPM
-            </Button>
-            {getStatusBadge(spm.status || "draft")}
+            <div className="flex items-center gap-3 flex-wrap">
+              <Button
+                variant="outline"
+                onClick={handlePrintSpm}
+                className="gap-2"
+              >
+                <Printer className="h-4 w-4" />
+                <span className="hidden sm:inline">Cetak Draft SPM</span>
+                <span className="sm:hidden">Cetak</span>
+              </Button>
+              {getStatusBadge(spm.status || "draft")}
+            </div>
           </div>
         </div>
 
