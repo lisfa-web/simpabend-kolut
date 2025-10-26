@@ -42,13 +42,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let mounted = true;
 
-    // Safety timeout - force loading to false after 5 seconds
+    // Safety timeout - force loading to false after 2 seconds (reduced from 5)
     const safetyTimeout = setTimeout(() => {
       console.warn("Auth loading timeout - forcing loading to false");
       if (mounted) {
         setLoading(false);
       }
-    }, 5000);
+    }, 2000);
 
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
