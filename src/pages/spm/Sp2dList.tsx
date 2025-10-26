@@ -215,42 +215,6 @@ const Sp2dList = () => {
           </TabsContent>
 
           <TabsContent value="list" className="space-y-4">
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Filter & Pencarian</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Cari nomor SP2D/SPM..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              <Select 
-                value={statusFilter || "all"} 
-                onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Semua Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="diproses">Diproses</SelectItem>
-                  <SelectItem value="diterbitkan">Diterbitkan</SelectItem>
-                  <SelectItem value="cair">Dicairkan</SelectItem>
-                  <SelectItem value="gagal">Gagal</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
             <Card>
               <CardHeader>
                 <CardTitle>Filter & Pencarian</CardTitle>
@@ -307,6 +271,8 @@ const Sp2dList = () => {
                         <TableHead>Nomor SPM</TableHead>
                         <TableHead>OPD</TableHead>
                         <TableHead>Nilai SP2D</TableHead>
+                        <TableHead>Total Potongan</TableHead>
+                        <TableHead>Nilai Diterima</TableHead>
                         <TableHead>Tanggal SP2D</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Aksi</TableHead>
@@ -315,7 +281,7 @@ const Sp2dList = () => {
                     <TableBody>
                       {sp2dList?.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8">
+                          <TableCell colSpan={9} className="text-center py-8">
                             Tidak ada data SP2D
                           </TableCell>
                         </TableRow>
@@ -328,10 +294,13 @@ const Sp2dList = () => {
                             <TableCell>{sp2d.spm?.nomor_spm || "-"}</TableCell>
                             <TableCell>{sp2d.spm?.opd?.nama_opd || "-"}</TableCell>
                             <TableCell>
-                              {new Intl.NumberFormat("id-ID", {
-                                style: "currency",
-                                currency: "IDR",
-                              }).format(Number(sp2d.nilai_sp2d))}
+                              {formatCurrency(Number(sp2d.nilai_sp2d))}
+                            </TableCell>
+                            <TableCell className="text-destructive">
+                              - {formatCurrency(Number(sp2d.total_potongan || 0))}
+                            </TableCell>
+                            <TableCell className="font-semibold text-success">
+                              {formatCurrency(Number(sp2d.nilai_diterima || sp2d.nilai_sp2d))}
                             </TableCell>
                             <TableCell>
                               {sp2d.tanggal_sp2d

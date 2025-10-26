@@ -35,6 +35,8 @@ const LaporanSp2d = () => {
 
   const totalSp2d = sp2dList?.length || 0;
   const totalNilai = sp2dList?.reduce((sum, item) => sum + Number(item.nilai_sp2d || 0), 0) || 0;
+  const totalPotongan = sp2dList?.reduce((sum, item) => sum + Number(item.total_potongan || 0), 0) || 0;
+  const totalDiterima = sp2dList?.reduce((sum, item) => sum + Number(item.nilai_diterima || item.nilai_sp2d || 0), 0) || 0;
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
@@ -115,7 +117,7 @@ const LaporanSp2d = () => {
         </Card>
 
         {/* Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <SummaryCard
             title="Total SP2D"
             value={totalSp2d}
@@ -123,10 +125,22 @@ const LaporanSp2d = () => {
             description={`Dari filter yang dipilih`}
           />
           <SummaryCard
-            title="Total Nilai Cair"
+            title="Nilai SP2D (Bruto)"
             value={formatCurrency(totalNilai)}
             icon={DollarSign}
-            description={`Total pencairan`}
+            description={`Total nilai SP2D`}
+          />
+          <SummaryCard
+            title="Total Potongan"
+            value={formatCurrency(totalPotongan)}
+            icon={DollarSign}
+            description={`Total potongan pajak`}
+          />
+          <SummaryCard
+            title="Nilai Diterima (Netto)"
+            value={formatCurrency(totalDiterima)}
+            icon={DollarSign}
+            description={`Total nilai diterima`}
           />
         </div>
 
@@ -156,7 +170,9 @@ const LaporanSp2d = () => {
                       <TableHead>Nomor SPM</TableHead>
                       <TableHead>Tanggal</TableHead>
                       <TableHead>OPD</TableHead>
-                      <TableHead className="text-right">Nilai</TableHead>
+                      <TableHead className="text-right">Nilai SP2D</TableHead>
+                      <TableHead className="text-right">Total Potongan</TableHead>
+                      <TableHead className="text-right">Nilai Diterima</TableHead>
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -177,6 +193,12 @@ const LaporanSp2d = () => {
                         <TableCell>{sp2d.spm?.opd?.nama_opd || "-"}</TableCell>
                         <TableCell className="text-right">
                           {formatCurrency(sp2d.nilai_sp2d)}
+                        </TableCell>
+                        <TableCell className="text-right text-destructive">
+                          - {formatCurrency(sp2d.total_potongan || 0)}
+                        </TableCell>
+                        <TableCell className="text-right font-semibold text-success">
+                          {formatCurrency(sp2d.nilai_diterima || sp2d.nilai_sp2d)}
                         </TableCell>
                         <TableCell>{getStatusBadge(sp2d.status)}</TableCell>
                       </TableRow>
