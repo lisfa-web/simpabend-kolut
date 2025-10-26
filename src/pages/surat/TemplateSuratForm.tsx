@@ -33,6 +33,7 @@ import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info, Loader2, X, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { RichTextEditor } from "@/components/surat/RichTextEditor";
 
 const templateSchema = z.object({
   nama_template: z.string().min(1, "Nama template wajib diisi"),
@@ -53,17 +54,6 @@ const jenisSuratOptions = [
   "Surat Keputusan",
 ];
 
-const availableVariables = [
-  { key: "{{nomor_surat}}", desc: "Nomor surat" },
-  { key: "{{tanggal}}", desc: "Tanggal surat" },
-  { key: "{{nama_opd}}", desc: "Nama OPD" },
-  { key: "{{nama_pejabat}}", desc: "Nama pejabat penandatangan" },
-  { key: "{{jabatan_pejabat}}", desc: "Jabatan pejabat" },
-  { key: "{{nip_pejabat}}", desc: "NIP pejabat" },
-  { key: "{{nomor_spm}}", desc: "Nomor SPM" },
-  { key: "{{nilai_spm}}", desc: "Nilai SPM" },
-  { key: "{{vendor}}", desc: "Nama vendor/penerima" },
-];
 
 export default function TemplateSuratForm() {
   const navigate = useNavigate();
@@ -199,19 +189,6 @@ export default function TemplateSuratForm() {
           </p>
         </div>
 
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Variables yang tersedia:</strong>
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              {availableVariables.map((v) => (
-                <div key={v.key} className="text-sm">
-                  <code className="bg-muted px-1 rounded">{v.key}</code> - {v.desc}
-                </div>
-              ))}
-            </div>
-          </AlertDescription>
-        </Alert>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -319,23 +296,23 @@ export default function TemplateSuratForm() {
             <FormField
               control={form.control}
               name="konten_html"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Konten Template</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Masukkan konten template dengan HTML sederhana dan gunakan {{variable}} untuk data dinamis"
-                          className="min-h-[300px] font-mono text-sm"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Gunakan HTML sederhana. Contoh: {"<p>Nomor: {{nomor_surat}}</p>"}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Konten Template</FormLabel>
+                  <FormControl>
+                    <RichTextEditor
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Mulai mengetik konten template surat..."
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Gunakan toolbar untuk format text dan klik tombol variable untuk memasukkan data dinamis.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
                 <FormField
                   control={form.control}
