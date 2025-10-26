@@ -49,10 +49,9 @@ const About = () => {
         </section>
 
         {/* Visi & Misi Section */}
-        <section className="container py-16 relative">{/* Removed unnecessary background */}
-
+        <section className="container py-16 relative">
           <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            <Card className="group relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-2 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">{/* Removed heavy blur */}
+            <Card className="group relative overflow-hidden bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-2 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">
               
               <CardHeader className="relative z-10">
                 <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4 w-fit">
@@ -69,7 +68,7 @@ const About = () => {
               </CardContent>
             </Card>
 
-            <Card className="group relative overflow-hidden bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">{/* Removed heavy blur */}
+            <Card className="group relative overflow-hidden bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 hover:border-primary/30 transition-all duration-300 hover:-translate-y-1">
               
               <CardHeader className="relative z-10">
                 <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4 w-fit">
