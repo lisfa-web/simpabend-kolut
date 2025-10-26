@@ -146,20 +146,20 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="border-b border-border">
+      <SidebarHeader className="bg-gradient-to-br from-blue-600 to-blue-700 text-white border-b-0">
         <div className="px-4 py-6">
           {open ? (
             <>
-              <h1 className="text-xl font-bold text-primary">SIMPA BEND</h1>
-              <p className="text-xs text-muted-foreground">BKAD Kolaka Utara</p>
+              <h1 className="text-2xl font-bold">SIMPA BEND</h1>
+              <p className="text-sm opacity-90">BKAD Kolaka Utara</p>
             </>
           ) : (
-            <h1 className="text-lg font-bold text-primary text-center">SB</h1>
+            <h1 className="text-xl font-bold text-center">SB</h1>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="bg-gradient-to-b from-blue-50 via-white to-gray-50">
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -167,9 +167,9 @@ export function AppSidebar() {
                 .filter((item) => canAccessMenu(item.roles))
                 .map((item) => (
                   <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.name}>
+                    <SidebarMenuButton asChild isActive={isActive(item.path)} tooltip={item.name} className="text-base">
                       <NavLink to={item.path}>
-                        <item.icon className="h-5 w-5" />
+                        <item.icon className="h-6 w-6" />
                         <span>{item.name}</span>
                       </NavLink>
                     </SidebarMenuButton>
