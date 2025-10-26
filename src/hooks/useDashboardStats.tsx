@@ -34,6 +34,31 @@ interface DashboardStats {
     total_spm: number;
     total_nilai: number;
   }>;
+  financialBreakdown: Array<{
+    jenis_spm: string;
+    total_spm: number;
+    total_nilai: number;
+  }>;
+  alerts: {
+    stuckSpm: Array<{
+      id: string;
+      nomor_spm: string;
+      status: string;
+      days_stuck: number;
+      nilai_spm: number;
+    }>;
+    outlierSpm: Array<{
+      id: string;
+      nomor_spm: string;
+      nilai_spm: number;
+    }>;
+  };
+  topVendors: Array<{
+    vendor_id: string;
+    vendor_name: string;
+    total_spm: number;
+    total_nilai: number;
+  }>;
 }
 
 export const useDashboardStats = () => {
@@ -179,6 +204,86 @@ export const useDashboardStats = () => {
         .sort((a, b) => b.total_nilai - a.total_nilai)
         .slice(0, 5);
 
+      // Financial Breakdown by Jenis SPM
+      const financialMap = new Map<string, { total_spm: number; total_nilai: number }>();
+      allSpm?.forEach((spm) => {
+        const jenis = spm.jenis_spm || "other";
+        if (!financialMap.has(jenis)) {
+          financialMap.set(jenis, { total_spm: 0, total_nilai: 0 });
+        }
+        const data = financialMap.get(jenis)!;
+        data.total_spm += 1;
+        data.total_nilai += Number(spm.nilai_spm || 0);
+      });
+
+      const financialBreakdown = Array.from(financialMap.entries()).map(([jenis_spm, data]) => ({
+        jenis_spm,
+        ...data,
+      }));
+
+      // Alert: Stuck SPM (in progress > 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const stuckSpm = allSpm
+        ?.filter((s) => {
+          const isInProgress = inProgressStatuses.includes(s.status || "");
+          const updatedAt = new Date(s.updated_at || "");
+          return isInProgress && updatedAt < sevenDaysAgo;
+        })
+        .map((s) => ({
+          id: s.id,
+          nomor_spm: s.nomor_spm || "Draft",
+          status: s.status || "",
+          days_stuck: Math.floor(
+            (new Date().getTime() - new Date(s.updated_at || "").getTime()) / (1000 * 60 * 60 * 24)
+          ),
+          nilai_spm: Number(s.nilai_spm || 0),
+        }))
+        .slice(0, 5) || [];
+
+      // Alert: Outlier SPM (nilai > 2 standard deviations from mean)
+      const values = allSpm?.map((s) => Number(s.nilai_spm || 0)) || [];
+      const mean = values.reduce((sum, val) => sum + val, 0) / (values.length || 1);
+      const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (values.length || 1);
+      const stdDev = Math.sqrt(variance);
+      const threshold = mean + 2 * stdDev;
+
+      const outlierSpm = allSpm
+        ?.filter((s) => Number(s.nilai_spm || 0) > threshold)
+        .map((s) => ({
+          id: s.id,
+          nomor_spm: s.nomor_spm || "Draft",
+          nilai_spm: Number(s.nilai_spm || 0),
+        }))
+        .slice(0, 5) || [];
+
+      // Top Vendors
+      const { data: vendorData, error: vendorError } = await supabase
+        .from("spm")
+        .select("vendor_id, nilai_spm, vendor:vendor_id(nama_vendor)")
+        .not("vendor_id", "is", null)
+        .neq("status", "draft");
+
+      if (vendorError) throw vendorError;
+
+      const vendorMap = new Map<string, { vendor_name: string; total_spm: number; total_nilai: number }>();
+      vendorData?.forEach((spm: any) => {
+        const vendorId = spm.vendor_id;
+        const vendorName = spm.vendor?.nama_vendor || "Unknown Vendor";
+        if (!vendorMap.has(vendorId)) {
+          vendorMap.set(vendorId, { vendor_name: vendorName, total_spm: 0, total_nilai: 0 });
+        }
+        const vendor = vendorMap.get(vendorId)!;
+        vendor.total_spm += 1;
+        vendor.total_nilai += Number(spm.nilai_spm || 0);
+      });
+
+      const topVendors = Array.from(vendorMap.entries())
+        .map(([vendor_id, data]) => ({ vendor_id, ...data }))
+        .sort((a, b) => b.total_nilai - a.total_nilai)
+        .slice(0, 5);
+
       return {
         totalSpm,
         totalSpmValue,
@@ -201,6 +306,12 @@ export const useDashboardStats = () => {
         avgProcessDays,
         monthlyTrend,
         opdBreakdown,
+        financialBreakdown,
+        alerts: {
+          stuckSpm,
+          outlierSpm,
+        },
+        topVendors,
       };
     },
     enabled: !!user,

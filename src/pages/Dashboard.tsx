@@ -10,6 +10,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ActionItemsWidget } from "./Dashboard/components/ActionItemsWidget";
 import { OpdBreakdownChart } from "./Dashboard/components/OpdBreakdownChart";
 import { Sp2dStatsSection } from "./Dashboard/components/Sp2dStatsSection";
+import { RecentActivityWidget } from "./Dashboard/components/RecentActivityWidget";
+import { FinancialBreakdownChart } from "./Dashboard/components/FinancialBreakdownChart";
+import { AlertWidget } from "./Dashboard/components/AlertWidget";
+import { TopVendorsWidget } from "./Dashboard/components/TopVendorsWidget";
 import { cn } from "@/lib/utils";
 import { Sparkline } from "@/components/Sparkline";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -265,6 +269,16 @@ const Dashboard = () => {
           </Card>
         </div>
 
+        {/* Recent Activity & Alerts */}
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="md:col-span-2">
+            <RecentActivityWidget />
+          </div>
+          <div>
+            <AlertWidget data={stats?.alerts} isLoading={isLoading} />
+          </div>
+        </div>
+
         {/* Charts Section */}
         <div className="grid gap-6 md:grid-cols-3">
           <Card className="md:col-span-2">
@@ -331,6 +345,12 @@ const Dashboard = () => {
               )}
             </CardContent>
           </Card>
+        </div>
+
+        {/* Financial Breakdown & Top Vendors */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <FinancialBreakdownChart data={stats?.financialBreakdown} isLoading={isLoading} />
+          <TopVendorsWidget data={stats?.topVendors} isLoading={isLoading} />
         </div>
 
         {/* SP2D Statistics Section */}
