@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { spmDataSchema, SpmDataFormValues } from "@/schemas/spmSchema";
 import { useEffect } from "react";
 import { terbilangRupiah } from "@/lib/formatHelpers";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 import {
   Form,
   FormControl,
@@ -27,7 +28,7 @@ import { useProgramList } from "@/hooks/useProgramList";
 import { useKegiatanList } from "@/hooks/useKegiatanList";
 import { useSubkegiatanList } from "@/hooks/useSubkegiatanList";
 import { useVendorList } from "@/hooks/useVendorList";
-import { Loader2 } from "lucide-react";
+import { Loader2, Volume2 } from "lucide-react";
 
 interface SpmDataFormProps {
   defaultValues?: Partial<SpmDataFormValues>;
@@ -49,6 +50,8 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const kegiatanId = form.watch("kegiatan_id");
   const nilaiSpm = form.watch("nilai_spm");
   const requiresVendor = jenisSpm === 'ls_barang_jasa' || jenisSpm === 'ls_belanja_modal';
+
+  const { speak, isSpeaking } = useSpeechSynthesis();
 
   const { data: opdList, isLoading: opdLoading } = useOpdList({ is_active: true });
   const { data: programList, isLoading: programLoading } = useProgramList({ tahun_anggaran: new Date().getFullYear(), is_active: true });
@@ -316,9 +319,21 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                 />
               </FormControl>
               {nilaiSpm > 0 && (
-                <p className="text-sm text-muted-foreground italic mt-2">
-                  <span className="font-medium">Terbilang:</span> {terbilangRupiah(nilaiSpm)}
-                </p>
+                <div className="flex items-center gap-2 mt-2">
+                  <p className="text-sm text-muted-foreground italic flex-1">
+                    <span className="font-medium">Terbilang:</span> {terbilangRupiah(nilaiSpm)}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => speak(terbilangRupiah(nilaiSpm))}
+                    className={isSpeaking ? "animate-pulse" : ""}
+                    title="Dengarkan terbilang"
+                  >
+                    <Volume2 className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
               <FormMessage />
             </FormItem>
