@@ -78,60 +78,60 @@ export const generateSpmPDF = (
         <style>
           @page {
             size: legal;
-            margin: 2cm 2.5cm;
+            margin: 0;
           }
           
           body {
             font-family: 'Times New Roman', Times, serif;
-            font-size: 11pt;
-            line-height: 1.4;
+            font-size: 10pt;
+            line-height: 1.3;
             color: #000;
             margin: 0;
-            padding: 0;
+            padding: 1.5cm 2cm;
           }
           
           .kop-container {
             border: 2px solid black;
             display: table;
             width: 100%;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
           }
           
           .kop-logo {
             display: table-cell;
-            width: 100px;
+            width: 90px;
             vertical-align: middle;
-            padding: 10px;
+            padding: 8px;
             text-align: center;
           }
           
           .kop-logo img {
-            max-height: 80px;
-            max-width: 90px;
+            max-height: 70px;
+            max-width: 80px;
           }
           
           .kop-text {
             display: table-cell;
             vertical-align: middle;
             text-align: center;
-            padding: 10px;
+            padding: 8px;
           }
           
           .kop-text h2 {
             margin: 0;
-            font-size: 14pt;
+            font-size: 13pt;
             font-weight: bold;
           }
           
           .kop-text h3 {
-            margin: 5px 0 0 0;
-            font-size: 13pt;
+            margin: 4px 0 0 0;
+            font-size: 12pt;
             font-weight: bold;
           }
           
           .info-header-bordered {
             border: 1px solid black;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
           }
           
           .info-layout {
@@ -144,8 +144,9 @@ export const generateSpmPDF = (
             display: table-cell;
             width: 50%;
             vertical-align: top;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-right: 1px solid black;
+            font-size: 9pt;
           }
           
           .info-right {
@@ -153,18 +154,18 @@ export const generateSpmPDF = (
           }
           
           .info-row {
-            margin-bottom: 4px;
+            margin-bottom: 3px;
           }
           
           .info-label {
             display: inline-block;
-            width: 130px;
+            width: 120px;
           }
           
           table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
           }
           
           table.bordered {
@@ -174,8 +175,9 @@ export const generateSpmPDF = (
           table.bordered td,
           table.bordered th {
             border: 1px solid black;
-            padding: 6px 8px;
+            padding: 4px 6px;
             vertical-align: top;
+            font-size: 9pt;
           }
           
           table.bordered th {
@@ -198,53 +200,57 @@ export const generateSpmPDF = (
           
           .section-title {
             font-weight: bold;
-            margin: 12px 0 6px 0;
+            margin: 8px 0 4px 0;
+            font-size: 9pt;
           }
           
           .bank-instruction {
             border: 1px solid black;
-            padding: 10px;
-            margin-bottom: 12px;
-            line-height: 1.6;
+            padding: 8px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+            font-size: 9pt;
           }
           
           .data-penerima {
-            margin: 12px 0;
+            margin: 8px 0;
           }
           
           .data-penerima .row {
-            margin-bottom: 4px;
+            margin-bottom: 3px;
+            font-size: 9pt;
           }
           
           .data-penerima .label {
             display: inline-block;
-            width: 160px;
+            width: 150px;
           }
           
           .footer-notes {
-            margin-top: 20px;
-            font-size: 10pt;
-            line-height: 1.5;
+            margin-top: 12px;
+            font-size: 8pt;
+            line-height: 1.3;
           }
           
           .signature-section {
-            margin-top: 40px;
+            margin-top: 20px;
             text-align: right;
+            font-size: 9pt;
           }
           
           .signature-space {
-            height: 70px;
+            height: 50px;
           }
           
           .signature-line {
             border-bottom: 2px solid black;
-            width: 220px;
+            width: 200px;
             margin: 0 0 2px auto;
           }
           
           @media print {
             body {
-              padding: 0;
+              padding: 1.5cm 2cm;
             }
             
             button {
@@ -252,7 +258,8 @@ export const generateSpmPDF = (
             }
             
             @page {
-              margin: 2cm 2.5cm;
+              size: legal;
+              margin: 0;
             }
           }
         </style>
