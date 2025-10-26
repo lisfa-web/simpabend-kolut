@@ -1,18 +1,14 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useSpmList } from "@/hooks/useSpmList";
-import { useSpmVerification } from "@/hooks/useSpmVerification";
 import { SpmVerificationCard } from "./components/SpmVerificationCard";
-import { VerificationDialog } from "./components/VerificationDialog";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2, FileText, Inbox } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function VerifikasiResepsionis() {
   const [search, setSearch] = useState("");
-  const [selectedSpmId, setSelectedSpmId] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-
+  
   const { data: spmListBaru, isLoading: loadingBaru } = useSpmList({
     status: "diajukan",
     search,
@@ -22,30 +18,6 @@ export default function VerifikasiResepsionis() {
     status: "resepsionis_verifikasi",
     search,
   });
-
-  const { verifySpm } = useSpmVerification("resepsionis");
-
-  const handleVerify = (spmId: string) => {
-    setSelectedSpmId(spmId);
-    setDialogOpen(true);
-  };
-
-  const handleSubmitVerification = (data: any) => {
-    if (!selectedSpmId) return;
-
-    verifySpm.mutate(
-      {
-        spmId: selectedSpmId,
-        ...data,
-      },
-      {
-        onSuccess: () => {
-          setDialogOpen(false);
-          setSelectedSpmId(null);
-        },
-      }
-    );
-  };
 
   return (
     <DashboardLayout>
@@ -88,7 +60,6 @@ export default function VerifikasiResepsionis() {
                   <SpmVerificationCard
                     key={spm.id}
                     spm={spm}
-                    onVerify={handleVerify}
                   />
                 ))}
               </div>
@@ -116,7 +87,6 @@ export default function VerifikasiResepsionis() {
                   <SpmVerificationCard
                     key={spm.id}
                     spm={spm}
-                    onVerify={handleVerify}
                   />
                 ))}
               </div>
@@ -134,17 +104,6 @@ export default function VerifikasiResepsionis() {
           </TabsContent>
         </Tabs>
       </div>
-
-      {/* Verification Dialog */}
-      <VerificationDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSubmit={handleSubmitVerification}
-        title="Verifikasi Resepsionis"
-        showNomorAntrian
-        showNomorBerkas
-        isLoading={verifySpm.isPending}
-      />
     </DashboardLayout>
   );
 }

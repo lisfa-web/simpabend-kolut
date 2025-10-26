@@ -1,11 +1,13 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { 
   ArrowLeft, 
   FileText, 
@@ -18,17 +20,46 @@ import {
   XCircle,
   AlertCircle,
   Eye,
-  Download
+  Download,
+  CheckCircle
 } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SpmTimeline } from "../spm/components/SpmTimeline";
+import { VerificationDialog } from "../spm/components/VerificationDialog";
+import { useSpmVerification } from "@/hooks/useSpmVerification";
+import { useUserRole } from "@/hooks/useUserRole";
+import { toast } from "@/hooks/use-toast";
 
 export default function SpmTimelineDetail() {
   const { id: spmId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const shouldVerify = searchParams.get('action') === 'verify';
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const userRole = useUserRole();
+  
+  // Determine verification role based on user role
+  const getVerificationRole = () => {
+    if (userRole.hasRole('resepsionis')) return 'resepsionis';
+    if (userRole.hasRole('pbmd')) return 'pbmd';
+    if (userRole.hasRole('akuntansi')) return 'akuntansi';
+    if (userRole.hasRole('perbendaharaan')) return 'perbendaharaan';
+    if (userRole.hasRole('kepala_bkad')) return 'kepala_bkad';
+    return null;
+  };
+
+  const verificationRole = getVerificationRole();
+  const { verifySpm } = useSpmVerification(verificationRole || 'resepsionis');
+
+  // Auto-open dialog when ?action=verify param is present
+  useEffect(() => {
+    if (shouldVerify && verificationRole) {
+      setDialogOpen(true);
+    }
+  }, [shouldVerify, verificationRole]);
 
   const { data: spm, isLoading } = useQuery({
     queryKey: ["spm-timeline", spmId],
@@ -57,6 +88,44 @@ export default function SpmTimelineDetail() {
     },
     enabled: !!spmId,
   });
+
+  const handleSubmitVerification = (data: any) => {
+    if (!spmId) return;
+
+    verifySpm.mutate(
+      {
+        spmId: spmId,
+        ...data,
+      },
+      {
+        onSuccess: () => {
+          setDialogOpen(false);
+          toast({
+            title: "Berhasil",
+            description: "SPM berhasil diverifikasi",
+          });
+          // Redirect back to verification list
+          if (verificationRole) {
+            navigate(`/spm/verifikasi/${verificationRole}`);
+          }
+        },
+      }
+    );
+  };
+
+  const canVerify = () => {
+    if (!spm || !verificationRole) return false;
+    
+    const roleStatusMap: Record<string, string> = {
+      'resepsionis': 'diajukan',
+      'pbmd': 'resepsionis_verifikasi',
+      'akuntansi': 'pbmd_verifikasi',
+      'perbendaharaan': 'akuntansi_validasi',
+      'kepala_bkad': 'perbendaharaan_verifikasi',
+    };
+    
+    return spm.status === roleStatusMap[verificationRole];
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -127,6 +196,35 @@ export default function SpmTimelineDetail() {
           </div>
           {getStatusBadge(spm.status || "draft")}
         </div>
+
+        {/* Verification Alert */}
+        {shouldVerify && canVerify() && (
+          <Alert className="border-primary bg-primary/5">
+            <CheckCircle className="h-4 w-4 text-primary" />
+            <AlertDescription className="flex items-center justify-between">
+              <span className="text-sm">
+                Anda dapat memverifikasi SPM ini setelah meninjau detail di bawah
+              </span>
+              <Button 
+                size="sm"
+                onClick={() => setDialogOpen(true)}
+                className="ml-4"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Verifikasi Sekarang
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {shouldVerify && !canVerify() && verificationRole && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              SPM ini tidak dalam status yang sesuai untuk diverifikasi oleh Anda.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Info Cards Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -282,6 +380,20 @@ export default function SpmTimelineDetail() {
           </div>
         </div>
       </div>
+
+      {/* Verification Dialog */}
+      {verificationRole && (
+        <VerificationDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          onSubmit={handleSubmitVerification}
+          title={`Verifikasi ${verificationRole.replace('_', ' ').toUpperCase()}`}
+          showNomorAntrian={verificationRole === 'resepsionis'}
+          showNomorBerkas={verificationRole === 'resepsionis'}
+          showPin={verificationRole === 'kepala_bkad'}
+          isLoading={verifySpm.isPending}
+        />
+      )}
     </DashboardLayout>
   );
 }

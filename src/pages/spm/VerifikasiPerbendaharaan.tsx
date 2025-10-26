@@ -1,45 +1,17 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useSpmList } from "@/hooks/useSpmList";
-import { useSpmVerification } from "@/hooks/useSpmVerification";
 import { SpmVerificationCard } from "./components/SpmVerificationCard";
-import { VerificationDialog } from "./components/VerificationDialog";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2 } from "lucide-react";
 
 export default function VerifikasiPerbendaharaan() {
   const [search, setSearch] = useState("");
-  const [selectedSpmId, setSelectedSpmId] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   const { data: spmList, isLoading } = useSpmList({
     status: "perbendaharaan_verifikasi",
     search,
   });
-
-  const { verifySpm } = useSpmVerification("perbendaharaan");
-
-  const handleVerify = (spmId: string) => {
-    setSelectedSpmId(spmId);
-    setDialogOpen(true);
-  };
-
-  const handleSubmitVerification = (data: any) => {
-    if (!selectedSpmId) return;
-
-    verifySpm.mutate(
-      {
-        spmId: selectedSpmId,
-        ...data,
-      },
-      {
-        onSuccess: () => {
-          setDialogOpen(false);
-          setSelectedSpmId(null);
-        },
-      }
-    );
-  };
 
   return (
     <DashboardLayout>
@@ -71,7 +43,6 @@ export default function VerifikasiPerbendaharaan() {
               <SpmVerificationCard
                 key={spm.id}
                 spm={spm}
-                onVerify={handleVerify}
               />
             ))}
           </div>
@@ -81,15 +52,6 @@ export default function VerifikasiPerbendaharaan() {
           </div>
         )}
       </div>
-
-      {/* Verification Dialog */}
-      <VerificationDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSubmit={handleSubmitVerification}
-        title="Verifikasi Perbendaharaan"
-        isLoading={verifySpm.isPending}
-      />
     </DashboardLayout>
   );
 }

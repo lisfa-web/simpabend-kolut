@@ -1,66 +1,17 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useSpmList } from "@/hooks/useSpmList";
-import { useSpmVerification } from "@/hooks/useSpmVerification";
-import { useRequestPin } from "@/hooks/useRequestPin";
-import { useAuth } from "@/hooks/useAuth";
 import { SpmVerificationCard } from "./components/SpmVerificationCard";
-import { VerificationDialog } from "./components/VerificationDialog";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
 
 export default function ApprovalKepalaBkad() {
   const [search, setSearch] = useState("");
-  const [selectedSpmId, setSelectedSpmId] = useState<string | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const { user } = useAuth();
 
   const { data: spmList, isLoading } = useSpmList({
     status: "kepala_bkad_review",
     search,
   });
-
-  const { verifySpm } = useSpmVerification("kepala_bkad");
-  const requestPin = useRequestPin();
-
-  const handleVerify = (spmId: string) => {
-    setSelectedSpmId(spmId);
-    setDialogOpen(true);
-  };
-
-  const handleRequestPin = () => {
-    if (!user?.id) {
-      toast({
-        title: "Error",
-        description: "User tidak terautentikasi",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    requestPin.mutate({
-      userId: user.id,
-      spmId: selectedSpmId || undefined,
-    });
-  };
-
-  const handleSubmitVerification = (data: any) => {
-    if (!selectedSpmId) return;
-
-    verifySpm.mutate(
-      {
-        spmId: selectedSpmId,
-        ...data,
-      },
-      {
-        onSuccess: () => {
-          setDialogOpen(false);
-          setSelectedSpmId(null);
-        },
-      }
-    );
-  };
 
   return (
     <DashboardLayout>
@@ -92,7 +43,6 @@ export default function ApprovalKepalaBkad() {
               <SpmVerificationCard
                 key={spm.id}
                 spm={spm}
-                onVerify={handleVerify}
               />
             ))}
           </div>
@@ -102,18 +52,6 @@ export default function ApprovalKepalaBkad() {
           </div>
         )}
       </div>
-
-      {/* Verification Dialog */}
-      <VerificationDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSubmit={handleSubmitVerification}
-        title="Persetujuan Kepala BKAD"
-        showPin
-        isLoading={verifySpm.isPending}
-        onRequestPin={handleRequestPin}
-        isRequestingPin={requestPin.isPending}
-      />
     </DashboardLayout>
   );
 }

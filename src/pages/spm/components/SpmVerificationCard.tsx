@@ -12,10 +12,9 @@ import { cn } from "@/lib/utils";
 
 interface SpmVerificationCardProps {
   spm: any;
-  onVerify: (spmId: string) => void;
 }
 
-export const SpmVerificationCard = ({ spm, onVerify }: SpmVerificationCardProps) => {
+export const SpmVerificationCard = ({ spm }: SpmVerificationCardProps) => {
   const navigate = useNavigate();
 
   return (
@@ -103,21 +102,21 @@ export const SpmVerificationCard = ({ spm, onVerify }: SpmVerificationCardProps)
         {/* Section 6: Action Buttons */}
         <div className="flex gap-2 pt-2">
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             className="flex-1"
             onClick={() => navigate(`/input-spm/detail/${spm.id}`)}
           >
             <Eye className="h-4 w-4 mr-2" />
-            Detail
+            Lihat Detail
           </Button>
           <Button
             size="sm"
             className="flex-1 bg-primary hover:bg-primary/90 shadow-md"
-            onClick={() => onVerify(spm.id)}
+            onClick={() => navigate(`/input-spm/detail/${spm.id}?action=verify`)}
           >
             <CheckCircle className="h-4 w-4 mr-2" />
-            Verifikasi
+            Buka & Verifikasi
           </Button>
         </div>
       </CardContent>
