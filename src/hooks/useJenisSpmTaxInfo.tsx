@@ -17,7 +17,7 @@ export interface JenisSpmTaxMapping {
 
 export const useJenisSpmTaxInfo = () => {
   return useQuery({
-    queryKey: ["jenis-spm-tax-info"],
+    queryKey: ["jenis-spm-tax-info", "v2"],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("pajak_per_jenis_spm")
