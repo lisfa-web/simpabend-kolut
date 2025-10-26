@@ -23,6 +23,7 @@ const InputSpmForm = () => {
   const [activeTab, setActiveTab] = useState("data");
   const [formData, setFormData] = useState<SpmDataFormValues | null>(null);
   const [potonganPajak, setPotonganPajak] = useState<any[]>([]);
+  const [selectedOptionalTaxIds, setSelectedOptionalTaxIds] = useState<string[]>([]);
   const [files, setFiles] = useState({
     dokumen_spm: [],
     tbk: [],

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -47,6 +47,7 @@ interface SpmPajakFormProps {
   onPotonganChange: (pajak: PajakFormData[]) => void;
   onNext: () => void;
   onBack: () => void;
+  initialSelectedOptionalTaxes?: string[]; // optional preselection from previous step
 }
 
 export const SpmPajakForm = ({
@@ -56,6 +57,7 @@ export const SpmPajakForm = ({
   onPotonganChange,
   onNext,
   onBack,
+  initialSelectedOptionalTaxes,
 }: SpmPajakFormProps) => {
   const navigate = useNavigate();
   const [pajaks, setPajaks] = useState<PajakFormData[]>(potonganPajak || []);
@@ -79,7 +81,15 @@ export const SpmPajakForm = ({
   });
   
   const optionalTaxes = allTaxesForType.filter(t => !t.is_default);
-
+  
+  // Initialize from pre-selected optional taxes (from previous step)
+  const initializedFromProps = useRef(false);
+  useEffect(() => {
+    if (!initializedFromProps.current && initialSelectedOptionalTaxes && initialSelectedOptionalTaxes.length > 0 && optionalTaxes.length > 0) {
+      initialSelectedOptionalTaxes.forEach((id) => handleOptionalTaxToggle(id, true));
+      initializedFromProps.current = true;
+    }
+  }, [initialSelectedOptionalTaxes, optionalTaxes]);
   useEffect(() => {
     // Auto-suggest pajak jika belum ada dan SPM type memerlukan pajak
     if (requiresPajak && pajaks.length === 0 && nilaiSpm > 0 && suggestedTaxes.length > 0) {

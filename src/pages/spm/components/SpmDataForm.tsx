@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
@@ -50,6 +51,8 @@ interface SpmDataFormProps {
   defaultValues?: Partial<SpmDataFormValues>;
   onSubmit: (data: SpmDataFormValues) => void;
   onBack?: () => void;
+  selectedOptionalTaxIds?: string[];
+  onToggleOptionalTax?: (taxId: string, checked: boolean) => void;
 }
 
 // Helper function for SPM type labels
@@ -70,7 +73,7 @@ const getJenisSpmLabel = (jenis: string): string => {
   return labels[jenis] || jenis.toUpperCase().replace(/_/g, ' ');
 };
 
-export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProps) => {
+export const SpmDataForm = ({ defaultValues, onSubmit, onBack, selectedOptionalTaxIds = [], onToggleOptionalTax }: SpmDataFormProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingData, setPendingData] = useState<SpmDataFormValues | null>(null);
 
@@ -582,11 +585,19 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
                                 <div className="space-y-2">
                                   {optionalTaxes.map((tax: any) => (
                                     <div key={tax.id} className="flex items-center gap-3 rounded-lg bg-muted/30 p-3 border border-border">
-                                      <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                      <div className="flex-1 flex items-center justify-between gap-2">
+                                      {onToggleOptionalTax ? (
+                                        <Checkbox
+                                          id={`opt-${tax.id}`}
+                                          checked={selectedOptionalTaxIds?.includes(tax.id)}
+                                          onCheckedChange={(checked) => onToggleOptionalTax?.(tax.id, Boolean(checked))}
+                                        />
+                                      ) : (
+                                        <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                      )}
+                                      <label htmlFor={`opt-${tax.id}`} className="flex-1 flex items-center justify-between gap-2 cursor-pointer">
                                         <span className="text-sm font-medium">{tax.nama}</span>
                                         <span className="text-sm font-semibold">{tax.tarif}%</span>
-                                      </div>
+                                      </label>
                                     </div>
                                   ))}
                                 </div>
