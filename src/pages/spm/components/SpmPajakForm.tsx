@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { JENIS_PAJAK_OPTIONS, getSuggestedTaxes } from "@/hooks/usePajakPotonganSpm";
+import { useMasterPajakOptions, useSuggestedTaxes } from "@/hooks/usePajakPotonganSpm";
 import { formatCurrency } from "@/lib/currency";
 import { Separator } from "@/components/ui/separator";
 import { terbilangRupiah } from "@/lib/formatHelpers";
@@ -22,6 +22,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 interface PajakFormData {
   jenis_pajak: string;
@@ -56,19 +61,23 @@ export const SpmPajakForm = ({
   const requiresPajak = ['ls_gaji', 'ls_barang_jasa', 'ls_belanja_modal'].includes(jenisSpm);
   
   const { speak } = useSpeechSynthesis();
+  
+  // Fetch master pajak options and suggested taxes from database
+  const { data: pajakOptions = [], isLoading: isLoadingPajak } = useMasterPajakOptions();
+  const { data: suggestedTaxes = [], isLoading: isLoadingSuggested } = useSuggestedTaxes(
+    requiresPajak ? jenisSpm : null
+  );
 
   useEffect(() => {
     // Auto-suggest pajak jika belum ada dan SPM type memerlukan pajak
-    if (requiresPajak && pajaks.length === 0 && nilaiSpm > 0) {
-      const suggestions = getSuggestedTaxes(jenisSpm);
-      const initialPajak = suggestions.map(sug => {
-        const pajakOption = JENIS_PAJAK_OPTIONS.find(opt => opt.value === sug.jenis);
+    if (requiresPajak && pajaks.length === 0 && nilaiSpm > 0 && suggestedTaxes.length > 0) {
+      const initialPajak = suggestedTaxes.map(sug => {
         const dasarPengenaan = nilaiSpm;
         const jumlahPajak = Math.round((dasarPengenaan * sug.tarif) / 100);
         
         return {
           jenis_pajak: sug.jenis,
-          rekening_pajak: pajakOption?.rekening || "",
+          rekening_pajak: sug.rekening || "",
           uraian: sug.uraian,
           tarif: sug.tarif,
           dasar_pengenaan: dasarPengenaan,
@@ -78,7 +87,7 @@ export const SpmPajakForm = ({
       
       setPajaks(initialPajak);
     }
-  }, [jenisSpm, nilaiSpm, requiresPajak, pajaks.length]);
+  }, [jenisSpm, nilaiSpm, requiresPajak, pajaks.length, suggestedTaxes]);
 
   const totalPotongan = pajaks.reduce((sum, p) => sum + (p.jumlah_pajak || 0), 0);
   const nilaiBersih = nilaiSpm - totalPotongan;
@@ -114,7 +123,7 @@ export const SpmPajakForm = ({
 
     // Auto-fill rekening when jenis_pajak changes
     if (field === "jenis_pajak") {
-      const pajakOption = JENIS_PAJAK_OPTIONS.find(opt => opt.value === value);
+      const pajakOption = pajakOptions.find(opt => opt.value === value);
       updated[index].rekening_pajak = pajakOption?.rekening || "";
     }
 
@@ -244,15 +253,30 @@ export const SpmPajakForm = ({
                     <Select
                       value={pajak.jenis_pajak}
                       onValueChange={(val) => handlePajakChange(index, "jenis_pajak", val)}
+                      disabled={isLoadingPajak}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Pilih Jenis Pajak" />
                       </SelectTrigger>
                       <SelectContent>
-                        {JENIS_PAJAK_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </SelectItem>
+                        {pajakOptions.map((opt) => (
+                          <HoverCard key={opt.value} openDelay={200}>
+                            <HoverCardTrigger asChild>
+                              <SelectItem value={opt.value}>
+                                {opt.label}
+                              </SelectItem>
+                            </HoverCardTrigger>
+                            <HoverCardContent side="right" className="w-80">
+                              <div className="space-y-2">
+                                <h4 className="font-semibold text-sm">{opt.label}</h4>
+                                <div className="text-xs space-y-1">
+                                  <p><span className="font-medium">Kode:</span> {opt.kode}</p>
+                                  <p><span className="font-medium">Rekening:</span> {opt.rekening}</p>
+                                  <p><span className="font-medium">Tarif Default:</span> {opt.tarif_default}%</p>
+                                </div>
+                              </div>
+                            </HoverCardContent>
+                          </HoverCard>
                         ))}
                       </SelectContent>
                     </Select>
@@ -392,7 +416,7 @@ export const SpmPajakForm = ({
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-foreground">Rincian Potongan Pajak:</p>
                   {pajaks.map((pajak, index) => {
-                    const pajakOption = JENIS_PAJAK_OPTIONS.find(opt => opt.value === pajak.jenis_pajak);
+                    const pajakOption = pajakOptions.find(opt => opt.value === pajak.jenis_pajak);
                     return (
                       <div key={index} className="border rounded-lg p-3 space-y-2 bg-background">
                         <div className="flex items-center justify-between">

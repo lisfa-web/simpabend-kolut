@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-// Hook to fetch master pajak options from database
+// Hook to fetch master pajak options from database with categorization
 export const useMasterPajakOptions = () => {
   return useQuery({
     queryKey: ["master-pajak-options"],
@@ -11,17 +11,19 @@ export const useMasterPajakOptions = () => {
         .from("master_pajak")
         .select("*")
         .eq("is_active", true)
+        .order("kategori")
         .order("kode_pajak");
       
       if (error) throw error;
       
-      // Transform to match old format for backward compatibility
-      return (data || []).map(pajak => ({
+      // Transform to match format with category grouping
+      return (data || []).map((pajak: any) => ({
         value: pajak.jenis_pajak,
         label: pajak.nama_pajak,
         rekening: pajak.rekening_pajak,
         kode: pajak.kode_pajak,
         tarif_default: pajak.tarif_default,
+        kategori: pajak.kategori || "Lainnya",
       }));
     },
   });
