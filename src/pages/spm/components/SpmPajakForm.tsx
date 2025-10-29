@@ -34,7 +34,7 @@ import {
 interface PajakFormData {
   jenis_pajak: string;
   rekening_pajak: string;
-  uraian: string;
+  uraian: string; // filled from master_pajak deskripsi
   tarif?: number; // optional, untuk backward compatibility
   dasar_pengenaan: number;
   jumlah_pajak: number;
@@ -127,7 +127,7 @@ export const SpmPajakForm = ({
         setPajaks(prev => [...prev, {
           jenis_pajak: optionalTax.master_pajak!.jenis_pajak,
           rekening_pajak: optionalTax.master_pajak!.rekening_pajak,
-          uraian: optionalTax.uraian_template || optionalTax.master_pajak!.nama_pajak,
+          uraian: optionalTax.uraian_template || optionalTax.master_pajak!.deskripsi || optionalTax.master_pajak!.nama_pajak,
           tarif: 0,
           dasar_pengenaan: nilaiSpm,
           jumlah_pajak: 0, // User will input manually
@@ -169,10 +169,11 @@ export const SpmPajakForm = ({
     const updated = [...pajaks];
     updated[index] = { ...updated[index], [field]: value };
 
-    // Auto-fill rekening when jenis_pajak changes
+    // Auto-fill rekening and deskripsi when jenis_pajak changes
     if (field === "jenis_pajak") {
       const pajakOption = pajakOptions.find(opt => opt.value === value);
       updated[index].rekening_pajak = pajakOption?.rekening || "";
+      updated[index].uraian = pajakOption?.deskripsi || pajakOption?.label || "";
     }
 
     setPajaks(updated);
@@ -189,7 +190,7 @@ export const SpmPajakForm = ({
     if (requiresPajak) {
       for (let i = 0; i < pajaks.length; i++) {
         const p = pajaks[i];
-        if (!p.jenis_pajak || !p.uraian || p.dasar_pengenaan <= 0 || p.jumlah_pajak <= 0) {
+        if (!p.jenis_pajak || p.dasar_pengenaan <= 0 || p.jumlah_pajak <= 0) {
           alert(`Pajak #${i + 1} belum lengkap. Mohon lengkapi semua field.`);
           return;
         }
@@ -400,14 +401,14 @@ export const SpmPajakForm = ({
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Uraian *</Label>
-                  <Input
-                    value={pajak.uraian}
-                    onChange={(e) => handlePajakChange(index, "uraian", e.target.value)}
-                    placeholder="Contoh: PPh 21 Gaji Pegawai"
-                  />
-                </div>
+                {pajak.uraian && (
+                  <div className="space-y-2">
+                    <Label>Deskripsi</Label>
+                    <div className="p-3 bg-muted rounded-md text-sm">
+                      {pajak.uraian}
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">

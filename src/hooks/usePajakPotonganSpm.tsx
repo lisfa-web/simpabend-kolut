@@ -22,6 +22,7 @@ export const useMasterPajakOptions = () => {
         rekening: pajak.rekening_pajak,
         kode: pajak.kode_pajak,
         tarif_default: pajak.tarif_default,
+        deskripsi: pajak.deskripsi || pajak.nama_pajak,
       }));
     },
   });
@@ -49,7 +50,7 @@ export const useSuggestedTaxes = (jenisSpm: string | null) => {
       return (data || []).map((item: any) => ({
         jenis: item.master_pajak.jenis_pajak,
         tarif: item.tarif_khusus || item.master_pajak.tarif_default,
-        uraian: item.uraian_template || item.master_pajak.nama_pajak,
+        uraian: item.uraian_template || item.master_pajak.deskripsi || item.master_pajak.nama_pajak,
         rekening: item.master_pajak.rekening_pajak,
         kode: item.master_pajak.kode_pajak,
       }));
