@@ -121,12 +121,12 @@ export const RecentSp2dActivityWidget = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full pr-4">
+        <ScrollArea className="h-[400px] pr-4">
           <div className="space-y-3">
             {activities?.map((activity) => (
               <Link
                 key={activity.id}
-                to={`/sp2d/detail/${activity.id}`}
+                to={`/input-spm/timeline/${activity.id}`}
                 className={`flex items-start gap-3 p-3 rounded-lg border transition-all hover:shadow-md cursor-pointer ${getActivityBgColor(activity.status)}`}
               >
                 <div className="mt-0.5">{getActivityIcon(activity.status)}</div>

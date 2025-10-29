@@ -124,7 +124,7 @@ export const RecentActivityWidget = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full pr-4">
+        <ScrollArea className="h-[400px] pr-4">
           <div className="space-y-3">
             {activities?.map((activity) => (
               <Link
