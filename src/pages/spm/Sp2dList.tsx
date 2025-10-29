@@ -155,7 +155,9 @@ const Sp2dList = () => {
         const { data: sp2dList, error: sp2dError } = await supabase
           .from("sp2d")
           .select("spm_id");
-        if (sp2dError) throw sp2dError;
+        if (sp2dError) {
+          console.warn("SP2D fetch restricted or failed; proceeding without exclusion.", sp2dError);
+        }
 
         const usedSpmIds = (sp2dList || [])
           .map((s) => s.spm_id)
