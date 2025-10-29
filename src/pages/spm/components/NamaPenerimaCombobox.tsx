@@ -27,6 +27,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useVendorList } from "@/hooks/useVendorList";
 import { useVendorMutation } from "@/hooks/useVendorMutation";
+import { useBendaharaPengeluaranList } from "@/hooks/useBendaharaPengeluaranList";
+import { useBendaharaPengeluaranMutation } from "@/hooks/useBendaharaPengeluaranMutation";
 import { usePihakKetigaList } from "@/hooks/usePihakKetigaList";
 import { usePihakKetigaMutation } from "@/hooks/usePihakKetigaMutation";
 import { usePejabatList } from "@/hooks/usePejabatList";
@@ -67,21 +69,22 @@ export const NamaPenerimaCombobox = ({
     is_active: true,
     enabled: tipePenerima === "pihak_ketiga" 
   });
-  const { data: pejabatList, isLoading: pejabatLoading } = usePejabatList({ 
+  const { data: bendaharaPengeluaranList, isLoading: bendaharaPengeluaranLoading } = useBendaharaPengeluaranList({ 
     is_active: true,
     enabled: tipePenerima === "bendahara_pengeluaran" 
   });
 
   const { createVendor } = useVendorMutation();
   const { createPihakKetiga } = usePihakKetigaMutation();
+  const { createBendaharaPengeluaran } = useBendaharaPengeluaranMutation();
 
-  const isLoading = vendorLoading || pihakKetigaLoading || pejabatLoading;
+  const isLoading = vendorLoading || pihakKetigaLoading || bendaharaPengeluaranLoading;
 
   // Get the appropriate list based on recipient type
   const getListData = () => {
     if (tipePenerima === "vendor") return vendorList || [];
     if (tipePenerima === "pihak_ketiga") return pihakKetigaList || [];
-    if (tipePenerima === "bendahara_pengeluaran") return pejabatList || [];
+    if (tipePenerima === "bendahara_pengeluaran") return bendaharaPengeluaranList || [];
     return [];
   };
 
@@ -91,7 +94,7 @@ export const NamaPenerimaCombobox = ({
   const getDisplayName = (item: any) => {
     if (tipePenerima === "vendor") return item.nama_vendor;
     if (tipePenerima === "pihak_ketiga") return item.nama_pihak_ketiga;
-    if (tipePenerima === "bendahara_pengeluaran") return item.nama_lengkap;
+    if (tipePenerima === "bendahara_pengeluaran") return item.nama_bendahara;
     return "";
   };
 
@@ -120,6 +123,7 @@ export const NamaPenerimaCombobox = ({
   const getDialogTitle = () => {
     if (tipePenerima === "vendor") return "Tambah Vendor Baru";
     if (tipePenerima === "pihak_ketiga") return "Tambah Pihak Ketiga Baru";
+    if (tipePenerima === "bendahara_pengeluaran") return "Tambah Bendahara Pengeluaran Baru";
     return "Tambah Data Baru";
   };
 
@@ -152,6 +156,17 @@ export const NamaPenerimaCombobox = ({
           nomor_rekening: newItem.nomor_rekening || undefined,
           nama_rekening: newItem.nama_rekening || undefined,
         });
+      } else if (tipePenerima === "bendahara_pengeluaran") {
+        await createBendaharaPengeluaran.mutateAsync({
+          nama_bendahara: newItem.nama,
+          nip: newItem.npwp || undefined,
+          alamat: newItem.alamat || undefined,
+          telepon: newItem.telepon || undefined,
+          email: newItem.email || undefined,
+          nama_bank: newItem.nama_bank || undefined,
+          nomor_rekening: newItem.nomor_rekening || undefined,
+          nama_rekening: newItem.nama_rekening || undefined,
+        });
       }
       
       onChange(newItem.nama);
@@ -166,24 +181,16 @@ export const NamaPenerimaCombobox = ({
         nomor_rekening: "",
         nama_rekening: "",
       });
-      toast.success(`${tipePenerima === "vendor" ? "Vendor" : "Pihak ketiga"} berhasil ditambahkan`);
+      
+      const entityType = tipePenerima === "vendor" ? "Vendor" : tipePenerima === "pihak_ketiga" ? "Pihak ketiga" : "Bendahara pengeluaran";
+      toast.success(`${entityType} berhasil ditambahkan`);
     } catch (error) {
-      toast.error(`Gagal menambahkan ${tipePenerima === "vendor" ? "vendor" : "pihak ketiga"}`);
+      const entityType = tipePenerima === "vendor" ? "vendor" : tipePenerima === "pihak_ketiga" ? "pihak ketiga" : "bendahara pengeluaran";
+      toast.error(`Gagal menambahkan ${entityType}`);
     }
   };
 
-  // Show combobox for all supported types
-  if (!tipePenerima || (tipePenerima !== "vendor" && tipePenerima !== "pihak_ketiga" && tipePenerima !== "bendahara_pengeluaran")) {
-    return (
-      <Input
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Masukkan nama penerima"
-      />
-    );
-  }
-
-  const canAddNew = tipePenerima === "vendor" || tipePenerima === "pihak_ketiga";
+  const canAddNew = tipePenerima === "vendor" || tipePenerima === "pihak_ketiga" || tipePenerima === "bendahara_pengeluaran";
 
   return (
     <>
@@ -283,7 +290,7 @@ export const NamaPenerimaCombobox = ({
             variant="outline"
             size="icon"
             onClick={() => setDialogOpen(true)}
-            title={`Tambah ${tipePenerima === "vendor" ? "vendor" : "pihak ketiga"} baru`}
+            title={`Tambah ${tipePenerima === "vendor" ? "vendor" : tipePenerima === "pihak_ketiga" ? "pihak ketiga" : "bendahara pengeluaran"} baru`}
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -296,14 +303,14 @@ export const NamaPenerimaCombobox = ({
             <DialogHeader>
               <DialogTitle>{getDialogTitle()}</DialogTitle>
               <DialogDescription>
-                Masukkan informasi {tipePenerima === "vendor" ? "vendor" : "pihak ketiga"} baru. Field yang wajib diisi ditandai dengan *.
+                Masukkan informasi {tipePenerima === "vendor" ? "vendor" : tipePenerima === "pihak_ketiga" ? "pihak ketiga" : "bendahara pengeluaran"} baru. Field yang wajib diisi ditandai dengan *.
               </DialogDescription>
             </DialogHeader>
             
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="nama">
-                  Nama {tipePenerima === "vendor" ? "Vendor" : "Pihak Ketiga"} <span className="text-destructive">*</span>
+                  Nama {tipePenerima === "vendor" ? "Vendor" : tipePenerima === "pihak_ketiga" ? "Pihak Ketiga" : "Bendahara Pengeluaran"} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="nama"
@@ -311,19 +318,19 @@ export const NamaPenerimaCombobox = ({
                   onChange={(e) =>
                     setNewItem({ ...newItem, nama: e.target.value })
                   }
-                  placeholder={`Nama ${tipePenerima === "vendor" ? "vendor" : "pihak ketiga"}`}
+                  placeholder={`Nama ${tipePenerima === "vendor" ? "vendor" : tipePenerima === "pihak_ketiga" ? "pihak ketiga" : "bendahara pengeluaran"}`}
                 />
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="npwp">NPWP</Label>
+                <Label htmlFor="npwp">{tipePenerima === "bendahara_pengeluaran" ? "NIP" : "NPWP"}</Label>
                 <Input
                   id="npwp"
                   value={newItem.npwp}
                   onChange={(e) =>
                     setNewItem({ ...newItem, npwp: e.target.value })
                   }
-                  placeholder="XX.XXX.XXX.X-XXX.XXX"
+                  placeholder={tipePenerima === "bendahara_pengeluaran" ? "NIP bendahara" : "XX.XXX.XXX.X-XXX.XXX"}
                 />
               </div>
 
@@ -432,15 +439,15 @@ export const NamaPenerimaCombobox = ({
               <Button
                 type="button"
                 onClick={handleCreate}
-                disabled={createVendor.isPending || createPihakKetiga.isPending}
+                disabled={createVendor.isPending || createPihakKetiga.isPending || createBendaharaPengeluaran.isPending}
               >
-                {(createVendor.isPending || createPihakKetiga.isPending) ? (
+                {(createVendor.isPending || createPihakKetiga.isPending || createBendaharaPengeluaran.isPending) ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Menyimpan...
                   </>
                 ) : (
-                  `Simpan ${tipePenerima === "vendor" ? "Vendor" : "Pihak Ketiga"}`
+                  `Simpan ${tipePenerima === "vendor" ? "Vendor" : tipePenerima === "pihak_ketiga" ? "Pihak Ketiga" : "Bendahara Pengeluaran"}`
                 )}
               </Button>
             </DialogFooter>

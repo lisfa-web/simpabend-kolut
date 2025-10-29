@@ -29,6 +29,8 @@ import OpdList from "./pages/masterdata/OpdList";
 import OpdForm from "./pages/masterdata/OpdForm";
 import VendorForm from "./pages/masterdata/VendorForm";
 import VendorList from "./pages/masterdata/VendorList";
+import BendaharaPengeluaranList from "./pages/masterdata/BendaharaPengeluaranList";
+import BendaharaPengeluaranForm from "./pages/masterdata/BendaharaPengeluaranForm";
 import JenisSpmList from "./pages/masterdata/JenisSpmList";
 import JenisSpmForm from "./pages/masterdata/JenisSpmForm";
 import MasterPajakList from "./pages/masterdata/MasterPajakList";
@@ -134,6 +136,10 @@ const App = () => (
             <Route path="/masterdata/vendor/new" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
             <Route path="/masterdata/vendor/create" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
             <Route path="/masterdata/vendor/:id/edit" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
+            
+            <Route path="/masterdata/bendahara-pengeluaran" element={<ProtectedRoute><BendaharaPengeluaranList /></ProtectedRoute>} />
+            <Route path="/masterdata/bendahara-pengeluaran/tambah" element={<ProtectedRoute><BendaharaPengeluaranForm /></ProtectedRoute>} />
+            <Route path="/masterdata/bendahara-pengeluaran/edit/:id" element={<ProtectedRoute><BendaharaPengeluaranForm /></ProtectedRoute>} />
             
             <Route path="/masterdata/jenis-spm" element={<ProtectedRoute><JenisSpmList /></ProtectedRoute>} />
             <Route path="/masterdata/jenis-spm/tambah" element={<ProtectedRoute><JenisSpmForm /></ProtectedRoute>} />

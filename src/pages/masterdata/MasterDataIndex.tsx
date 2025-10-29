@@ -38,6 +38,14 @@ const masterDataList: MasterDataCard[] = [
     iconColor: "text-purple-600",
   },
   {
+    title: "Bendahara Pengeluaran",
+    description: "Data Bendahara Pengeluaran",
+    icon: Users2,
+    path: "/masterdata/bendahara-pengeluaran",
+    gradient: "from-indigo-500/10 to-blue-500/10",
+    iconColor: "text-indigo-600",
+  },
+  {
     title: "Jenis SPM",
     description: "Jenis Surat Perintah Membayar",
     icon: FileText,

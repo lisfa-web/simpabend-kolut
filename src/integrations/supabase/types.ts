@@ -67,6 +67,51 @@ export type Database = {
           },
         ]
       }
+      bendahara_pengeluaran: {
+        Row: {
+          alamat: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          nama_bank: string | null
+          nama_bendahara: string
+          nama_rekening: string | null
+          nip: string | null
+          nomor_rekening: string | null
+          telepon: string | null
+          updated_at: string
+        }
+        Insert: {
+          alamat?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          nama_bank?: string | null
+          nama_bendahara: string
+          nama_rekening?: string | null
+          nip?: string | null
+          nomor_rekening?: string | null
+          telepon?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alamat?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          nama_bank?: string | null
+          nama_bendahara?: string
+          nama_rekening?: string | null
+          nip?: string | null
+          nomor_rekening?: string | null
+          telepon?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       config_sistem: {
         Row: {
           description: string | null
