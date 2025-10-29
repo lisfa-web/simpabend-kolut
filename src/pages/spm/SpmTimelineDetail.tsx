@@ -74,7 +74,6 @@ export default function SpmTimelineDetail() {
           opd:opd_id(nama_opd, kode_opd),
           jenis_spm:jenis_spm_id(nama_jenis),
           bendahara:profiles!bendahara_id(full_name, email),
-          vendor:vendor_id(nama_vendor, npwp, nama_bank, nomor_rekening, nama_rekening),
           verified_resepsionis:profiles!verified_by_resepsionis(full_name),
           verified_pbmd:profiles!verified_by_pbmd(full_name),
           verified_akuntansi:profiles!verified_by_akuntansi(full_name),
