@@ -18,11 +18,12 @@ const DEFAULT_LAYOUT: Layout[] = [
   { i: "analytics", x: 0, y: 6, w: 12, h: 3, minW: 6, minH: 2 },
   { i: "financial", x: 0, y: 9, w: 6, h: 3, minW: 4, minH: 2 },
   { i: "activity", x: 6, y: 9, w: 6, h: 3, minW: 4, minH: 2 },
-  { i: "sp2d-stats", x: 0, y: 12, w: 12, h: 2, minW: 6, minH: 2 },
-  { i: "opd-breakdown", x: 0, y: 14, w: 6, h: 3, minW: 4, minH: 2 },
-  { i: "vendors", x: 6, y: 14, w: 6, h: 3, minW: 4, minH: 2 },
-  { i: "alerts", x: 0, y: 17, w: 6, h: 2, minW: 4, minH: 2 },
-  { i: "action-items", x: 6, y: 17, w: 6, h: 2, minW: 4, minH: 2 },
+  { i: "sp2d-activity", x: 0, y: 12, w: 6, h: 3, minW: 4, minH: 2 },
+  { i: "sp2d-stats", x: 6, y: 12, w: 6, h: 2, minW: 6, minH: 2 },
+  { i: "opd-breakdown", x: 0, y: 15, w: 6, h: 3, minW: 4, minH: 2 },
+  { i: "vendors", x: 6, y: 15, w: 6, h: 3, minW: 4, minH: 2 },
+  { i: "alerts", x: 0, y: 18, w: 6, h: 2, minW: 4, minH: 2 },
+  { i: "action-items", x: 6, y: 18, w: 6, h: 2, minW: 4, minH: 2 },
 ];
 
 export const useDashboardLayout = () => {

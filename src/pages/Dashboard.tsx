@@ -13,6 +13,7 @@ import { ActionItemsWidget } from "./Dashboard/components/ActionItemsWidget";
 import { OpdBreakdownChart } from "./Dashboard/components/OpdBreakdownChart";
 import { Sp2dStatsSection } from "./Dashboard/components/Sp2dStatsSection";
 import { RecentActivityWidget } from "./Dashboard/components/RecentActivityWidget";
+import { RecentSp2dActivityWidget } from "./Dashboard/components/RecentSp2dActivityWidget";
 import { FinancialBreakdownChart } from "./Dashboard/components/FinancialBreakdownChart";
 import { AlertWidget } from "./Dashboard/components/AlertWidget";
 import { TopVendorsWidget } from "./Dashboard/components/TopVendorsWidget";
@@ -45,6 +46,7 @@ const WIDGET_LABELS = [
   { id: "analytics", label: "Advanced Analytics" },
   { id: "financial", label: "Financial Breakdown" },
   { id: "activity", label: "Recent Activity" },
+  { id: "sp2d-activity", label: "Aktivitas SP2D Terbaru" },
   { id: "sp2d-stats", label: "Statistik SP2D" },
   { id: "opd-breakdown", label: "OPD Breakdown" },
   { id: "vendors", label: "Top Vendors" },
@@ -613,6 +615,17 @@ const Dashboard = () => {
               <WidgetContainer isEditMode={isEditMode} title="Recent Activity">
                 <div className="p-4 h-full">
                   <RecentActivityWidget />
+                </div>
+              </WidgetContainer>
+            </div>
+          )}
+
+          {/* Recent SP2D Activity Widget */}
+          {!isWidgetHidden("sp2d-activity") && (
+            <div key="sp2d-activity" className="h-full">
+              <WidgetContainer isEditMode={isEditMode} title="Aktivitas SP2D Terbaru">
+                <div className="p-4 h-full">
+                  <RecentSp2dActivityWidget />
                 </div>
               </WidgetContainer>
             </div>
