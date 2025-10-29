@@ -132,15 +132,13 @@ export const SpmSp2dTableWidget = () => {
                 <TableHead className="font-semibold text-center">PBMD</TableHead>
                 <TableHead className="font-semibold text-center">Akuntansi</TableHead>
                 <TableHead className="font-semibold text-center">Perbendaharaan</TableHead>
-                <TableHead className="font-semibold">Nomor SP2D</TableHead>
-                <TableHead className="font-semibold">Nilai SP2D</TableHead>
-                <TableHead className="font-semibold">Status SP2D</TableHead>
+                <TableHead className="font-semibold">Informasi SP2D</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     Loading data...
                   </TableCell>
                 </TableRow>
@@ -214,21 +212,28 @@ export const SpmSp2dTableWidget = () => {
                           }
                         />
                       </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {sp2d?.nomor_sp2d || "-"}
-                      </TableCell>
-                      <TableCell className="font-medium text-sm">
-                        {sp2d?.nilai_sp2d ? formatCurrency(sp2d.nilai_sp2d) : "-"}
-                      </TableCell>
                       <TableCell>
-                        {sp2d?.status ? (
-                          <div className="flex flex-col gap-1">
-                            <Sp2dStatusBadge status={sp2d.status} />
-                            {sp2d.status === "cair" && sp2d.tanggal_cair && (
-                              <span className="text-xs text-muted-foreground">
-                                {format(new Date(sp2d.tanggal_cair), "dd MMM yyyy", { locale: id })}
-                              </span>
-                            )}
+                        {sp2d ? (
+                          <div className="flex flex-col gap-1 min-w-[280px]">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">Nomor SP2D:</span>
+                              <span className="font-mono text-sm font-medium">{sp2d.nomor_sp2d}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">Nilai SP2D:</span>
+                              <span className="text-sm font-medium">{formatCurrency(sp2d.nilai_sp2d)}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">Status:</span>
+                              <div className="flex flex-col items-end gap-1">
+                                <Sp2dStatusBadge status={sp2d.status} />
+                                {sp2d.status === "cair" && sp2d.tanggal_cair && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {format(new Date(sp2d.tanggal_cair), "dd MMM yyyy", { locale: id })}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         ) : (
                           <Badge variant="outline" className="bg-muted/50">
@@ -241,7 +246,7 @@ export const SpmSp2dTableWidget = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     No data available
                   </TableCell>
                 </TableRow>
