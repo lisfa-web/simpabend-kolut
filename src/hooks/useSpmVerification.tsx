@@ -120,7 +120,11 @@ export const useSpmVerification = (role: string) => {
             // Hitung nomor berikutnya
             let nextNumber = 1;
             if (existingToday?.nomor_antrian) {
-              const lastNumber = parseInt(existingToday.nomor_antrian);
+              // Ambil bagian angka dari format lama "A-014" atau baru "001-291025"
+              const raw = existingToday.nomor_antrian as string;
+              const firstPart = raw.includes('-') ? raw.split('-')[0] : raw;
+              const digitMatch = firstPart.match(/\d{1,3}/);
+              const lastNumber = digitMatch ? parseInt(digitMatch[0]) : NaN;
               if (!isNaN(lastNumber)) {
                 nextNumber = lastNumber + 1;
               }

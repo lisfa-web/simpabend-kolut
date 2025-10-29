@@ -17,6 +17,20 @@ interface SpmVerificationCardProps {
 export const SpmVerificationCard = ({ spm }: SpmVerificationCardProps) => {
   const navigate = useNavigate();
 
+  // Pastikan tampilan nomor antrian mengikuti format terbaru: 001-DDMMYY
+  const formattedNomorAntrian = (() => {
+    const raw = spm?.nomor_antrian as string | null;
+    if (!raw) return null;
+    // Jika sudah sesuai "001-291025"
+    if (/^\d{3}-\d{6}$/.test(raw)) return raw;
+    // Format lama "A-014" atau hanya angka "14"
+    const dateSrc = spm?.tanggal_resepsionis || spm?.tanggal_ajuan || new Date().toISOString();
+    const dateSuffix = format(new Date(dateSrc), "ddMMyy", { locale: localeId });
+    const match = String(raw).match(/(\d{1,3})/);
+    const nomor = match ? match[1].padStart(3, "0") : "001";
+    return `${nomor}-${dateSuffix}`;
+  })();
+
   return (
     <Card className={cn(
       "min-h-[340px]",
@@ -88,12 +102,12 @@ export const SpmVerificationCard = ({ spm }: SpmVerificationCardProps) => {
         )}
 
         {/* Section 4: Nomor Antrian (jika ada) */}
-        {spm.nomor_antrian && (
+        {formattedNomorAntrian && (
           <div className="p-3 bg-gradient-to-r from-green-500/5 to-green-500/10 border border-green-500/20 rounded-lg shadow-sm">
             <div className="flex justify-between items-center">
               <span className="text-xs text-muted-foreground">No. Antrian:</span>
               <Badge variant="outline" className="font-mono text-base bg-green-500/10 border-green-500/30 font-bold">
-                {spm.nomor_antrian}
+                {formattedNomorAntrian}
               </Badge>
             </div>
           </div>
