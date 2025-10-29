@@ -1295,25 +1295,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      check_kegiatan_dependencies: {
-        Args: { kegiatan_id_param: string }
+      check_jenis_spm_dependencies: {
+        Args: { jenis_spm_id_param: string }
         Returns: Json
       }
       check_opd_dependencies: { Args: { opd_id_param: string }; Returns: Json }
       check_pajak_dependencies: {
         Args: { pajak_id_param: string }
-        Returns: Json
-      }
-      check_pejabat_dependencies: {
-        Args: { pejabat_id_param: string }
-        Returns: Json
-      }
-      check_program_dependencies: {
-        Args: { program_id_param: string }
-        Returns: Json
-      }
-      check_subkegiatan_dependencies: {
-        Args: { subkegiatan_id_param: string }
         Returns: Json
       }
       check_vendor_dependencies: {
