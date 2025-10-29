@@ -13,17 +13,46 @@ export const useSp2dDetail = (sp2dId: string | undefined) => {
           *,
           spm:spm_id(
             *,
-            opd:opd_id(nama_opd, kode_opd),
-            jenis_spm:jenis_spm_id(nama_jenis, ada_pajak),
-            bendahara:profiles!spm_bendahara_id_fkey(full_name, email)
+            opd:opd_id(
+              nama_opd, 
+              kode_opd
+            ),
+            jenis_spm:jenis_spm_id(
+              nama_jenis, 
+              ada_pajak
+            ),
+            bendahara:bendahara_id(
+              full_name, 
+              email, 
+              phone
+            )
+          ),
+          created_by_user:created_by(
+            full_name,
+            email
+          ),
+          verified_by_user:verified_by(
+            full_name,
+            email
           )
         `)
         .eq("id", sp2dId)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching SP2D detail:", error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.warn("SP2D not found:", sp2dId);
+        return null;
+      }
+
+      console.log("SP2D detail loaded:", data);
       return data;
     },
     enabled: !!sp2dId,
+    retry: 1,
   });
 };
