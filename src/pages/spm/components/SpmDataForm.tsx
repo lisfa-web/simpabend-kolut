@@ -26,9 +26,9 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CurrencyInput } from "./CurrencyInput";
+import { NamaPenerimaCombobox } from "./NamaPenerimaCombobox";
 import { useOpdList } from "@/hooks/useOpdList";
 import { useJenisSpmList } from "@/hooks/useJenisSpmList";
-import { useVendorList } from "@/hooks/useVendorList";
 import { Loader2, Volume2, Info } from "lucide-react";
 import {
   AlertDialog,
@@ -69,12 +69,12 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const jenisSpmId = form.watch("jenis_spm_id");
   const nilaiSpm = form.watch("nilai_spm");
   const isAset = form.watch("is_aset");
+  const tipePenerima = form.watch("tipe_penerima");
 
   const { speak, isSpeaking } = useSpeechSynthesis();
 
   const { data: opdList, isLoading: opdLoading } = useOpdList({ is_active: true });
   const { data: jenisSpmList, isLoading: jenisSpmLoading } = useJenisSpmList({ is_active: true });
-  const { data: vendorList, isLoading: vendorLoading } = useVendorList({ is_active: true });
 
   // Get selected jenis SPM data
   const selectedJenisSpm = jenisSpmList?.find((j) => j.id === jenisSpmId);
@@ -125,7 +125,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
     setPendingData(null);
   };
 
-  if (opdLoading || jenisSpmLoading || vendorLoading) {
+  if (opdLoading || jenisSpmLoading) {
     return (
       <div className="flex justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -228,7 +228,11 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
             <FormItem>
               <FormLabel>Nama Penerima</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Masukkan nama penerima" />
+                <NamaPenerimaCombobox
+                  value={field.value}
+                  onChange={field.onChange}
+                  tipePenerima={tipePenerima}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
