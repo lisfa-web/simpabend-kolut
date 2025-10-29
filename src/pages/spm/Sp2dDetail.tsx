@@ -189,13 +189,18 @@ const Sp2dDetail = () => {
                   </div>
                 </div>
 
-                {(sp2d as any).dokumen_sp2d_url && (
+                {sp2d.dokumen_sp2d_url && (
                   <div className="mt-4 p-4 bg-muted rounded-lg">
                     <p className="text-sm font-medium mb-2">Dokumen SP2D</p>
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open((sp2d as any).dokumen_sp2d_url, '_blank')}
+                      onClick={() => {
+                        const url = sp2d.dokumen_sp2d_url;
+                        if (url) {
+                          window.open(url, '_blank', 'noopener,noreferrer');
+                        }
+                      }}
                     >
                       <FileCheck className="h-4 w-4 mr-2" />
                       Lihat Dokumen
