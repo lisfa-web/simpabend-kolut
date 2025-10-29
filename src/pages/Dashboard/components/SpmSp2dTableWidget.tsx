@@ -127,9 +127,7 @@ export const SpmSp2dTableWidget = () => {
           <Table>
             <TableHeader className="sticky top-0 bg-background z-10">
               <TableRow className="bg-muted/50">
-                <TableHead className="font-semibold">No. Antrian</TableHead>
-                <TableHead className="font-semibold">Tanggal SPM</TableHead>
-                <TableHead className="font-semibold">Nomor SPM</TableHead>
+                <TableHead className="font-semibold">Informasi SPM</TableHead>
                 <TableHead className="font-semibold">Penerima</TableHead>
                 <TableHead className="font-semibold text-center">PBMD</TableHead>
                 <TableHead className="font-semibold text-center">Akuntansi</TableHead>
@@ -142,7 +140,7 @@ export const SpmSp2dTableWidget = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     Loading data...
                   </TableCell>
                 </TableRow>
@@ -152,16 +150,25 @@ export const SpmSp2dTableWidget = () => {
                   
                   return (
                     <TableRow key={spm.id} className="hover:bg-accent/5">
-                      <TableCell className="font-mono text-sm">
-                        {spm.nomor_antrian || "-"}
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {spm.tanggal_ajuan
-                          ? format(new Date(spm.tanggal_ajuan), "dd MMM yyyy", { locale: id })
-                          : "-"}
-                      </TableCell>
-                      <TableCell className="font-mono text-sm font-medium">
-                        {spm.nomor_spm || "-"}
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">No. Antrian:</span>
+                            <span className="font-mono text-sm font-medium">{spm.nomor_antrian || "-"}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">Tanggal:</span>
+                            <span className="text-sm">
+                              {spm.tanggal_ajuan
+                                ? format(new Date(spm.tanggal_ajuan), "dd MMM yyyy", { locale: id })
+                                : "-"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">No. SPM:</span>
+                            <span className="font-mono text-sm font-medium">{spm.nomor_spm || "-"}</span>
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="max-w-[200px]">
@@ -234,7 +241,7 @@ export const SpmSp2dTableWidget = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     No data available
                   </TableCell>
                 </TableRow>
