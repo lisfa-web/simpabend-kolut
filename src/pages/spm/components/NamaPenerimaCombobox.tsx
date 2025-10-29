@@ -55,7 +55,10 @@ export const NamaPenerimaCombobox = ({
     nama_rekening: "",
   });
 
-  const { data: vendorList, isLoading } = useVendorList({ is_active: true });
+  const { data: vendorList, isLoading } = useVendorList({ 
+    is_active: true,
+    enabled: tipePenerima === "vendor" 
+  });
   const { createVendor } = useVendorMutation();
 
   const handleCreateVendor = async () => {

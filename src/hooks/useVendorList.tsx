@@ -3,11 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface VendorFilters {
   is_active?: boolean;
+  enabled?: boolean;
 }
 
 export const useVendorList = (filters?: VendorFilters) => {
   return useQuery({
     queryKey: ["vendor-list", filters],
+    enabled: filters?.enabled !== false,
     queryFn: async () => {
       let query = supabase
         .from("vendor")
