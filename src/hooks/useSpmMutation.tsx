@@ -61,17 +61,47 @@ export const useSpmMutation = () => {
 
   const updateSpm = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      // Pisahkan potongan_pajak agar tidak dikirim ke tabel spm (kolom tsb tidak ada)
+      const { potongan_pajak, ...spmData } = data || {};
+
       const { data: spm, error } = await supabase
         .from("spm")
-        .update(data)
+        .update(spmData)
         .eq("id", id)
         .select()
         .single();
 
       if (error) throw error;
 
+      // Sinkronisasi potongan pajak saat edit draft
+      if (Array.isArray(potongan_pajak)) {
+        // Hapus seluruh potongan lama lalu insert ulang agar sederhana dan konsisten
+        const { error: delError } = await supabase
+          .from("potongan_pajak_spm")
+          .delete()
+          .eq("spm_id", id);
+        if (delError) throw delError;
+
+        if (potongan_pajak.length > 0) {
+          const pajakToInsert = potongan_pajak.map((p: any) => ({
+            spm_id: id,
+            jenis_pajak: p.jenis_pajak,
+            rekening_pajak: p.rekening_pajak,
+            uraian: p.uraian,
+            tarif: p.tarif,
+            dasar_pengenaan: p.dasar_pengenaan,
+            jumlah_pajak: p.jumlah_pajak,
+          }));
+
+          const { error: insError } = await supabase
+            .from("potongan_pajak_spm")
+            .insert(pajakToInsert);
+          if (insError) throw insError;
+        }
+      }
+
       // Send notification if status changed to diajukan
-      if (data.status === 'diajukan') {
+      if (spmData.status === 'diajukan') {
         try {
           await supabase.functions.invoke('send-workflow-notification', {
             body: {
