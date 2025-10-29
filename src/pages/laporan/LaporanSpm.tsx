@@ -200,7 +200,7 @@ const LaporanSpm = () => {
                             : "-"}
                         </TableCell>
                         <TableCell>{spm.opd?.nama_opd || "-"}</TableCell>
-                        <TableCell>{getJenisSpmLabel(spm.jenis_spm)}</TableCell>
+                        <TableCell>{spm.jenis_spm?.nama_jenis || "-"}</TableCell>
                         <TableCell className="text-right">
                           {formatCurrency(spm.nilai_spm)}
                         </TableCell>
