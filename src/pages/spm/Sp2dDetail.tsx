@@ -10,6 +10,7 @@ import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { useConfigSistem } from "@/hooks/useConfigSistem";
 import { usePajakPotongan } from "@/hooks/usePajakPotongan";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatCurrency } from "@/lib/currency";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
 import { Sp2dTimeline } from "./components/Sp2dTimeline";
@@ -334,14 +335,81 @@ const Sp2dDetail = () => {
           )}
         </Tabs>
 
+        {/* Uji Bank Section - Show after SP2D is issued */}
         {sp2d.status === "diterbitkan" && canVerify && (
+          <Card className="border-primary print:hidden">
+            <CardHeader>
+              <CardTitle>Uji SP2D - Proses Bank Sultra</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                SP2D telah diterbitkan. Kirim ke Bank Sultra untuk diproses pemindahbukuan dari rekening kasda ke rekening giro penerima.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold mb-1">Status: Siap Dikirim ke Bank</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Klik tombol untuk menandai SP2D telah dikirim ke Bank Sultra
+                  </p>
+                </div>
+                <Button onClick={handleSendToBank} disabled={sendToBank.isPending}>
+                  {sendToBank.isPending ? "Memproses..." : "Kirim ke Bank Sultra"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Bank Confirmation Section */}
+        {sp2d.status === "diuji_bank" && canVerify && (
+          <Card className="border-warning print:hidden">
+            <CardHeader>
+              <CardTitle>Uji SP2D - Menunggu Konfirmasi Bank</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                SP2D telah dikirim ke Bank Sultra pada{" "}
+                {(sp2d as any).tanggal_kirim_bank
+                  ? format(new Date((sp2d as any).tanggal_kirim_bank), "dd MMMM yyyy, HH:mm", {
+                      locale: localeId,
+                    })
+                  : "-"}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Menunggu konfirmasi dari Bank Sultra bahwa pemindahbukuan telah selesai
+                  </AlertDescription>
+                </Alert>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold mb-1">Konfirmasi Pemindahbukuan</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Klik tombol setelah menerima konfirmasi dari Bank Sultra
+                    </p>
+                  </div>
+                  <Button onClick={handleConfirmFromBank} disabled={confirmFromBank.isPending}>
+                    {confirmFromBank.isPending ? "Memproses..." : "Konfirmasi dari Bank"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Ready to Disburse Section - Only show after bank confirmation */}
+        {sp2d.status === "diuji_bank" && (sp2d as any).tanggal_konfirmasi_bank && canVerify && (
           <Card className="border-success print:hidden">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-lg">SP2D Terverifikasi</h3>
+                  <h3 className="font-semibold text-lg">SP2D Siap Dicairkan</h3>
                   <p className="text-muted-foreground">
-                    SP2D telah diverifikasi dan siap untuk dicairkan
+                    Bank Sultra telah mengkonfirmasi pemindahbukuan pada{" "}
+                    {format(new Date((sp2d as any).tanggal_konfirmasi_bank), "dd MMMM yyyy, HH:mm", {
+                      locale: localeId,
+                    })}
                   </p>
                 </div>
                 <Button onClick={handleDisburse} disabled={disburseSp2d.isPending}>
