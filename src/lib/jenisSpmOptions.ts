@@ -7,7 +7,9 @@ export const JENIS_SPM_OPTIONS = [
   { value: 'LS_Belanja_Modal', label: 'LS Belanja Modal' },
 ] as const;
 
-export const getJenisSpmLabel = (value: string): string => {
+export const getJenisSpmLabel = (value: string | null | undefined): string => {
+  if (!value) return '-';
+  
   const option = JENIS_SPM_OPTIONS.find(opt => opt.value === value);
   if (option) return option.label;
   

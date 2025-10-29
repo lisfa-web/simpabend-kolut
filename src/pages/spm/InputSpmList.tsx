@@ -46,7 +46,7 @@ const InputSpmList = () => {
 
   const { data: spmList, isLoading } = useSpmList({
     search,
-    jenis_spm: jenisSpmFilter === "all" ? undefined : jenisSpmFilter,
+    jenis_spm_id: jenisSpmFilter === "all" ? undefined : jenisSpmFilter,
     status: statusFilter === "all" ? undefined : statusFilter,
   });
 
@@ -168,7 +168,7 @@ const InputSpmList = () => {
                     <TableCell className="font-medium">
                       {spm.nomor_spm || "-"}
                     </TableCell>
-                    <TableCell>{getJenisSpmLabel(spm.jenis_spm)}</TableCell>
+                    <TableCell>{spm.jenis_spm?.nama_jenis || "-"}</TableCell>
                     <TableCell>{formatCurrency(spm.nilai_spm)}</TableCell>
                     <TableCell>
                       <SpmStatusBadge status={spm.status} />

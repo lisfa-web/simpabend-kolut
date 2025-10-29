@@ -4,7 +4,7 @@ import { useAuth } from "./useAuth";
 
 interface SpmListFilters {
   search?: string;
-  jenis_spm?: string;
+  jenis_spm_id?: string;
   status?: string;
   tanggal_dari?: string;
   tanggal_sampai?: string;
@@ -33,8 +33,8 @@ export const useSpmList = (filters?: SpmListFilters) => {
         query = query.or(`nomor_spm.ilike.%${filters.search}%,uraian.ilike.%${filters.search}%`);
       }
 
-      if (filters?.jenis_spm) {
-        query = query.eq("jenis_spm_id", filters.jenis_spm);
+      if (filters?.jenis_spm_id) {
+        query = query.eq("jenis_spm_id", filters.jenis_spm_id);
       }
 
       if (filters?.status) {
