@@ -201,14 +201,17 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
           render={({ field }) => (
             <FormItem>
               <FormLabel>Vendor/Pihak Ketiga (Opsional)</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ""}>
+              <Select 
+                onValueChange={(value) => field.onChange(value === "none" ? undefined : value)} 
+                value={field.value || "none"}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Pilih Vendor (jika ada)" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">Tidak ada vendor</SelectItem>
+                  <SelectItem value="none">Tidak ada vendor</SelectItem>
                   {vendorList?.map((vendor) => (
                     <SelectItem key={vendor.id} value={vendor.id}>
                       {vendor.nama_vendor}
