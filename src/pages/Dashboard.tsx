@@ -540,8 +540,10 @@ const Dashboard = () => {
           totalValue={stats?.totalSp2dValue || 0}
           issuedSp2d={stats?.issuedSp2d || 0}
           issuedValue={stats?.issuedSp2dValue || 0}
-          pendingSp2d={stats?.pendingSp2d || 0}
-          failedSp2d={stats?.failedSp2d || 0}
+          testingBankSp2d={stats?.testingBankSp2d || 0}
+          testingBankValue={stats?.testingBankValue || 0}
+          disbursedSp2d={stats?.disbursedSp2d || 0}
+          disbursedValue={stats?.disbursedValue || 0}
           isLoading={isLoading}
         />
 

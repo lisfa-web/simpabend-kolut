@@ -8,8 +8,10 @@ interface Sp2dStatsSectionProps {
   totalValue: number;
   issuedSp2d: number;
   issuedValue: number;
-  pendingSp2d: number;
-  failedSp2d: number;
+  testingBankSp2d: number;
+  testingBankValue: number;
+  disbursedSp2d: number;
+  disbursedValue: number;
   isLoading: boolean;
 }
 
@@ -18,8 +20,10 @@ export const Sp2dStatsSection = ({
   totalValue, 
   issuedSp2d, 
   issuedValue, 
-  pendingSp2d, 
-  failedSp2d, 
+  testingBankSp2d, 
+  testingBankValue,
+  disbursedSp2d,
+  disbursedValue,
   isLoading 
 }: Sp2dStatsSectionProps) => {
   if (isLoading) {
@@ -46,7 +50,7 @@ export const Sp2dStatsSection = ({
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Statistik SP2D</h3>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card variant="interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total SP2D</CardTitle>
@@ -97,30 +101,30 @@ export const Sp2dStatsSection = ({
 
         <Card variant="interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">SP2D Pending</CardTitle>
-            <div className="p-2 rounded-full bg-orange-50 group-hover:bg-orange-100 transition-colors">
-              <Clock className="h-4 w-4 text-orange-600" />
+            <CardTitle className="text-sm font-medium">Diuji Bank</CardTitle>
+            <div className="p-2 rounded-full bg-purple-50 group-hover:bg-purple-100 transition-colors">
+              <Clock className="h-4 w-4 text-purple-600" />
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-2xl font-bold text-orange-600">{pendingSp2d}</div>
+            <div className="text-2xl font-bold text-purple-600">{testingBankSp2d}</div>
             <p className="text-xs text-muted-foreground">
-              Menunggu Verifikasi
+              {formatCurrency(testingBankValue)}
             </p>
 
             {/* Progress Bar */}
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium text-orange-600">
-                  {totalSp2d > 0 ? Math.round((pendingSp2d / totalSp2d) * 100) : 0}%
+                <span className="font-medium text-purple-600">
+                  {totalSp2d > 0 ? Math.round((testingBankSp2d / totalSp2d) * 100) : 0}%
                 </span>
               </div>
-              <div className="h-2 bg-orange-100 rounded-full overflow-hidden">
+              <div className="h-2 bg-purple-100 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-purple-500 to-violet-500 rounded-full transition-all duration-500"
                   style={{ 
-                    width: `${totalSp2d > 0 ? (pendingSp2d / totalSp2d) * 100 : 0}%` 
+                    width: `${totalSp2d > 0 ? (testingBankSp2d / totalSp2d) * 100 : 0}%` 
                   }}
                 />
               </div>
@@ -130,30 +134,30 @@ export const Sp2dStatsSection = ({
 
         <Card variant="interactive">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">SP2D Gagal</CardTitle>
-            <div className="p-2 rounded-full bg-red-50 group-hover:bg-red-100 transition-colors">
-              <XCircle className="h-4 w-4 text-red-600" />
+            <CardTitle className="text-sm font-medium">Dana Cair</CardTitle>
+            <div className="p-2 rounded-full bg-emerald-50 group-hover:bg-emerald-100 transition-colors">
+              <CheckCircle className="h-4 w-4 text-emerald-600" />
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-2xl font-bold text-red-600">{failedSp2d}</div>
+            <div className="text-2xl font-bold text-emerald-600">{disbursedSp2d}</div>
             <p className="text-xs text-muted-foreground">
-              Tidak Diterbitkan
+              {formatCurrency(disbursedValue)}
             </p>
 
             {/* Progress Bar */}
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium text-red-600">
-                  {totalSp2d > 0 ? Math.round((failedSp2d / totalSp2d) * 100) : 0}%
+                <span className="font-medium text-emerald-600">
+                  {totalSp2d > 0 ? Math.round((disbursedSp2d / totalSp2d) * 100) : 0}%
                 </span>
               </div>
-              <div className="h-2 bg-red-100 rounded-full overflow-hidden">
+              <div className="h-2 bg-emerald-100 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-gradient-to-r from-red-500 to-rose-500 rounded-full transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500"
                   style={{ 
-                    width: `${totalSp2d > 0 ? (failedSp2d / totalSp2d) * 100 : 0}%` 
+                    width: `${totalSp2d > 0 ? (disbursedSp2d / totalSp2d) * 100 : 0}%` 
                   }}
                 />
               </div>

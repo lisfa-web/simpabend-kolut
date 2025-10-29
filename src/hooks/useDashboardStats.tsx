@@ -20,7 +20,10 @@ interface DashboardStats {
   totalSp2dValue: number;
   issuedSp2d: number;
   issuedSp2dValue: number;
-  pendingSp2d: number;
+  testingBankSp2d: number;
+  testingBankValue: number;
+  disbursedSp2d: number;
+  disbursedValue: number;
   failedSp2d: number;
   avgProcessDays: number;
   monthlyTrend: Array<{
@@ -232,17 +235,31 @@ export const useDashboardStats = () => {
         };
       });
 
-      // SP2D Stats
+      // SP2D Stats - Updated untuk workflow baru tanpa OTP
       const { data: sp2dData, error: sp2dError } = await supabase.from("sp2d").select("*");
       if (sp2dError) throw sp2dError;
 
       const totalSp2d = sp2dData?.length || 0;
       const totalSp2dValue = sp2dData?.reduce((sum, sp2d) => sum + Number(sp2d.nilai_sp2d || 0), 0) || 0;
+      
+      // Status: diterbitkan (siap kirim ke bank)
       const issuedSp2d = sp2dData?.filter((s) => s.status === "diterbitkan").length || 0;
       const issuedSp2dValue = sp2dData
         ?.filter((s) => s.status === "diterbitkan")
         .reduce((sum, sp2d) => sum + Number(sp2d.nilai_sp2d || 0), 0) || 0;
-      const pendingSp2d = sp2dData?.filter((s) => s.status === "pending").length || 0;
+      
+      // Status: diuji_bank (sedang di Bank Sultra)
+      const testingBankSp2d = sp2dData?.filter((s) => s.status === "diuji_bank").length || 0;
+      const testingBankValue = sp2dData
+        ?.filter((s) => s.status === "diuji_bank")
+        .reduce((sum, sp2d) => sum + Number(sp2d.nilai_sp2d || 0), 0) || 0;
+      
+      // Status: cair (dana sudah dicairkan)
+      const disbursedSp2d = sp2dData?.filter((s) => s.status === "cair").length || 0;
+      const disbursedValue = sp2dData
+        ?.filter((s) => s.status === "cair")
+        .reduce((sum, sp2d) => sum + Number(sp2d.nilai_sp2d || 0), 0) || 0;
+      
       const failedSp2d = sp2dData?.filter((s) => s.status === "gagal").length || 0;
 
       // OPD Breakdown
@@ -552,7 +569,10 @@ export const useDashboardStats = () => {
         totalSp2dValue,
         issuedSp2d,
         issuedSp2dValue,
-        pendingSp2d,
+        testingBankSp2d,
+        testingBankValue,
+        disbursedSp2d,
+        disbursedValue,
         failedSp2d,
         avgProcessDays,
         monthlyTrend: monthlyTrend as any,

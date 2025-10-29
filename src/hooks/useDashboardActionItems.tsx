@@ -187,26 +187,77 @@ export const useDashboardActionItems = () => {
           }
         }
 
-        // Kuasa BUD: SP2D pending
-        if (hasRole("kuasa_bud")) {
-          const { data: pendingSp2d, error } = await supabase
+        // Kuasa BUD: SP2D yang perlu tindakan (workflow baru tanpa OTP)
+        if (hasRole("kuasa_bud") || isAdmin()) {
+          // 1. SP2D siap dikirim ke Bank (status: diterbitkan)
+          const { data: readyToSend, error: error1 } = await supabase
             .from("sp2d")
             .select("*, spm:spm_id(nomor_spm)")
-            .eq("status", "pending")
+            .eq("status", "diterbitkan")
             .order("created_at", { ascending: true })
-            .limit(5);
+            .limit(3);
 
-          if (error) {
-            console.error("❌ [ActionItems] Error fetching Kuasa BUD SP2D:", error);
+          if (error1) {
+            console.error("❌ [ActionItems] Error fetching ready-to-send SP2D:", error1);
           } else {
-            console.log(`✅ [ActionItems] Kuasa BUD - Found ${pendingSp2d?.length || 0} SP2D pending`);
-            pendingSp2d?.forEach((sp2d: any) => {
+            console.log(`✅ [ActionItems] Found ${readyToSend?.length || 0} SP2D siap kirim bank`);
+            readyToSend?.forEach((sp2d: any) => {
               items.push({
                 id: sp2d.id,
                 type: "sp2d",
-                title: `SP2D ${sp2d.nomor_sp2d} menunggu verifikasi`,
-                status: "pending",
+                title: `SP2D ${sp2d.nomor_sp2d} siap dikirim ke Bank`,
+                status: "diterbitkan",
                 date: sp2d.tanggal_sp2d || "",
+                amount: Number(sp2d.nilai_sp2d || 0),
+              });
+            });
+          }
+
+          // 2. SP2D menunggu konfirmasi Bank (status: diuji_bank tanpa konfirmasi)
+          const { data: waitingConfirm, error: error2 } = await supabase
+            .from("sp2d")
+            .select("*, spm:spm_id(nomor_spm)")
+            .eq("status", "diuji_bank")
+            .is("tanggal_konfirmasi_bank", null)
+            .order("tanggal_kirim_bank", { ascending: true })
+            .limit(3);
+
+          if (error2) {
+            console.error("❌ [ActionItems] Error fetching waiting-confirm SP2D:", error2);
+          } else {
+            console.log(`✅ [ActionItems] Found ${waitingConfirm?.length || 0} SP2D menunggu konfirmasi`);
+            waitingConfirm?.forEach((sp2d: any) => {
+              items.push({
+                id: sp2d.id,
+                type: "sp2d",
+                title: `SP2D ${sp2d.nomor_sp2d} menunggu konfirmasi Bank`,
+                status: "diuji_bank",
+                date: sp2d.tanggal_kirim_bank || "",
+                amount: Number(sp2d.nilai_sp2d || 0),
+              });
+            });
+          }
+
+          // 3. SP2D siap dicairkan (status: diuji_bank dengan konfirmasi)
+          const { data: readyToDisburse, error: error3 } = await supabase
+            .from("sp2d")
+            .select("*, spm:spm_id(nomor_spm)")
+            .eq("status", "diuji_bank")
+            .not("tanggal_konfirmasi_bank", "is", null)
+            .order("tanggal_konfirmasi_bank", { ascending: true })
+            .limit(3);
+
+          if (error3) {
+            console.error("❌ [ActionItems] Error fetching ready-to-disburse SP2D:", error3);
+          } else {
+            console.log(`✅ [ActionItems] Found ${readyToDisburse?.length || 0} SP2D siap dicairkan`);
+            readyToDisburse?.forEach((sp2d: any) => {
+              items.push({
+                id: sp2d.id,
+                type: "sp2d",
+                title: `SP2D ${sp2d.nomor_sp2d} siap dicairkan`,
+                status: "diuji_bank_confirmed",
+                date: sp2d.tanggal_konfirmasi_bank || "",
                 amount: Number(sp2d.nilai_sp2d || 0),
               });
             });
