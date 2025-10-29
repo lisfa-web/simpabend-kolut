@@ -303,12 +303,13 @@ export const useSp2dMutation = () => {
   });
 
   const sendToBank = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ id, nomorPenguji }: { id: string; nomorPenguji: string }) => {
       const { data: result, error } = await supabase
         .from("sp2d")
         .update({ 
           status: "diuji_bank" as StatusSp2d,
-          tanggal_kirim_bank: new Date().toISOString()
+          tanggal_kirim_bank: new Date().toISOString(),
+          nomor_penguji: nomorPenguji
         })
         .eq("id", id)
         .select()

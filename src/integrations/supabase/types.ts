@@ -791,6 +791,7 @@ export type Database = {
           nama_rekening: string | null
           nilai_diterima: number | null
           nilai_sp2d: number
+          nomor_penguji: string | null
           nomor_rekening: string | null
           nomor_sp2d: string
           otp_verified_at: string | null
@@ -816,6 +817,7 @@ export type Database = {
           nama_rekening?: string | null
           nilai_diterima?: number | null
           nilai_sp2d: number
+          nomor_penguji?: string | null
           nomor_rekening?: string | null
           nomor_sp2d: string
           otp_verified_at?: string | null
@@ -841,6 +843,7 @@ export type Database = {
           nama_rekening?: string | null
           nilai_diterima?: number | null
           nilai_sp2d?: number
+          nomor_penguji?: string | null
           nomor_rekening?: string | null
           nomor_sp2d?: string
           otp_verified_at?: string | null

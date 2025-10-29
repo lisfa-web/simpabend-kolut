@@ -15,6 +15,7 @@ import { formatCurrency } from "@/lib/currency";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
 import { Sp2dTimeline } from "./components/Sp2dTimeline";
 import { Sp2dVerificationDialog } from "./components/Sp2dVerificationDialog";
+import { NomorPengujiDialog } from "./components/NomorPengujiDialog";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +26,7 @@ const Sp2dDetail = () => {
   const navigate = useNavigate();
   const { roles, user } = useAuth();
   const [showVerifyDialog, setShowVerifyDialog] = useState(false);
+  const [showNomorPengujiDialog, setShowNomorPengujiDialog] = useState(false);
 
   const { data: sp2d, isLoading } = useSp2dDetail(id);
   const { data: configs } = useConfigSistem();
@@ -54,9 +56,16 @@ const Sp2dDetail = () => {
     }
   };
 
-  const handleSendToBank = () => {
+  const handleSendToBank = (nomorPenguji: string) => {
     if (id) {
-      sendToBank.mutate(id);
+      sendToBank.mutate(
+        { id, nomorPenguji },
+        {
+          onSuccess: () => {
+            setShowNomorPengujiDialog(false);
+          },
+        }
+      );
     }
   };
 
@@ -350,8 +359,8 @@ const Sp2dDetail = () => {
                     Klik tombol untuk menandai SP2D telah dikirim ke Bank Sultra
                   </p>
                 </div>
-                <Button onClick={handleSendToBank} disabled={sendToBank.isPending}>
-                  {sendToBank.isPending ? "Memproses..." : "Kirim ke Bank Sultra"}
+                <Button onClick={() => setShowNomorPengujiDialog(true)}>
+                  Kirim ke Bank Sultra
                 </Button>
               </div>
             </CardContent>
@@ -448,6 +457,13 @@ const Sp2dDetail = () => {
         loading={verifyOtp.isPending}
         sp2dId={id || ""}
         userId={user?.id || ""}
+      />
+
+      <NomorPengujiDialog
+        open={showNomorPengujiDialog}
+        onOpenChange={setShowNomorPengujiDialog}
+        onSubmit={handleSendToBank}
+        loading={sendToBank.isPending}
       />
 
       {/* Print styles */}
