@@ -95,12 +95,6 @@ const menuItems: MenuItem[] = [
     path: "/laporan"
   },
   { 
-    name: "Surat", 
-    icon: Mail, 
-    path: "/surat",
-    roles: ["administrator", "kepala_bkad"]
-  },
-  { 
     name: "Manajemen User", 
     icon: Users, 
     path: "/users",

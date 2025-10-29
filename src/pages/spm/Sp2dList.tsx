@@ -172,9 +172,7 @@ const Sp2dList = () => {
         .select(`
           *,
           opd:opd_id(nama_opd, kode_opd),
-          program:program_id(nama_program, kode_program),
-          kegiatan:kegiatan_id(nama_kegiatan, kode_kegiatan),
-          subkegiatan:subkegiatan_id(nama_subkegiatan, kode_subkegiatan),
+          jenis_spm:jenis_spm_id(nama_jenis, ada_pajak, deskripsi),
           vendor:vendor_id(nama_vendor, npwp, nama_bank, nomor_rekening, nama_rekening),
           potongan_pajak_spm(*)
         `)

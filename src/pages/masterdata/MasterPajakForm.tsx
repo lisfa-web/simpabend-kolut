@@ -36,7 +36,6 @@ const formSchema = z.object({
     required_error: "Jenis pajak wajib dipilih",
   }),
   rekening_pajak: z.string().min(1, "Rekening pajak wajib diisi"),
-  tarif_default: z.coerce.number().min(0, "Tarif tidak boleh negatif").max(100, "Tarif maksimal 100%"),
   deskripsi: z.string().optional(),
   is_active: z.boolean().default(true),
 });
@@ -58,7 +57,6 @@ const MasterPajakForm = () => {
       nama_pajak: "",
       jenis_pajak: "pph_21",
       rekening_pajak: "",
-      tarif_default: 0,
       deskripsi: "",
       is_active: true,
     },
@@ -71,7 +69,6 @@ const MasterPajakForm = () => {
         nama_pajak: pajakData.nama_pajak,
         jenis_pajak: pajakData.jenis_pajak,
         rekening_pajak: pajakData.rekening_pajak,
-        tarif_default: pajakData.tarif_default,
         deskripsi: pajakData.deskripsi || "",
         is_active: pajakData.is_active,
       });
@@ -173,41 +170,22 @@ const MasterPajakForm = () => {
                   )}
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="rekening_pajak"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Rekening Pajak</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Contoh: 4.1.01.01.01.0001" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Nomor rekening untuk pencatatan pajak
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="tarif_default"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tarif Default (%)</FormLabel>
-                        <FormControl>
-                          <Input type="number" step="0.01" placeholder="Contoh: 5" {...field} />
-                        </FormControl>
-                        <FormDescription>
-                          Tarif pajak dalam persen (0-100)
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="rekening_pajak"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rekening Pajak</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Contoh: 4.1.01.01.01.0001" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Nomor rekening untuk pencatatan pajak
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}

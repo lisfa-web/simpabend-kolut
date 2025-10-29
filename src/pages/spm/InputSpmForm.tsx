@@ -10,9 +10,7 @@ import { SpmDataFormValues } from "@/schemas/spmSchema";
 import { useSpmMutation } from "@/hooks/useSpmMutation";
 import { useSpmDetail } from "@/hooks/useSpmDetail";
 import { useOpdList } from "@/hooks/useOpdList";
-import { useProgramList } from "@/hooks/useProgramList";
-import { useKegiatanList } from "@/hooks/useKegiatanList";
-import { useSubkegiatanList } from "@/hooks/useSubkegiatanList";
+import { useJenisSpmList } from "@/hooks/useJenisSpmList";
 import { useVendorList } from "@/hooks/useVendorList";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
@@ -34,9 +32,7 @@ const InputSpmForm = () => {
   const { createSpm, updateSpm, uploadFile } = useSpmMutation();
   const { data: spmDetail, isLoading: isLoadingSpm } = useSpmDetail(id);
   const { data: opdList } = useOpdList({ is_active: true });
-  const { data: programList } = useProgramList({ is_active: true });
-  const { data: kegiatanList } = useKegiatanList({ program_id: formData?.program_id, is_active: true });
-  const { data: subkegiatanList } = useSubkegiatanList({ kegiatan_id: formData?.kegiatan_id, is_active: true });
+  const { data: jenisSpmList } = useJenisSpmList({ is_active: true });
   const { data: vendorList } = useVendorList({ is_active: true });
 
   // Block access if SPM status is "ditolak"
@@ -54,48 +50,18 @@ const InputSpmForm = () => {
   // Pre-fill form data saat mode edit
   useEffect(() => {
     if (id && spmDetail && !formData) {
-      const convertDbJenisSpmToFormFormat = (jenis: string): 'UP' | 'GU' | 'TU' | 'LS_Gaji' | 'LS_Barang_Jasa' | 'LS_Belanja_Modal' => {
-        const mapping: Record<string, 'UP' | 'GU' | 'TU' | 'LS_Gaji' | 'LS_Barang_Jasa' | 'LS_Belanja_Modal'> = {
-          'UP': 'UP',
-          'up': 'UP',
-          'GU': 'GU',
-          'gu': 'GU',
-          'TU': 'TU',
-          'tu': 'TU',
-          'LS_Gaji': 'LS_Gaji',
-          'ls_gaji': 'LS_Gaji',
-          'LS_Barang_Jasa': 'LS_Barang_Jasa',
-          'ls_barang_jasa': 'LS_Barang_Jasa',
-          // Backward compatibility for granular types
-          'ls_barang': 'LS_Barang_Jasa',
-          'ls_jasa': 'LS_Barang_Jasa',
-          'ls_honorarium': 'LS_Barang_Jasa',
-          'ls_jasa_konstruksi': 'LS_Barang_Jasa',
-          'ls_sewa': 'LS_Barang_Jasa',
-          'LS_Belanja_Modal': 'LS_Belanja_Modal',
-          'ls_belanja_modal': 'LS_Belanja_Modal',
-        };
-        return mapping[jenis] || 'UP';
-      };
-
       setFormData({
         opd_id: spmDetail.opd_id,
-        program_id: spmDetail.program_id,
-        kegiatan_id: spmDetail.kegiatan_id,
-        subkegiatan_id: spmDetail.subkegiatan_id,
-        jenis_spm: convertDbJenisSpmToFormFormat(spmDetail.jenis_spm),
+        jenis_spm_id: spmDetail.jenis_spm_id,
         nilai_spm: spmDetail.nilai_spm,
         uraian: spmDetail.uraian || '',
         vendor_id: spmDetail.vendor_id || undefined,
         tanggal_ajuan: new Date(spmDetail.tanggal_ajuan || new Date()),
+        is_aset: spmDetail.is_aset || false,
+        nomor_spm: spmDetail.nomor_spm || undefined,
       });
     }
   }, [id, spmDetail, formData]);
-
-  const convertJenisSpmToDbFormat = (jenis: string): string => {
-    // All values are already in correct DB format (PascalCase)
-    return jenis;
-  };
 
   const handleToggleOptionalTax = (taxId: string, checked: boolean) => {
     setSelectedOptionalTaxIds(prev => 
@@ -126,13 +92,12 @@ const InputSpmForm = () => {
     try {
       const spmData = {
         opd_id: formData.opd_id,
-        program_id: formData.program_id,
-        kegiatan_id: formData.kegiatan_id,
-        subkegiatan_id: formData.subkegiatan_id,
-        jenis_spm: convertJenisSpmToDbFormat(formData.jenis_spm),
+        jenis_spm_id: formData.jenis_spm_id,
         nilai_spm: formData.nilai_spm,
         uraian: formData.uraian,
         vendor_id: formData.vendor_id,
+        is_aset: formData.is_aset || false,
+        nomor_spm: formData.nomor_spm,
         status: isDraft ? "draft" : "diajukan",
         tanggal_ajuan: isDraft ? null : new Date().toISOString(),
         potongan_pajak: potonganPajak,
@@ -182,9 +147,7 @@ const InputSpmForm = () => {
   };
 
   const opdName = opdList?.find((o) => o.id === formData?.opd_id)?.nama_opd;
-  const programName = programList?.find((p) => p.id === formData?.program_id)?.nama_program;
-  const kegiatanName = kegiatanList?.find((k) => k.id === formData?.kegiatan_id)?.nama_kegiatan;
-  const subkegiatanName = subkegiatanList?.find((s) => s.id === formData?.subkegiatan_id)?.nama_subkegiatan;
+  const jenisSpmName = jenisSpmList?.find((j) => j.id === formData?.jenis_spm_id)?.nama_jenis;
   const vendorName = vendorList?.find((v) => v.id === formData?.vendor_id)?.nama_vendor;
 
   // Tampilkan loading saat fetch data SPM untuk mode edit

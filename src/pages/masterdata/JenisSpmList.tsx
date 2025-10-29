@@ -22,27 +22,19 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Pencil, Trash2, Receipt } from "lucide-react";
-import { useMasterPajakList } from "@/hooks/useMasterPajakList";
-import { useMasterPajakMutation } from "@/hooks/useMasterPajakMutation";
+import { Plus, Pencil, Trash2, FileText, CheckCircle2, XCircle } from "lucide-react";
+import { useJenisSpmList } from "@/hooks/useJenisSpmList";
+import { useJenisSpmMutation } from "@/hooks/useJenisSpmMutation";
 
-const jenisPajakLabels: Record<string, string> = {
-  pph_21: "PPh 21",
-  pph_22: "PPh 22",
-  pph_23: "PPh 23",
-  pph_4_ayat_2: "PPh Pasal 4 Ayat 2",
-  ppn: "PPN",
-};
-
-const MasterPajakList = () => {
+const JenisSpmList = () => {
   const navigate = useNavigate();
-  const { data: pajakList = [], isLoading } = useMasterPajakList();
-  const { deletePajak } = useMasterPajakMutation();
+  const { data: jenisSpmList = [], isLoading } = useJenisSpmList();
+  const { deleteJenisSpm } = useJenisSpmMutation();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const handleDelete = () => {
     if (deleteId) {
-      deletePajak.mutate(deleteId);
+      deleteJenisSpm.mutate(deleteId);
       setDeleteId(null);
     }
   };
@@ -53,64 +45,60 @@ const MasterPajakList = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
-              <Receipt className="h-8 w-8 text-primary" />
-              Master Pajak
+              <FileText className="h-8 w-8 text-primary" />
+              Jenis SPM
             </h1>
             <p className="text-muted-foreground mt-2">
-              Kelola data master pajak (PPh, PPN) dan tarifnya
+              Kelola data jenis Surat Perintah Membayar (SPM)
             </p>
           </div>
-          <Button onClick={() => navigate("/masterdata/pajak/tambah")}>
+          <Button onClick={() => navigate("/masterdata/jenis-spm/tambah")}>
             <Plus className="mr-2 h-4 w-4" />
-            Tambah Master Pajak
+            Tambah Jenis SPM
           </Button>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Daftar Master Pajak</CardTitle>
+            <CardTitle>Daftar Jenis SPM</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">
                 Memuat data...
               </div>
-            ) : pajakList.length === 0 ? (
+            ) : jenisSpmList.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                Belum ada data master pajak
+                Belum ada data jenis SPM
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Kode</TableHead>
-                    <TableHead>Nama Pajak</TableHead>
-                    <TableHead>Jenis</TableHead>
-                    <TableHead>Rekening</TableHead>
+                    <TableHead>Nama Jenis</TableHead>
                     <TableHead>Deskripsi</TableHead>
+                    <TableHead className="text-center">Ada Pajak</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pajakList.map((pajak) => (
-                    <TableRow key={pajak.id}>
-                      <TableCell className="font-medium">{pajak.kode_pajak}</TableCell>
-                      <TableCell>{pajak.nama_pajak}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {jenisPajakLabels[pajak.jenis_pajak] || pajak.jenis_pajak}
-                        </Badge>
+                  {jenisSpmList.map((jenis) => (
+                    <TableRow key={jenis.id}>
+                      <TableCell className="font-medium">{jenis.nama_jenis}</TableCell>
+                      <TableCell className="max-w-md text-sm text-muted-foreground">
+                        {jenis.deskripsi || "-"}
                       </TableCell>
-                      <TableCell className="font-mono text-sm">
-                        {pajak.rekening_pajak}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground max-w-xs truncate">
-                        {pajak.deskripsi || "-"}
+                      <TableCell className="text-center">
+                        {jenis.ada_pajak ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-600 inline" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-gray-400 inline" />
+                        )}
                       </TableCell>
                       <TableCell>
-                        <Badge variant={pajak.is_active ? "default" : "secondary"}>
-                          {pajak.is_active ? "Aktif" : "Nonaktif"}
+                        <Badge variant={jenis.is_active ? "default" : "secondary"}>
+                          {jenis.is_active ? "Aktif" : "Nonaktif"}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -118,14 +106,14 @@ const MasterPajakList = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => navigate(`/masterdata/pajak/edit/${pajak.id}`)}
+                            onClick={() => navigate(`/masterdata/jenis-spm/edit/${jenis.id}`)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => setDeleteId(pajak.id)}
+                            onClick={() => setDeleteId(jenis.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -143,9 +131,9 @@ const MasterPajakList = () => {
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hapus Master Pajak?</AlertDialogTitle>
+            <AlertDialogTitle>Hapus Jenis SPM?</AlertDialogTitle>
             <AlertDialogDescription>
-              Aksi ini tidak dapat dibatalkan. Data master pajak akan dihapus permanen.
+              Aksi ini tidak dapat dibatalkan. Data jenis SPM akan dihapus permanen.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -158,4 +146,4 @@ const MasterPajakList = () => {
   );
 };
 
-export default MasterPajakList;
+export default JenisSpmList;

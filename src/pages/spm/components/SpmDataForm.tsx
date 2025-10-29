@@ -19,22 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Circle } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { CurrencyInput } from "./CurrencyInput";
 import { useOpdList } from "@/hooks/useOpdList";
-import { useProgramList } from "@/hooks/useProgramList";
-import { useKegiatanList } from "@/hooks/useKegiatanList";
-import { useSubkegiatanList } from "@/hooks/useSubkegiatanList";
+import { useJenisSpmList } from "@/hooks/useJenisSpmList";
 import { useVendorList } from "@/hooks/useVendorList";
-import { useJenisSpmTaxInfo } from "@/hooks/useJenisSpmTaxInfo";
 import { Loader2, Volume2, Info } from "lucide-react";
 import {
   AlertDialog,
@@ -55,25 +47,7 @@ interface SpmDataFormProps {
   onToggleOptionalTax?: (taxId: string, checked: boolean) => void;
 }
 
-// Helper function for SPM type labels
-const getJenisSpmLabel = (jenis: string): string => {
-  const labels: Record<string, string> = {
-    up: "UP (Uang Persediaan)",
-    gu: "GU (Ganti Uang)",
-    tu: "TU (Tambah Uang)",
-    ls_gaji: "LS Gaji",
-    ls_barang: "LS Barang",
-    ls_jasa: "LS Jasa",
-    ls_honorarium: "LS Honorarium",
-    ls_jasa_konstruksi: "LS Jasa Konstruksi",
-    ls_sewa: "LS Sewa",
-    ls_barang_jasa: "LS Barang & Jasa",
-    ls_belanja_modal: "LS Belanja Modal",
-  };
-  return labels[jenis] || jenis.toUpperCase().replace(/_/g, ' ');
-};
-
-export const SpmDataForm = ({ defaultValues, onSubmit, onBack, selectedOptionalTaxIds = [], onToggleOptionalTax }: SpmDataFormProps) => {
+export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProps) => {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingData, setPendingData] = useState<SpmDataFormValues | null>(null);
 
@@ -81,31 +55,23 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack, selectedOptionalT
     resolver: zodResolver(spmDataSchema),
     defaultValues: {
       tanggal_ajuan: new Date(),
-      jenis_spm: "" as any,
+      jenis_spm_id: "",
       nilai_spm: 0,
       opd_id: "",
-      program_id: "",
-      kegiatan_id: "",
-      subkegiatan_id: "",
       uraian: "",
+      is_aset: false,
       ...defaultValues,
     },
   });
 
-  const jenisSpm = form.watch("jenis_spm");
-  const programId = form.watch("program_id");
-  const kegiatanId = form.watch("kegiatan_id");
+  const jenisSpmId = form.watch("jenis_spm_id");
   const nilaiSpm = form.watch("nilai_spm");
-  const requiresVendor = ['LS_Barang_Jasa', 'LS_Belanja_Modal'].includes(jenisSpm);
 
   const { speak, isSpeaking } = useSpeechSynthesis();
 
   const { data: opdList, isLoading: opdLoading } = useOpdList({ is_active: true });
-  const { data: programList, isLoading: programLoading } = useProgramList({ tahun_anggaran: new Date().getFullYear(), is_active: true });
-  const { data: kegiatanList } = useKegiatanList({ program_id: programId, is_active: true });
-  const { data: subkegiatanList } = useSubkegiatanList({ kegiatan_id: kegiatanId, is_active: true });
+  const { data: jenisSpmList, isLoading: jenisSpmLoading } = useJenisSpmList({ is_active: true });
   const { data: vendorList } = useVendorList({ is_active: true });
-  const { data: taxMapping = {}, availableJenisSpm } = useJenisSpmTaxInfo();
 
   // Reset form dengan defaultValues saat mode edit
   useEffect(() => {
