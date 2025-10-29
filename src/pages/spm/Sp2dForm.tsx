@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useForm, useFieldArray } from "react-hook-form";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Plus, Trash2, Info } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Info, Upload, FileCheck } from "lucide-react";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { useAuth } from "@/hooks/useAuth";
 import { useGenerateSp2dNumber } from "@/hooks/useGenerateSp2dNumber";
@@ -47,33 +48,28 @@ interface Sp2dFormData {
   nomor_sp2d: string;
   tanggal_sp2d: string;
   nilai_sp2d: number;
-  nama_bank: string;
-  nomor_rekening: string;
-  nama_rekening: string;
+  dokumen_sp2d_file?: File;
   catatan?: string;
   potongan_pajak: PajakFormData[];
 }
 
 const Sp2dForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [selectedSpm, setSelectedSpm] = useState<any>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
-  // Fetch approved SPM that don't have SP2D yet
-  const { data: spmList } = useQuery({
-    queryKey: ["spm-without-sp2d"],
+  // Get SPM ID from route state
+  const routeSpmId = location.state?.spmId;
+
+  // Fetch specific SPM if ID is provided
+  const { data: spmData } = useQuery({
+    queryKey: ["spm-detail", routeSpmId],
     queryFn: async () => {
-      // First, get all SPM IDs that already have SP2D
-      const { data: sp2dList, error: sp2dError } = await supabase
-        .from("sp2d")
-        .select("spm_id");
-
-      if (sp2dError) throw sp2dError;
-
-      const usedSpmIds = sp2dList?.map((sp2d) => sp2d.spm_id) || [];
-
-      // Then, fetch approved SPM excluding those with SP2D
-      let query = supabase
+      if (!routeSpmId) return null;
+      
+      const { data, error } = await supabase
         .from("spm")
         .select(`
           *,
@@ -82,45 +78,29 @@ const Sp2dForm = () => {
           vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening),
           potongan_pajak_spm(*)
         `)
+        .eq("id", routeSpmId)
         .eq("status", "disetujui")
-        .order("created_at", { ascending: false });
-
-      // Exclude SPM that already have SP2D
-      if (usedSpmIds.length > 0) {
-        query = query.not("id", "in", `(${usedSpmIds.join(",")})`);
-      }
-
-      const { data, error } = await query;
+        .single();
 
       if (error) throw error;
       return data;
     },
-    enabled: !!user?.id,
+    enabled: !!routeSpmId && !!user?.id,
   });
 
   const { createSp2d } = useSp2dMutation();
-  const { data: generatedNumber, isLoading: isGeneratingNumber } = useGenerateSp2dNumber();
 
   const form = useForm<Sp2dFormData>({
     defaultValues: {
-      spm_id: "",
+      spm_id: routeSpmId || "",
       nomor_sp2d: "",
       tanggal_sp2d: new Date().toISOString().split("T")[0],
       nilai_sp2d: 0,
-      nama_bank: "",
-      nomor_rekening: "",
-      nama_rekening: "",
       catatan: "",
       potongan_pajak: [],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "potongan_pajak",
-  });
-
-  const watchSpmId = form.watch("spm_id");
   const watchPotonganPajak = form.watch("potongan_pajak");
   const watchNilaiSp2d = form.watch("nilai_sp2d");
 
@@ -131,38 +111,44 @@ const Sp2dForm = () => {
   );
   const nilaiDiterima = watchNilaiSp2d - totalPotongan;
 
-  // Auto-fill nomor SP2D when generated
+  // Load SPM data when available
   useEffect(() => {
-    if (generatedNumber) {
-      form.setValue("nomor_sp2d", generatedNumber);
+    if (spmData) {
+      setSelectedSpm(spmData);
+      form.setValue("spm_id", spmData.id);
+      form.setValue("nilai_sp2d", Number(spmData.nilai_bersih || spmData.nilai_spm));
     }
-  }, [generatedNumber, form]);
-
-  useEffect(() => {
-    if (watchSpmId && spmList) {
-      const spm = spmList.find((s) => s.id === watchSpmId);
-      if (spm) {
-        setSelectedSpm(spm);
-        
-        // Set nilai SP2D from SPM (use nilai_bersih if exists, otherwise nilai_spm)
-        form.setValue("nilai_sp2d", Number(spm.nilai_bersih || spm.nilai_spm));
-        
-        // Auto-fill bank info from vendor
-        if (spm.vendor) {
-          const vendor = spm.vendor as any;
-          form.setValue("nama_bank", vendor.nama_bank || "");
-          form.setValue("nomor_rekening", vendor.nomor_rekening || "");
-          form.setValue("nama_rekening", vendor.nama_rekening || "");
-        } else {
-          form.setValue("nama_bank", "");
-          form.setValue("nomor_rekening", "");
-          form.setValue("nama_rekening", "");
-        }
-      }
-    }
-  }, [watchSpmId, spmList, form]);
+  }, [spmData, form]);
 
   const onSubmit = async (data: Sp2dFormData) => {
+    if (!selectedSpm) {
+      toast.error("SPM belum dipilih");
+      return;
+    }
+
+    // Upload dokumen SP2D if provided
+    let dokumenUrl = null;
+    if (uploadedFile) {
+      const fileExt = uploadedFile.name.split('.').pop();
+      const fileName = `${data.spm_id}-${Date.now()}.${fileExt}`;
+      const filePath = `sp2d-documents/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('spm-documents')
+        .upload(filePath, uploadedFile);
+
+      if (uploadError) {
+        toast.error("Gagal mengupload dokumen: " + uploadError.message);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('spm-documents')
+        .getPublicUrl(filePath);
+      
+      dokumenUrl = urlData.publicUrl;
+    }
+
     // Copy pajak from SPM
     const pajakFromSpm = selectedSpm?.potongan_pajak_spm || [];
     
@@ -172,9 +158,10 @@ const Sp2dForm = () => {
         nomor_sp2d: data.nomor_sp2d,
         tanggal_sp2d: data.tanggal_sp2d,
         nilai_sp2d: data.nilai_sp2d,
-        nama_bank: data.nama_bank,
-        nomor_rekening: data.nomor_rekening,
-        nama_rekening: data.nama_rekening,
+        dokumen_sp2d_url: dokumenUrl,
+        nama_bank: selectedSpm.vendor?.nama_bank || selectedSpm.nama_bank || "",
+        nomor_rekening: selectedSpm.vendor?.nomor_rekening || selectedSpm.nomor_rekening || "",
+        nama_rekening: selectedSpm.vendor?.nama_rekening || selectedSpm.nama_rekening || "",
         catatan: data.catatan || null,
         kuasa_bud_id: user?.id,
         status: "pending" as any,
@@ -198,9 +185,9 @@ const Sp2dForm = () => {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Buat SP2D Baru</h1>
+            <h1 className="text-3xl font-bold text-foreground">Penerbitan SP2D</h1>
             <p className="text-muted-foreground">
-              Buat Surat Perintah Pencairan Dana dari SPM yang disetujui
+              SP2D Terbit dari SIPD berdasarkan SPM yang disetujui
             </p>
           </div>
         </div>
@@ -209,43 +196,23 @@ const Sp2dForm = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Pilih SPM</CardTitle>
+                <CardTitle>Data SPM</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="spm_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>SPM yang Disetujui</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih SPM" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {spmList?.map((spm) => (
-                            <SelectItem key={spm.id} value={spm.id}>
-                              {spm.nomor_spm} - {spm.opd?.nama_opd} - Rp{" "}
-                              {new Intl.NumberFormat("id-ID").format(
-                                Number(spm.nilai_spm)
-                              )}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {selectedSpm && (
+                {!routeSpmId ? (
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                      SPM harus dipilih dari halaman daftar SP2D
+                    </AlertDescription>
+                  </Alert>
+                ) : selectedSpm ? (
                   <div className="space-y-3">
                     <div className="p-4 bg-muted rounded-lg space-y-2">
+                      <p className="text-sm">
+                        <span className="font-semibold">Nomor SPM:</span>{" "}
+                        {selectedSpm.nomor_spm}
+                      </p>
                       <p className="text-sm">
                         <span className="font-semibold">Jenis SPM:</span>{" "}
                         {selectedSpm.jenis_spm?.nama_jenis}
@@ -255,17 +222,14 @@ const Sp2dForm = () => {
                         {selectedSpm.opd?.nama_opd}
                       </p>
                       <p className="text-sm">
-                        <span className="font-semibold">Vendor:</span>{" "}
-                        {selectedSpm.vendor?.nama_vendor || "-"}
+                        <span className="font-semibold">Nilai SPM:</span>{" "}
+                        {formatCurrency(selectedSpm.nilai_spm)}
                       </p>
                     </div>
-                    {!selectedSpm.vendor && (
-                      <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                        <p className="text-sm text-amber-800 dark:text-amber-200">
-                          ⚠️ SPM ini tidak terkait dengan vendor. Silakan input informasi bank penerima secara manual di bawah.
-                        </p>
-                      </div>
-                    )}
+                  </div>
+                ) : (
+                  <div className="flex justify-center py-4">
+                    <p className="text-muted-foreground">Memuat data SPM...</p>
                   </div>
                 )}
               </CardContent>
@@ -282,17 +246,16 @@ const Sp2dForm = () => {
                     name="nomor_sp2d"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nomor SP2D</FormLabel>
+                        <FormLabel>Nomor SP2D *</FormLabel>
                         <FormControl>
                           <Input 
                             {...field} 
-                            placeholder={isGeneratingNumber ? "Generating..." : "Nomor SP2D"}
-                            readOnly
-                            className="bg-muted"
+                            placeholder="Masukkan nomor SP2D"
+                            required
                           />
                         </FormControl>
                         <p className="text-xs text-muted-foreground">
-                          Nomor otomatis dibuat oleh sistem
+                          Masukkan nomor SP2D dari SIPD
                         </p>
                         <FormMessage />
                       </FormItem>
@@ -304,10 +267,13 @@ const Sp2dForm = () => {
                     name="tanggal_sp2d"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Tanggal SP2D</FormLabel>
+                        <FormLabel>Tanggal SP2D *</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} />
+                          <Input type="date" {...field} required />
                         </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Masukkan tanggal SP2D dari SIPD
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -335,63 +301,46 @@ const Sp2dForm = () => {
                     </FormItem>
                   )}
                 />
+
+                <div className="space-y-2">
+                  <Label htmlFor="dokumen_sp2d">Upload Dokumen SP2D *</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="dokumen_sp2d"
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          if (file.size > 10 * 1024 * 1024) {
+                            toast.error("Ukuran file maksimal 10MB");
+                            e.target.value = "";
+                            return;
+                          }
+                          setUploadedFile(file);
+                        }
+                      }}
+                      required
+                    />
+                    {uploadedFile && (
+                      <div className="flex items-center gap-2 text-sm text-success">
+                        <FileCheck className="h-4 w-4" />
+                        {uploadedFile.name}
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Upload dokumen SP2D yang sudah discan dengan tanda tangan dan cap basah (PDF/JPG/PNG, maks. 10MB)
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader>
-                <CardTitle>Informasi Bank</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {selectedSpm?.vendor 
-                    ? "Informasi bank diambil dari data vendor (dapat diedit jika diperlukan)"
-                    : "Masukkan informasi bank penerima secara manual"}
-                </p>
+                <CardTitle>Catatan</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="nama_bank"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Bank *</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Contoh: BRI, BNI, Mandiri" required />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="nomor_rekening"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nomor Rekening *</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Masukkan nomor rekening" required />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="nama_rekening"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nama Rekening *</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Nama pemilik rekening" required />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
                 <FormField
                   control={form.control}
                   name="catatan"
@@ -399,7 +348,7 @@ const Sp2dForm = () => {
                     <FormItem>
                       <FormLabel>Catatan (Opsional)</FormLabel>
                       <FormControl>
-                        <Textarea {...field} placeholder="Catatan tambahan" />
+                        <Textarea {...field} placeholder="Catatan tambahan" rows={4} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -416,8 +365,8 @@ const Sp2dForm = () => {
               >
                 Batal
               </Button>
-              <Button type="submit" disabled={createSp2d.isPending}>
-                {createSp2d.isPending ? "Menyimpan..." : "Simpan SP2D"}
+              <Button type="submit" disabled={createSp2d.isPending || !selectedSpm || !uploadedFile}>
+                {createSp2d.isPending ? "Menyimpan..." : "Terbitkan SP2D"}
               </Button>
             </div>
           </form>

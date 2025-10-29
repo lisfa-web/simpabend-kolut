@@ -784,6 +784,7 @@ export type Database = {
           catatan: string | null
           created_at: string | null
           created_by: string | null
+          dokumen_sp2d_url: string | null
           id: string
           kuasa_bud_id: string | null
           nama_bank: string | null
@@ -796,6 +797,8 @@ export type Database = {
           spm_id: string
           status: Database["public"]["Enums"]["status_sp2d"] | null
           tanggal_cair: string | null
+          tanggal_kirim_bank: string | null
+          tanggal_konfirmasi_bank: string | null
           tanggal_sp2d: string | null
           total_potongan: number | null
           ttd_digital_url: string | null
@@ -806,6 +809,7 @@ export type Database = {
           catatan?: string | null
           created_at?: string | null
           created_by?: string | null
+          dokumen_sp2d_url?: string | null
           id?: string
           kuasa_bud_id?: string | null
           nama_bank?: string | null
@@ -818,6 +822,8 @@ export type Database = {
           spm_id: string
           status?: Database["public"]["Enums"]["status_sp2d"] | null
           tanggal_cair?: string | null
+          tanggal_kirim_bank?: string | null
+          tanggal_konfirmasi_bank?: string | null
           tanggal_sp2d?: string | null
           total_potongan?: number | null
           ttd_digital_url?: string | null
@@ -828,6 +834,7 @@ export type Database = {
           catatan?: string | null
           created_at?: string | null
           created_by?: string | null
+          dokumen_sp2d_url?: string | null
           id?: string
           kuasa_bud_id?: string | null
           nama_bank?: string | null
@@ -840,6 +847,8 @@ export type Database = {
           spm_id?: string
           status?: Database["public"]["Enums"]["status_sp2d"] | null
           tanggal_cair?: string | null
+          tanggal_kirim_bank?: string | null
+          tanggal_konfirmasi_bank?: string | null
           tanggal_sp2d?: string | null
           total_potongan?: number | null
           ttd_digital_url?: string | null
@@ -1253,7 +1262,13 @@ export type Database = {
         | "verifikasi_pin"
         | "verifikasi_otp"
       jenis_pajak: "pph_21" | "pph_22" | "pph_23" | "pph_4_ayat_2" | "ppn"
-      status_sp2d: "pending" | "diproses" | "diterbitkan" | "cair" | "gagal"
+      status_sp2d:
+        | "pending"
+        | "diproses"
+        | "diterbitkan"
+        | "diuji_bank"
+        | "cair"
+        | "gagal"
       status_spm:
         | "draft"
         | "diajukan"
@@ -1414,7 +1429,14 @@ export const Constants = {
         "verifikasi_otp",
       ],
       jenis_pajak: ["pph_21", "pph_22", "pph_23", "pph_4_ayat_2", "ppn"],
-      status_sp2d: ["pending", "diproses", "diterbitkan", "cair", "gagal"],
+      status_sp2d: [
+        "pending",
+        "diproses",
+        "diterbitkan",
+        "diuji_bank",
+        "cair",
+        "gagal",
+      ],
       status_spm: [
         "draft",
         "diajukan",

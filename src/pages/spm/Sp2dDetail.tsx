@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, CheckCircle2, Printer, Wallet } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle2, Printer, Wallet, FileCheck, Info } from "lucide-react";
 import { useSp2dDetail } from "@/hooks/useSp2dDetail";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { useConfigSistem } from "@/hooks/useConfigSistem";
@@ -27,7 +27,7 @@ const Sp2dDetail = () => {
 
   const { data: sp2d, isLoading } = useSp2dDetail(id);
   const { data: configs } = useConfigSistem();
-  const { verifyOtp, disburseSp2d } = useSp2dMutation();
+  const { verifyOtp, disburseSp2d, sendToBank, confirmFromBank } = useSp2dMutation();
   const { potonganList } = usePajakPotongan(id);
 
   const canVerify = roles.some((role) =>
@@ -50,6 +50,18 @@ const Sp2dDetail = () => {
   const handleDisburse = () => {
     if (id) {
       disburseSp2d.mutate(id);
+    }
+  };
+
+  const handleSendToBank = () => {
+    if (id) {
+      sendToBank.mutate(id);
+    }
+  };
+
+  const handleConfirmFromBank = () => {
+    if (id) {
+      confirmFromBank.mutate(id);
     }
   };
 
@@ -175,6 +187,20 @@ const Sp2dDetail = () => {
                     </p>
                   </div>
                 </div>
+
+                {(sp2d as any).dokumen_sp2d_url && (
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <p className="text-sm font-medium mb-2">Dokumen SP2D</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open((sp2d as any).dokumen_sp2d_url, '_blank')}
+                    >
+                      <FileCheck className="h-4 w-4 mr-2" />
+                      Lihat Dokumen
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -192,36 +218,6 @@ const Sp2dDetail = () => {
                     <p className="text-sm text-muted-foreground">Jenis SPM</p>
                     <p className="font-medium">
                       {(sp2d.spm as any)?.jenis_spm?.nama_jenis || "-"}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Informasi Bank Penerima</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Nama Bank</p>
-                    <p className="font-medium">{sp2d.nama_bank || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Nomor Rekening</p>
-                    <p className="font-medium">{sp2d.nomor_rekening || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Nama Rekening</p>
-                    <p className="font-medium">{sp2d.nama_rekening || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      Penerima
-                    </p>
-                    <p className="font-medium">
-                      {sp2d.spm?.nama_penerima || "-"} ({sp2d.spm?.tipe_penerima || "-"})
                     </p>
                   </div>
                 </div>

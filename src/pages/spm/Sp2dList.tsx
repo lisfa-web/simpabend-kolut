@@ -183,14 +183,14 @@ const Sp2dList = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Daftar SP2D</h1>
+            <h1 className="text-3xl font-bold text-foreground">Daftar SP2D Terbit</h1>
             <p className="text-muted-foreground">
               Kelola Surat Perintah Pencairan Dana
             </p>
           </div>
           <Button onClick={() => navigate("/sp2d/buat")}>
             <Plus className="h-4 w-4 mr-2" />
-            Buat SP2D
+            Terbit SP2D
           </Button>
         </div>
 
@@ -203,7 +203,7 @@ const Sp2dList = () => {
                 <Badge variant="secondary" className="ml-1">{approvedSpm.length}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="list">Daftar SP2D</TabsTrigger>
+            <TabsTrigger value="list">Daftar SP2D Terbit</TabsTrigger>
           </TabsList>
 
           <TabsContent value="ready" className="space-y-4">
@@ -269,20 +269,12 @@ const Sp2dList = () => {
                                   <Eye className="h-4 w-4" />
                                 </Button>
                                 <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handlePrintSpm(spm)}
-                                >
-                                  <Printer className="h-4 w-4 mr-1" />
-                                  Cetak SPM
-                                </Button>
-                                <Button
                                   variant="default"
                                   size="sm"
                                   onClick={() => navigate("/sp2d/buat", { state: { spmId: spm.id } })}
                                 >
                                   <Plus className="h-4 w-4 mr-1" />
-                                  Buat SP2D
+                                  Terbit SP2D
                                 </Button>
                               </div>
                             </TableCell>

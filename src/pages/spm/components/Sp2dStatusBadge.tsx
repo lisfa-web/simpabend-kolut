@@ -12,6 +12,7 @@ export const Sp2dStatusBadge = ({ status }: Sp2dStatusBadgeProps) => {
     pending: { label: "Pending", variant: "outline" },
     diproses: { label: "Diproses", variant: "secondary" },
     diterbitkan: { label: "Diterbitkan", variant: "default" },
+    diuji_bank: { label: "Uji Bank", variant: "secondary" },
     cair: { label: "Dicairkan", variant: "default" },
     gagal: { label: "Gagal", variant: "destructive" },
   };

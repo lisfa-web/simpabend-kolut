@@ -289,10 +289,75 @@ export const useSp2dMutation = () => {
     },
   });
 
+  const sendToBank = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: result, error } = await supabase
+        .from("sp2d")
+        .update({ 
+          status: "diuji_bank" as StatusSp2d,
+          tanggal_kirim_bank: new Date().toISOString()
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sp2d-detail"] });
+      queryClient.invalidateQueries({ queryKey: ["sp2d-list"] });
+      toast({
+        title: "Berhasil",
+        description: "SP2D telah dikirim ke Bank Sultra untuk diproses",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Gagal",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const confirmFromBank = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: result, error } = await supabase
+        .from("sp2d")
+        .update({ 
+          tanggal_konfirmasi_bank: new Date().toISOString()
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["sp2d-detail"] });
+      queryClient.invalidateQueries({ queryKey: ["sp2d-list"] });
+      toast({
+        title: "Berhasil",
+        description: "Konfirmasi dari Bank Sultra telah dicatat. SP2D siap untuk dicairkan.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Gagal",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
     createSp2d,
     updateSp2d,
     verifyOtp,
     disburseSp2d,
+    sendToBank,
+    confirmFromBank,
   };
 };
