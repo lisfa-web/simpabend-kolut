@@ -57,7 +57,7 @@ export const SpmVerificationCard = ({ spm }: SpmVerificationCardProps) => {
         <div>
           <p className="text-xs text-muted-foreground mb-1.5">Jenis SPM</p>
           <Badge variant="outline" className="font-semibold">
-            {formatJenisSpm(spm.jenis_spm)}
+            {spm.jenis_spm ? formatJenisSpm(spm.jenis_spm) : "Belum ditentukan"}
           </Badge>
         </div>
 
