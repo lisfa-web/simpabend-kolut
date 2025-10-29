@@ -27,10 +27,6 @@ interface Sp2dPrintData {
       nama_vendor?: string;
       npwp?: string;
     };
-    subkegiatan?: {
-      kode_subkegiatan?: string;
-      nama_subkegiatan?: string;
-    };
   };
 }
 
@@ -299,8 +295,8 @@ export const generateSp2dPDF = (
           <tbody>
             <tr>
               <td class="text-center">1</td>
-              <td>${sp2dData.spm?.subkegiatan?.kode_subkegiatan || '-'}</td>
-              <td>${sp2dData.spm?.subkegiatan?.nama_subkegiatan || sp2dData.spm?.uraian || '-'}</td>
+              <td>-</td>
+              <td>${sp2dData.spm?.uraian || '-'}</td>
               <td class="text-right">${formatAngka(sp2dData.nilai_sp2d)}</td>
             </tr>
             <tr>

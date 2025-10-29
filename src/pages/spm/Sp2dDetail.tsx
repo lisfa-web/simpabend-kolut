@@ -180,7 +180,7 @@ const Sp2dDetail = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Data OPD & Program</CardTitle>
+                <CardTitle>Data OPD</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -189,21 +189,9 @@ const Sp2dDetail = () => {
                     <p className="font-medium">{sp2d.spm?.opd?.nama_opd || "-"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Program</p>
+                    <p className="text-sm text-muted-foreground">Jenis SPM</p>
                     <p className="font-medium">
-                      {sp2d.spm?.program?.nama_program || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Kegiatan</p>
-                    <p className="font-medium">
-                      {sp2d.spm?.kegiatan?.nama_kegiatan || "-"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Sub Kegiatan</p>
-                    <p className="font-medium">
-                      {sp2d.spm?.subkegiatan?.nama_subkegiatan || "-"}
+                      {(sp2d.spm as any)?.jenis_spm?.nama_jenis || "-"}
                     </p>
                   </div>
                 </div>

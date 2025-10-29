@@ -259,7 +259,7 @@ const InputSpmForm = () => {
                 files={files}
                 potonganPajak={potonganPajak}
                 opdName={opdName}
-                jenisSpmLabel={jenisSpmLabel}
+                jenisSpmLabel={jenisSpmName}
                 vendorName={vendorName}
                 onSubmit={handleFinalSubmit}
                 onBack={() => setActiveTab("lampiran")}

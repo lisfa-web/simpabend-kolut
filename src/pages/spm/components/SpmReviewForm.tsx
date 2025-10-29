@@ -20,9 +20,7 @@ interface SpmReviewFormProps {
   };
   potonganPajak?: any[];
   opdName?: string;
-  programName?: string;
-  kegiatanName?: string;
-  subkegiatanName?: string;
+  jenisSpmLabel?: string;
   vendorName?: string;
   onSubmit: (isDraft: boolean) => void;
   onBack: () => void;
@@ -34,9 +32,7 @@ export const SpmReviewForm = ({
   files,
   potonganPajak = [],
   opdName,
-  programName,
-  kegiatanName,
-  subkegiatanName,
+  jenisSpmLabel,
   vendorName,
   onSubmit,
   onBack,
@@ -73,20 +69,8 @@ export const SpmReviewForm = ({
             <dd className="font-medium">{opdName}</dd>
           </div>
           <div>
-            <dt className="text-sm text-muted-foreground">Program</dt>
-            <dd className="font-medium">{programName}</dd>
-          </div>
-          <div>
-            <dt className="text-sm text-muted-foreground">Kegiatan</dt>
-            <dd className="font-medium">{kegiatanName}</dd>
-          </div>
-          <div>
-            <dt className="text-sm text-muted-foreground">Sub Kegiatan</dt>
-            <dd className="font-medium">{subkegiatanName}</dd>
-          </div>
-          <div>
             <dt className="text-sm text-muted-foreground">Jenis SPM</dt>
-            <dd className="font-medium">{jenisSpmLabels[formData.jenis_spm]}</dd>
+            <dd className="font-medium">{jenisSpmLabel}</dd>
           </div>
           <div>
             <dt className="text-sm text-muted-foreground">Nilai SPM</dt>

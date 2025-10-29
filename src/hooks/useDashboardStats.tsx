@@ -271,8 +271,8 @@ export const useDashboardStats = () => {
 
       // Financial Breakdown by Jenis SPM
       const financialMap = new Map<string, { total_spm: number; total_nilai: number }>();
-      allSpm?.forEach((spm) => {
-        const jenis = spm.jenis_spm || "other";
+      allSpm?.forEach((spm: any) => {
+        const jenis = spm.jenis_spm?.nama_jenis || "Lainnya";
         if (!financialMap.has(jenis)) {
           financialMap.set(jenis, { total_spm: 0, total_nilai: 0 });
         }

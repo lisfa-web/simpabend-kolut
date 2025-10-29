@@ -100,22 +100,10 @@ const Sp2dList = () => {
       nomor_spm: spm.nomor_spm || "DRAFT",
       tanggal_spm: spm.tanggal_ajuan || new Date().toISOString(),
       tanggal_ajuan: spm.tanggal_ajuan || new Date().toISOString(),
-      jenis_spm: getJenisSpmLabel(spm.jenis_spm),
+      jenis_spm: spm.jenis_spm?.nama_jenis || "SPM",
       opd: {
         nama_opd: spm.opd?.nama_opd || "-",
         kode_opd: spm.opd?.kode_opd || "-",
-      },
-      program: {
-        nama_program: spm.program?.nama_program || "-",
-        kode_program: spm.program?.kode_program || "-",
-      },
-      kegiatan: {
-        nama_kegiatan: spm.kegiatan?.nama_kegiatan || "-",
-        kode_kegiatan: spm.kegiatan?.kode_kegiatan || "-",
-      },
-      subkegiatan: {
-        nama_subkegiatan: spm.subkegiatan?.nama_subkegiatan || "-",
-        kode_subkegiatan: spm.subkegiatan?.kode_subkegiatan || "-",
       },
       vendor: spm.vendor ? {
         nama_vendor: spm.vendor.nama_vendor,
@@ -262,7 +250,7 @@ const Sp2dList = () => {
                               {spm.nomor_spm || "-"}
                             </TableCell>
                             <TableCell>{spm.opd?.nama_opd || "-"}</TableCell>
-                            <TableCell>{spm.program?.nama_program || "-"}</TableCell>
+                            <TableCell>{(spm as any).jenis_spm?.nama_jenis || "-"}</TableCell>
                             <TableCell>{formatCurrency(spm.nilai_spm)}</TableCell>
                             <TableCell>
                               {spm.tanggal_disetujui

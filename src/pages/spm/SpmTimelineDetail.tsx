@@ -368,42 +368,19 @@ export default function SpmTimelineDetail() {
 
           {/* Details Section */}
           <div className="space-y-6">
-            {/* Program Info */}
+            {/* Jenis SPM Info */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Informasi Program</CardTitle>
+                <CardTitle className="text-base">Informasi Jenis SPM</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent>
                 <div>
-                  <p className="text-xs text-muted-foreground mb-1">Program</p>
-                  <p className="text-sm font-medium">{spm.program?.nama_program || "-"}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {spm.program?.kode_program || "-"}
-                  </p>
+                  <p className="text-xs text-muted-foreground mb-1">Jenis SPM</p>
+                  <p className="text-sm font-medium">{(spm as any).jenis_spm?.nama_jenis || "-"}</p>
+                  {(spm as any).jenis_spm?.deskripsi && (
+                    <p className="text-xs text-muted-foreground mt-1">{(spm as any).jenis_spm.deskripsi}</p>
+                  )}
                 </div>
-
-                <Separator />
-
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Kegiatan</p>
-                  <p className="text-sm font-medium">{spm.kegiatan?.nama_kegiatan || "-"}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {spm.kegiatan?.kode_kegiatan || "-"}
-                  </p>
-                </div>
-
-                {spm.subkegiatan && (
-                  <>
-                    <Separator />
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Sub Kegiatan</p>
-                      <p className="text-sm font-medium">{spm.subkegiatan.nama_subkegiatan}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {spm.subkegiatan.kode_subkegiatan}
-                      </p>
-                    </div>
-                  </>
-                )}
               </CardContent>
             </Card>
 

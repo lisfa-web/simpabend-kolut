@@ -22,6 +22,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CurrencyInput } from "./CurrencyInput";
 import { useOpdList } from "@/hooks/useOpdList";
@@ -66,12 +68,16 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
 
   const jenisSpmId = form.watch("jenis_spm_id");
   const nilaiSpm = form.watch("nilai_spm");
+  const isAset = form.watch("is_aset");
 
   const { speak, isSpeaking } = useSpeechSynthesis();
 
   const { data: opdList, isLoading: opdLoading } = useOpdList({ is_active: true });
   const { data: jenisSpmList, isLoading: jenisSpmLoading } = useJenisSpmList({ is_active: true });
   const { data: vendorList, isLoading: vendorLoading } = useVendorList({ is_active: true });
+
+  // Get selected jenis SPM data
+  const selectedJenisSpm = jenisSpmList?.find((j) => j.id === jenisSpmId);
 
   // Reset form dengan defaultValues saat mode edit
   useEffect(() => {
@@ -97,13 +103,11 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
       utterance.pitch = 1;
       
       utterance.onend = () => {
-        // Setelah audio selesai, buka dialog konfirmasi
         setShowConfirmDialog(true);
       };
       
       window.speechSynthesis.speak(utterance);
     } else {
-      // Fallback jika browser tidak support TTS
       setShowConfirmDialog(true);
     }
   };
@@ -159,482 +163,63 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
 
         <FormField
           control={form.control}
-          name="program_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Program</FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  form.setValue("kegiatan_id", "");
-                  form.setValue("subkegiatan_id", "");
-                }}
-                value={field.value}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Program" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {programList?.map((program) => (
-                    <SelectItem key={program.id} value={program.id}>
-                      {program.kode_program} - {program.nama_program}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="kegiatan_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Kegiatan</FormLabel>
-              <Select
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  form.setValue("subkegiatan_id", "");
-                }}
-                value={field.value}
-                disabled={!programId}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Kegiatan" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {kegiatanList?.map((kegiatan) => (
-                    <SelectItem key={kegiatan.id} value={kegiatan.id}>
-                      {kegiatan.kode_kegiatan} - {kegiatan.nama_kegiatan}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="subkegiatan_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sub Kegiatan</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                value={field.value}
-                disabled={!kegiatanId}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih Sub Kegiatan" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {subkegiatanList?.map((subkegiatan) => (
-                    <SelectItem key={subkegiatan.id} value={subkegiatan.id}>
-                      {subkegiatan.kode_subkegiatan} - {subkegiatan.nama_subkegiatan}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="jenis_spm"
+          name="jenis_spm_id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Jenis SPM</FormLabel>
-              <FormControl>
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  value={field.value}
-                  className="grid grid-cols-2 gap-4"
-                >
-                  {/* UP - Uang Persediaan */}
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
-                        <FormControl>
-                          <RadioGroupItem value="UP" />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
-                          UP (Uang Persediaan)
-                          <Info className="h-3 w-3 text-muted-foreground" />
-                        </FormLabel>
-                      </FormItem>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80">
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Informasi Pajak:</h4>
-                        <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
-                          <p className="font-medium text-foreground mb-1">✓ Tidak dikenakan potongan pajak</p>
-                          <p>Uang Persediaan adalah uang muka untuk keperluan operasional, sehingga tidak ada potongan pajak.</p>
-                        </div>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                  
-                  {/* GU - Ganti Uang */}
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
-                        <FormControl>
-                          <RadioGroupItem value="GU" />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
-                          GU (Ganti Uang)
-                          <Info className="h-3 w-3 text-muted-foreground" />
-                        </FormLabel>
-                      </FormItem>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80">
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Informasi Pajak:</h4>
-                        <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
-                          <p className="font-medium text-foreground mb-1">✓ Tidak dikenakan potongan pajak</p>
-                          <p>Ganti Uang adalah penggantian UP yang telah digunakan. Pajak sudah dipotong saat pengeluaran sebenarnya.</p>
-                        </div>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                  
-                  {/* TU - Tambah Uang */}
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
-                        <FormControl>
-                          <RadioGroupItem value="TU" />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
-                          TU (Tambah Uang)
-                          <Info className="h-3 w-3 text-muted-foreground" />
-                        </FormLabel>
-                      </FormItem>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80">
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Informasi Pajak:</h4>
-                        <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
-                          <p className="font-medium text-foreground mb-1">✓ Tidak dikenakan potongan pajak</p>
-                          <p>Tambah Uang adalah penambahan UP/TU saat saldo kurang. Tidak ada potongan pajak pada tahap ini.</p>
-                        </div>
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                  
-                  {/* LS Gaji */}
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
-                        <FormControl>
-                          <RadioGroupItem value="LS_Gaji" />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
-                          LS Gaji
-                          <Info className="h-3 w-3 text-muted-foreground" />
-                        </FormLabel>
-                      </FormItem>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80">
-                      <div className="space-y-2">
-                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
-                        {availableJenisSpm.includes('LS_Gaji') && taxMapping["LS_Gaji"] && taxMapping["LS_Gaji"].length > 0 ? (
-                          <div className="space-y-2">
-                            {taxMapping["LS_Gaji"].filter(t => t.is_default).map((tax) => (
-                              <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
-                                <div className="space-y-0.5">
-                                  <span className="text-sm font-medium">{tax.nama}</span>
-                                  {tax.uraian && <p className="text-xs text-muted-foreground">{tax.uraian}</p>}
-                                </div>
-                                <span className="font-semibold text-primary">{tax.tarif}%</span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">Belum ada konfigurasi pajak</p>
-                        )}
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                  
-                  {/* LS Barang & Jasa */}
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
-                        <FormControl>
-                          <RadioGroupItem value="LS_Barang_Jasa" />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
-                          LS Barang & Jasa
-                          <Info className="h-3 w-3 text-muted-foreground" />
-                        </FormLabel>
-                      </FormItem>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80">
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
-                        {availableJenisSpm.includes('LS_Barang_Jasa') && taxMapping["LS_Barang_Jasa"] && taxMapping["LS_Barang_Jasa"].length > 0 ? (
-                          <>
-                            <div className="space-y-2">
-                              <p className="text-xs text-muted-foreground font-medium">Pajak Default (Otomatis):</p>
-                              {taxMapping["LS_Barang_Jasa"].filter(t => t.is_default).map((tax) => (
-                                <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
-                                  <div className="space-y-0.5">
-                                    <span className="text-sm font-medium">{tax.nama}</span>
-                                    {tax.uraian && <p className="text-xs text-muted-foreground">{tax.uraian}</p>}
-                                  </div>
-                                  <span className="font-semibold text-primary">{tax.tarif}%</span>
-                                </div>
-                              ))}
-                            </div>
-                            {taxMapping["LS_Barang_Jasa"].filter(t => !t.is_default).length > 0 && (
-                              <div className="space-y-2">
-                                <p className="text-xs text-muted-foreground font-medium">Pajak Opsional (Dapat ditambahkan):</p>
-                                {taxMapping["LS_Barang_Jasa"].filter(t => !t.is_default).map((tax) => (
-                                  <div key={tax.id} className="flex items-center gap-2 rounded-md bg-muted/50 p-2">
-                                    <Checkbox 
-                                      id={`optional-tax-${tax.id}`}
-                                      checked={selectedOptionalTaxIds?.includes(tax.id) || false}
-                                      onCheckedChange={(checked) => onToggleOptionalTax?.(tax.id, checked as boolean)}
-                                    />
-                                    <label htmlFor={`optional-tax-${tax.id}`} className="flex-1 flex items-center justify-between cursor-pointer">
-                                      <span className="text-sm">{tax.nama}</span>
-                                      <span className="font-medium">{tax.tarif}%</span>
-                                    </label>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">Belum ada konfigurasi pajak</p>
-                        )}
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                  
-                  {/* LS Belanja Modal */}
-                  <HoverCard>
-                    <HoverCardTrigger asChild>
-                      <FormItem className="flex items-center space-x-3 space-y-0 cursor-help">
-                        <FormControl>
-                          <RadioGroupItem value="LS_Belanja_Modal" />
-                        </FormControl>
-                        <FormLabel className="font-normal cursor-help flex items-center gap-1">
-                          LS Belanja Modal
-                          <Info className="h-3 w-3 text-muted-foreground" />
-                        </FormLabel>
-                      </FormItem>
-                    </HoverCardTrigger>
-                    <HoverCardContent className="w-80">
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-sm">Pajak yang akan dipotong:</h4>
-                        {availableJenisSpm.includes('LS_Belanja_Modal') && taxMapping["LS_Belanja_Modal"] && taxMapping["LS_Belanja_Modal"].length > 0 ? (
-                          <>
-                            <div className="space-y-2">
-                              <p className="text-xs text-muted-foreground font-medium">Pajak Default (Otomatis):</p>
-                              {taxMapping["LS_Belanja_Modal"].filter(t => t.is_default).map((tax) => (
-                                <div key={tax.id} className="flex items-center justify-between rounded-md bg-primary/10 p-2">
-                                  <div className="space-y-0.5">
-                                    <span className="text-sm font-medium">{tax.nama}</span>
-                                    {tax.uraian && <p className="text-xs text-muted-foreground">{tax.uraian}</p>}
-                                  </div>
-                                  <span className="font-semibold text-primary">{tax.tarif}%</span>
-                                </div>
-                              ))}
-                            </div>
-                            {taxMapping["LS_Belanja_Modal"].filter(t => !t.is_default).length > 0 && (
-                              <div className="space-y-2">
-                                <p className="text-xs text-muted-foreground font-medium">Pajak Opsional (Dapat ditambahkan):</p>
-                                {taxMapping["LS_Belanja_Modal"].filter(t => !t.is_default).map((tax) => (
-                                  <div key={tax.id} className="flex items-center gap-2 rounded-md bg-muted/50 p-2">
-                                    <Checkbox 
-                                      id={`optional-tax-${tax.id}`}
-                                      checked={selectedOptionalTaxIds?.includes(tax.id) || false}
-                                      onCheckedChange={(checked) => onToggleOptionalTax?.(tax.id, checked as boolean)}
-                                    />
-                                    <label htmlFor={`optional-tax-${tax.id}`} className="flex-1 flex items-center justify-between cursor-pointer">
-                                      <span className="text-sm">{tax.nama}</span>
-                                      <span className="font-medium">{tax.tarif}%</span>
-                                    </label>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">Belum ada konfigurasi pajak</p>
-                        )}
-                      </div>
-                    </HoverCardContent>
-                  </HoverCard>
-                </RadioGroup>
-              </FormControl>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Jenis SPM" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {jenisSpmList?.map((jenis) => (
+                    <SelectItem key={jenis.id} value={jenis.id}>
+                      {jenis.nama_jenis}
+                      {jenis.deskripsi && ` - ${jenis.deskripsi}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedJenisSpm && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  <Info className="h-3 w-3 inline mr-1" />
+                  {selectedJenisSpm.ada_pajak 
+                    ? "Jenis SPM ini ada potongan pajak" 
+                    : "Jenis SPM ini tidak ada potongan pajak"}
+                </p>
+              )}
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {jenisSpm && (
-          <div className="p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground">
-              {requiresVendor ? (
-                <span className="font-medium text-primary">
-                  ℹ️ Jenis SPM ini memerlukan vendor. Informasi bank akan diambil dari data vendor.
-                </span>
-              ) : (
-                <span>
-                  ℹ️ Jenis SPM ini tidak memerlukan vendor. Input informasi rekening penerima akan dilakukan saat pembuatan SP2D.
-                </span>
-              )}
-            </p>
-          </div>
-        )}
-
-        {/* Enhanced Tax Information Display */}
-        {jenisSpm && (
-          <Alert className="border-2">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Info className="h-5 w-5 text-primary" />
-                <h4 className="font-semibold text-base">Informasi Pajak - {getJenisSpmLabel(jenisSpm)}</h4>
-              </div>
-              
-              {['UP','GU','TU'].includes(jenisSpm) ? (
-                <AlertDescription className="flex items-center gap-2 text-sm">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <span>Tidak dikenakan potongan pajak untuk jenis SPM ini.</span>
-                </AlertDescription>
-              ) : (
-                Array.isArray((taxMapping as any)[jenisSpm]) && (taxMapping as any)[jenisSpm].length > 0 ? (
-                  <>
-                    {/* Default Taxes */}
-                    {(() => {
-                      const defaultTaxes = (taxMapping as any)[jenisSpm].filter((t: any) => t.is_default);
-                      const optionalTaxes = (taxMapping as any)[jenisSpm].filter((t: any) => !t.is_default);
-                      const totalDefault = defaultTaxes.reduce((sum: number, tax: any) => sum + tax.tarif, 0);
-                      
-                      return (
-                        <>
-                          {defaultTaxes.length > 0 && (
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2">
-                                <Badge variant="default" className="bg-green-600">Pajak Default</Badge>
-                                <span className="text-xs text-muted-foreground">(Otomatis dipotong)</span>
-                              </div>
-                              <div className="space-y-2">
-                                {defaultTaxes.map((tax: any) => (
-                                  <div key={tax.id} className="flex items-start gap-3 rounded-lg bg-green-50 dark:bg-green-950/20 p-3 border border-green-200 dark:border-green-900">
-                                    <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                                    <div className="flex-1 space-y-1">
-                                      <div className="flex items-start justify-between gap-2">
-                                        <span className="text-sm font-semibold text-foreground">{tax.nama}</span>
-                                        <span className="text-base font-bold text-green-700 dark:text-green-400">{tax.tarif}%</span>
-                                      </div>
-                                      {tax.uraian && (
-                                        <p className="text-xs text-muted-foreground leading-relaxed">{tax.uraian}</p>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Optional Taxes */}
-                          {optionalTaxes.length > 0 && (
-                            <>
-                              <Separator />
-                              <div className="space-y-3">
-                                <div className="flex items-center gap-2">
-                                  <Badge variant="outline">Pajak Opsional</Badge>
-                                  <span className="text-xs text-muted-foreground">(Dapat ditambahkan)</span>
-                                </div>
-                                <div className="space-y-2">
-                                  {optionalTaxes.map((tax: any) => (
-                                    <div key={tax.id} className="flex items-center gap-3 rounded-lg bg-muted/30 p-3 border border-border">
-                                      {onToggleOptionalTax ? (
-                                        <Checkbox
-                                          id={`opt-${tax.id}`}
-                                          checked={selectedOptionalTaxIds?.includes(tax.id)}
-                                          onCheckedChange={(checked) => onToggleOptionalTax?.(tax.id, Boolean(checked))}
-                                        />
-                                      ) : (
-                                        <Circle className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                      )}
-                                      <label htmlFor={`opt-${tax.id}`} className="flex-1 flex items-center justify-between gap-2 cursor-pointer">
-                                        <span className="text-sm font-medium">{tax.nama}</span>
-                                        <span className="text-sm font-semibold">{tax.tarif}%</span>
-                                      </label>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </>
-                          )}
-                          
-                          {/* Estimation */}
-                          {defaultTaxes.length > 0 && (
-                            <>
-                              <Separator />
-                              <AlertDescription className="flex items-center justify-between bg-primary/5 rounded-lg p-3">
-                                <span className="text-sm font-medium">💡 Estimasi Total Potongan Default:</span>
-                                <span className="text-lg font-bold text-primary">{totalDefault.toFixed(1)}%</span>
-                              </AlertDescription>
-                            </>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </>
-                ) : (
-                  <AlertDescription className="text-sm text-muted-foreground">
-                    Tidak ada pajak terkonfigurasi untuk jenis SPM ini.
-                  </AlertDescription>
-                )
-              )}
-            </div>
-          </Alert>
-        )}
-
-        {requiresVendor && (
-          <FormField
-            control={form.control}
-            name="vendor_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Vendor/Pihak Ketiga *</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih Vendor" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {vendorList?.map((vendor) => (
-                      <SelectItem key={vendor.id} value={vendor.id}>
-                        {vendor.nama_vendor}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+        <FormField
+          control={form.control}
+          name="vendor_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Vendor/Pihak Ketiga (Opsional)</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value || ""}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih Vendor (jika ada)" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="">Tidak ada vendor</SelectItem>
+                  {vendorList?.map((vendor) => (
+                    <SelectItem key={vendor.id} value={vendor.id}>
+                      {vendor.nama_vendor}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -687,6 +272,54 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
             </FormItem>
           )}
         />
+
+        <FormField
+          control={form.control}
+          name="tanggal_ajuan"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tanggal Ajuan</FormLabel>
+              <FormControl>
+                <Input
+                  type="date"
+                  value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : ''}
+                  onChange={(e) => field.onChange(new Date(e.target.value))}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="is_aset"
+          render={({ field }) => (
+            <FormItem className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel>Belanja Aset</FormLabel>
+                <p className="text-sm text-muted-foreground">
+                  Tandai jika SPM ini untuk pembelian aset
+                </p>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        {isAset && (
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              SPM untuk belanja aset akan dicatat dalam sistem manajemen aset.
+            </AlertDescription>
+          </Alert>
+        )}
 
         <div className="flex justify-between">
           {onBack && (

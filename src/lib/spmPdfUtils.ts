@@ -16,18 +16,6 @@ interface SpmPrintData {
     nama_opd: string;
     kode_opd?: string;
   };
-  program?: {
-    nama_program: string;
-    kode_program?: string;
-  };
-  kegiatan?: {
-    nama_kegiatan: string;
-    kode_kegiatan?: string;
-  };
-  subkegiatan?: {
-    nama_subkegiatan: string;
-    kode_subkegiatan?: string;
-  };
   vendor?: {
     nama_vendor?: string;
     npwp?: string;
@@ -361,12 +349,8 @@ export const generateSpmPDF = (
           <tbody>
             <tr>
               <td class="text-center">1</td>
-              <td>${spmData.program?.kode_program || '-'}.${spmData.kegiatan?.kode_kegiatan || '-'}.${spmData.subkegiatan?.kode_subkegiatan || '-'}</td>
-              <td>
-                <strong>Program:</strong> ${spmData.program?.nama_program || '-'}<br>
-                <strong>Kegiatan:</strong> ${spmData.kegiatan?.nama_kegiatan || '-'}<br>
-                <strong>Sub Kegiatan:</strong> ${spmData.subkegiatan?.nama_subkegiatan || '-'}
-              </td>
+              <td>-</td>
+              <td>${spmData.uraian || '-'}</td>
               <td class="text-right">Rp ${formatAngka(spmData.nilai_spm)}</td>
             </tr>
             <tr style="background-color: #f5f5f5;">
