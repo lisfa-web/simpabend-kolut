@@ -92,7 +92,8 @@ export const SpmSp2dTableWidget = () => {
             id,
             nomor_sp2d,
             nilai_sp2d,
-            status
+            status,
+            tanggal_cair
           )
         `, { count: 'exact' })
         .not("status", "eq", "draft")
@@ -214,7 +215,14 @@ export const SpmSp2dTableWidget = () => {
                       </TableCell>
                       <TableCell>
                         {sp2d?.status ? (
-                          <Sp2dStatusBadge status={sp2d.status} />
+                          <div className="flex flex-col gap-1">
+                            <Sp2dStatusBadge status={sp2d.status} />
+                            {sp2d.status === "cair" && sp2d.tanggal_cair && (
+                              <span className="text-xs text-muted-foreground">
+                                {format(new Date(sp2d.tanggal_cair), "dd MMM yyyy", { locale: id })}
+                              </span>
+                            )}
+                          </div>
                         ) : (
                           <Badge variant="outline" className="bg-muted/50">
                             No SP2D
