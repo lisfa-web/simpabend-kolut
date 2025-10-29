@@ -151,21 +151,21 @@ export const SpmSp2dTableWidget = () => {
                   return (
                     <TableRow key={spm.id} className="hover:bg-accent/5">
                       <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">No. Antrian:</span>
+                        <div className="flex flex-col gap-1 min-w-[280px]">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">No. Antrian:</span>
                             <span className="font-mono text-sm font-medium">{spm.nomor_antrian || "-"}</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">Tanggal:</span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">Tanggal:</span>
                             <span className="text-sm">
                               {spm.tanggal_ajuan
                                 ? format(new Date(spm.tanggal_ajuan), "dd MMM yyyy", { locale: id })
                                 : "-"}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">No. SPM:</span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">No. SPM:</span>
                             <span className="font-mono text-sm font-medium">{spm.nomor_spm || "-"}</span>
                           </div>
                         </div>
