@@ -23,14 +23,14 @@ const COLORS = ["#3b82f6", "#22c55e", "#f59e0b"]; // Blue, Green, Amber - vibran
 export const FinancialBreakdownChart = ({ data, isLoading }: FinancialBreakdownProps) => {
   if (isLoading) {
     return (
-      <Card>
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5" />
             Breakdown Jenis SPM
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1">
           <Skeleton className="h-[300px] w-full" />
         </CardContent>
       </Card>
@@ -70,14 +70,14 @@ export const FinancialBreakdownChart = ({ data, isLoading }: FinancialBreakdownP
   };
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TrendingUp className="w-5 h-5" />
           Breakdown Jenis SPM
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1">
         {chartData.length > 0 ? (
           <>
             <ResponsiveContainer width="100%" height={280}>

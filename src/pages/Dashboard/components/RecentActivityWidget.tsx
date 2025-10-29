@@ -97,14 +97,14 @@ export const RecentActivityWidget = () => {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="w-5 h-5" />
             Aktivitas Terbaru
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1">
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
               <Skeleton key={i} className="h-16 w-full" />
@@ -116,15 +116,15 @@ export const RecentActivityWidget = () => {
   }
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Activity className="w-5 h-5" />
           Aktivitas Terbaru
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[400px] pr-4">
+      <CardContent className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full pr-4">
           <div className="space-y-3">
             {activities?.map((activity) => (
               <Link

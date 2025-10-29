@@ -598,9 +598,9 @@ const Dashboard = () => {
 
           {/* Financial Breakdown Widget */}
           {!isWidgetHidden("financial") && (
-            <div key="financial">
+            <div key="financial" className="h-full">
               <WidgetContainer isEditMode={isEditMode} title="Financial Breakdown">
-                <div className="p-4">
+                <div className="p-4 h-full">
                   <FinancialBreakdownChart data={stats?.financialBreakdown} isLoading={isLoading} />
                 </div>
               </WidgetContainer>
@@ -609,9 +609,9 @@ const Dashboard = () => {
 
           {/* Recent Activity Widget */}
           {!isWidgetHidden("activity") && (
-            <div key="activity">
+            <div key="activity" className="h-full">
               <WidgetContainer isEditMode={isEditMode} title="Recent Activity">
-                <div className="p-4">
+                <div className="p-4 h-full">
                   <RecentActivityWidget />
                 </div>
               </WidgetContainer>

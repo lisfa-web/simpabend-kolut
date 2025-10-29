@@ -21,7 +21,7 @@ export const WidgetContainer = ({
   return (
     <Card
       className={cn(
-        "relative overflow-hidden transition-all",
+        "relative overflow-hidden transition-all h-full flex flex-col",
         isEditMode && "ring-2 ring-primary/20 cursor-move",
         isHidden && "opacity-50",
         className
@@ -34,7 +34,7 @@ export const WidgetContainer = ({
           {title && <span className="text-xs font-medium">{title}</span>}
         </div>
       )}
-      <div className={cn(isEditMode && "pt-8")}>{children}</div>
+      <div className={cn("flex-1", isEditMode && "pt-8")}>{children}</div>
     </Card>
   );
 };
