@@ -123,7 +123,7 @@ export const SpmSp2dTableWidget = () => {
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto max-h-[600px]">
           <Table>
             <TableHeader className="sticky top-0 bg-background z-10">
               <TableRow className="bg-muted/50">
