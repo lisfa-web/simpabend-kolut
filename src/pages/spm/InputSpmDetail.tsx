@@ -455,7 +455,12 @@ const InputSpmDetail = () => {
                 </div>
                 <div>
                   <dt className="text-sm text-muted-foreground">Tanggal Ajuan</dt>
-                  <dd className="font-medium">{new Date(spm.tanggal_ajuan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</dd>
+                  <dd className="font-medium">
+                    {spm.tanggal_ajuan 
+                      ? new Date(spm.tanggal_ajuan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                      : new Date(spm.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                    }
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-sm text-muted-foreground">OPD</dt>
