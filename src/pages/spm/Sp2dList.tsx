@@ -148,38 +148,39 @@ const Sp2dList = () => {
 
   // Fetch SPM yang sudah disetujui dan belum ada SP2D
   const { data: approvedSpm, isLoading: isLoadingApproved } = useQuery({
-    queryKey: ["approved-spm-for-sp2d"],
+    queryKey: ["approved-spm-for-sp2d", search],
     queryFn: async () => {
-      // Get all SPM IDs that already have SP2D
-      const { data: sp2dList, error: sp2dError } = await supabase
-        .from("sp2d")
-        .select("spm_id");
+      try {
+        // Fetch approved SPM with left join to sp2d to check if SP2D exists
+        let query = supabase
+          .from("spm")
+          .select(`
+            *,
+            opd:opd_id(nama_opd, kode_opd),
+            jenis_spm:jenis_spm_id(nama_jenis, ada_pajak, deskripsi),
+            vendor:vendor_id(nama_vendor, npwp, nama_bank, nomor_rekening, nama_rekening),
+            potongan_pajak_spm(*),
+            sp2d!left(id)
+          `)
+          .eq("status", "disetujui")
+          .is("sp2d.id", null)
+          .order("tanggal_disetujui", { ascending: false });
 
-      if (sp2dError) throw sp2dError;
+        if (search) {
+          query = query.ilike("nomor_spm", `%${search}%`);
+        }
 
-      const usedSpmIds = sp2dList?.map((sp2d) => sp2d.spm_id) || [];
+        const { data, error } = await query;
 
-      // Fetch approved SPM excluding those with SP2D
-      let query = supabase
-        .from("spm")
-        .select(`
-          *,
-          opd:opd_id(nama_opd, kode_opd),
-          jenis_spm:jenis_spm_id(nama_jenis, ada_pajak, deskripsi),
-          vendor:vendor_id(nama_vendor, npwp, nama_bank, nomor_rekening, nama_rekening),
-          potongan_pajak_spm(*)
-        `)
-        .eq("status", "disetujui")
-        .order("tanggal_disetujui", { ascending: false });
-
-      if (usedSpmIds.length > 0) {
-        query = query.not("id", "in", `(${usedSpmIds.join(",")})`);
+        if (error) {
+          console.error("Error fetching approved SPM:", error);
+          throw error;
+        }
+        return data || [];
+      } catch (error) {
+        console.error("Error in approved SPM query:", error);
+        return [];
       }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      return data;
     },
   });
 

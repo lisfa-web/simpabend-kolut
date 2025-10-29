@@ -33,7 +33,7 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
 
         // Apply filters
         if (filters?.search) {
-          query = query.or(`nomor_sp2d.ilike.%${filters.search}%,spm.nomor_spm.ilike.%${filters.search}%`);
+          query = query.ilike("nomor_sp2d", `%${filters.search}%`);
         }
 
         if (filters?.status) {
