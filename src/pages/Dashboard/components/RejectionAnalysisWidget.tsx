@@ -1,10 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { XCircle, TrendingDown, AlertCircle } from "lucide-react";
+import { FileEdit, TrendingDown, AlertCircle } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { Badge } from "@/components/ui/badge";
 
-interface RejectionReason {
+interface RevisionReason {
   stage: string;
   count: number;
   percentage: number;
@@ -13,7 +13,7 @@ interface RejectionReason {
 interface RejectionAnalysisWidgetProps {
   data?: {
     totalRejected: number;
-    byStage: RejectionReason[];
+    byStage: RevisionReason[];
     trendVsLastMonth: number;
   };
   isLoading?: boolean;
@@ -41,8 +41,8 @@ export const RejectionAnalysisWidget = ({ data, isLoading }: RejectionAnalysisWi
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <XCircle className="w-5 h-5" />
-            Analisis Penolakan
+            <FileEdit className="w-5 h-5" />
+            Analisis Revisi
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -57,14 +57,14 @@ export const RejectionAnalysisWidget = ({ data, isLoading }: RejectionAnalysisWi
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <XCircle className="w-5 h-5" />
-            Analisis Penolakan
+            <FileEdit className="w-5 h-5" />
+            Analisis Revisi
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
-            <XCircle className="w-12 h-12 mx-auto mb-2 opacity-20" />
-            <p className="text-sm">Tidak ada data penolakan</p>
+            <FileEdit className="w-12 h-12 mx-auto mb-2 opacity-20" />
+            <p className="text-sm">Tidak ada data revisi</p>
           </div>
         </CardContent>
       </Card>
@@ -77,15 +77,15 @@ export const RejectionAnalysisWidget = ({ data, isLoading }: RejectionAnalysisWi
     percentage: item.percentage,
   }));
 
-  const isPositiveTrend = data.trendVsLastMonth < 0; // Negative trend is good for rejections
+  const isPositiveTrend = data.trendVsLastMonth < 0; // Negative trend is good for revisions
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <XCircle className="w-5 h-5 text-red-600" />
-            Analisis Penolakan & Revisi
+            <FileEdit className="w-5 h-5 text-orange-600" />
+            Analisis Revisi SPM
           </div>
           <Badge 
             variant={isPositiveTrend ? "default" : "destructive"}
@@ -99,7 +99,7 @@ export const RejectionAnalysisWidget = ({ data, isLoading }: RejectionAnalysisWi
             {Math.abs(data.trendVsLastMonth).toFixed(1)}% vs bulan lalu
           </Badge>
         </CardTitle>
-        <p className="text-sm text-muted-foreground">Distribusi penolakan per tahap verifikasi</p>
+        <p className="text-sm text-muted-foreground">Distribusi revisi per tahap verifikasi</p>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 md:grid-cols-2">
@@ -135,10 +135,10 @@ export const RejectionAnalysisWidget = ({ data, isLoading }: RejectionAnalysisWi
               </PieChart>
             </ResponsiveContainer>
             
-            {/* Total Rejected */}
+            {/* Total Revisions */}
             <div className="text-center mt-4">
-              <div className="text-3xl font-bold text-red-600">{data.totalRejected}</div>
-              <div className="text-sm text-muted-foreground">Total Ditolak/Revisi</div>
+              <div className="text-3xl font-bold text-orange-600">{data.totalRejected}</div>
+              <div className="text-sm text-muted-foreground">Total Revisi</div>
             </div>
           </div>
 
@@ -172,11 +172,11 @@ export const RejectionAnalysisWidget = ({ data, isLoading }: RejectionAnalysisWi
                   
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
-                      {item.count} SPM ditolak/revisi
+                      {item.count} SPM perlu revisi
                     </span>
                     <div className="flex items-center gap-1">
                       {index === 0 && (
-                        <Badge variant="destructive" className="text-xs">
+                        <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-700 border-orange-300">
                           Tertinggi
                         </Badge>
                       )}
@@ -206,7 +206,7 @@ export const RejectionAnalysisWidget = ({ data, isLoading }: RejectionAnalysisWi
               <p className="text-xs text-muted-foreground">
                 {data.byStage[0] && (
                   <>
-                    Fokus improvement pada tahap <span className="font-semibold">{data.byStage[0].stage}</span> yang memiliki tingkat penolakan tertinggi ({data.byStage[0].percentage.toFixed(1)}%).
+                    Fokus improvement pada tahap <span className="font-semibold">{data.byStage[0].stage}</span> yang memiliki tingkat revisi tertinggi ({data.byStage[0].percentage.toFixed(1)}%).
                   </>
                 )}
               </p>
