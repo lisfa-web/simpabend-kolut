@@ -561,6 +561,51 @@ export type Database = {
         }
         Relationships: []
       }
+      pihak_ketiga: {
+        Row: {
+          alamat: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          nama_bank: string | null
+          nama_pihak_ketiga: string
+          nama_rekening: string | null
+          nomor_rekening: string | null
+          npwp: string | null
+          telepon: string | null
+          updated_at: string
+        }
+        Insert: {
+          alamat?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          nama_bank?: string | null
+          nama_pihak_ketiga: string
+          nama_rekening?: string | null
+          nomor_rekening?: string | null
+          npwp?: string | null
+          telepon?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alamat?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          nama_bank?: string | null
+          nama_pihak_ketiga?: string
+          nama_rekening?: string | null
+          nomor_rekening?: string | null
+          npwp?: string | null
+          telepon?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pin_otp: {
         Row: {
           created_at: string | null

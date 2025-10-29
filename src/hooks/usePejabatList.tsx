@@ -5,11 +5,13 @@ interface PejabatFilters {
   opd_id?: string;
   is_active?: boolean;
   search?: string;
+  enabled?: boolean;
 }
 
 export const usePejabatList = (filters?: PejabatFilters) => {
   return useQuery({
     queryKey: ["pejabat", filters],
+    enabled: filters?.enabled !== false,
     queryFn: async () => {
       console.log("Fetching pejabat with filters:", filters);
       
