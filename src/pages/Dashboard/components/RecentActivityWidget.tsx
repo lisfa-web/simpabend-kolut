@@ -101,7 +101,7 @@ export const RecentActivityWidget = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="w-5 h-5" />
-            Aktivitas Terbaru
+            Aktivitas SPM Terbaru
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-1">
@@ -120,7 +120,7 @@ export const RecentActivityWidget = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Activity className="w-5 h-5" />
-          Aktivitas Terbaru
+          Aktivitas SPM Terbaru
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 overflow-hidden">
