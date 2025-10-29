@@ -4,6 +4,8 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
   Table,
   TableBody,
@@ -53,6 +55,8 @@ const UserList = () => {
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
+  const pagination = usePagination(10);
+  
   const isSuperAdminUser = isSuperAdmin();
   const [resetPasswordDialog, setResetPasswordDialog] = useState<{
     open: boolean;
@@ -218,7 +222,7 @@ const UserList = () => {
                   </TableCell>
                 </TableRow>
               ) : filteredUsers && filteredUsers.length > 0 ? (
-                filteredUsers.map((user: any) => (
+                pagination.paginateData(filteredUsers).map((user: any) => (
                   <TableRow key={user.id}>
                     <TableCell className="font-medium">{user.full_name}</TableCell>
                     <TableCell>{user.email}</TableCell>
@@ -318,6 +322,16 @@ const UserList = () => {
               )}
             </TableBody>
           </Table>
+          {filteredUsers && filteredUsers.length > 0 && (
+            <DataTablePagination
+              pageIndex={pagination.pagination.pageIndex}
+              pageSize={pagination.pagination.pageSize}
+              pageCount={pagination.getPageCount(filteredUsers.length)}
+              totalItems={filteredUsers.length}
+              onPageChange={pagination.goToPage}
+              onPageSizeChange={pagination.setPageSize}
+            />
+          )}
         </div>
       </div>
 

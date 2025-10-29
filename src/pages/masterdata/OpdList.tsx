@@ -4,6 +4,8 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
   Table,
   TableBody,
@@ -34,6 +36,8 @@ const OpdList = () => {
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
   const [activateId, setActivateId] = useState<string | null>(null);
   const [permanentDeleteId, setPermanentDeleteId] = useState<string | null>(null);
+  
+  const pagination = usePagination(10);
 
   const { data: opdList, isLoading } = useOpdList();
   const { deleteOpd, activateOpd, permanentDeleteOpd } = useOpdMutation();
@@ -119,7 +123,7 @@ const OpdList = () => {
                   </TableCell>
                 </TableRow>
               ) : filteredData && filteredData.length > 0 ? (
-                filteredData.map((opd) => (
+                pagination.paginateData(filteredData).map((opd) => (
                   <TableRow 
                     key={opd.id}
                     className={!opd.is_active ? "opacity-60 bg-muted/30" : ""}
@@ -195,6 +199,16 @@ const OpdList = () => {
               )}
             </TableBody>
           </Table>
+          {filteredData && filteredData.length > 0 && (
+            <DataTablePagination
+              pageIndex={pagination.pagination.pageIndex}
+              pageSize={pagination.pagination.pageSize}
+              pageCount={pagination.getPageCount(filteredData.length)}
+              totalItems={filteredData.length}
+              onPageChange={pagination.goToPage}
+              onPageSizeChange={pagination.setPageSize}
+            />
+          )}
         </div>
       </div>
 

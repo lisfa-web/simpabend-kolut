@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
   Select,
   SelectContent,
@@ -49,6 +51,8 @@ const InputSpmList = () => {
   const [submitSpmId, setSubmitSpmId] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isValidating, setIsValidating] = useState(false);
+  
+  const pagination = usePagination(10);
 
   const { data: spmList, isLoading } = useSpmList({
     search,
@@ -259,7 +263,7 @@ const InputSpmList = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                spmList?.map((spm: any) => (
+                pagination.paginateData(spmList)?.map((spm: any) => (
                   <TableRow key={spm.id}>
                     <TableCell className="font-medium">
                       {spm.nomor_spm || "-"}
@@ -321,6 +325,16 @@ const InputSpmList = () => {
               )}
             </TableBody>
           </Table>
+          {spmList && spmList.length > 0 && (
+            <DataTablePagination
+              pageIndex={pagination.pagination.pageIndex}
+              pageSize={pagination.pagination.pageSize}
+              pageCount={pagination.getPageCount(spmList.length)}
+              totalItems={spmList.length}
+              onPageChange={pagination.goToPage}
+              onPageSizeChange={pagination.setPageSize}
+            />
+          )}
         </div>
       </div>
 

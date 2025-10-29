@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
   Table,
   TableBody,
@@ -43,6 +45,12 @@ const Sp2dList = () => {
   const [search, setSearch] = useState("");
   const [selectedSp2dId, setSelectedSp2dId] = useState<string | null>(null);
   const [showDisburseDialog, setShowDisburseDialog] = useState(false);
+
+  // Pagination hooks
+  const paginationReady = usePagination(10);
+  const paginationTerbit = usePagination(10);
+  const paginationUjiBank = usePagination(10);
+  const paginationCair = usePagination(10);
 
   // Query for SP2D Terbit (pending & diterbitkan)
   const { data: sp2dTerbit, isLoading: isLoadingTerbit } = useSp2dList({
@@ -264,7 +272,7 @@ const Sp2dList = () => {
                       <TableRow>
                         <TableHead>Nomor SPM</TableHead>
                         <TableHead>OPD</TableHead>
-                        <TableHead>Program</TableHead>
+                        <TableHead>Jenis SPM</TableHead>
                         <TableHead>Nilai SPM</TableHead>
                         <TableHead>Tanggal Disetujui</TableHead>
                         <TableHead>Aksi</TableHead>
@@ -283,7 +291,7 @@ const Sp2dList = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        approvedSpm?.map((spm) => (
+                        paginationReady.paginateData(approvedSpm)?.map((spm) => (
                           <TableRow key={spm.id}>
                             <TableCell className="font-medium">
                               {spm.nomor_spm || "-"}
@@ -326,6 +334,16 @@ const Sp2dList = () => {
                       )}
                     </TableBody>
                   </Table>
+                )}
+                {approvedSpm && approvedSpm.length > 0 && (
+                  <DataTablePagination
+                    pageIndex={paginationReady.pagination.pageIndex}
+                    pageSize={paginationReady.pagination.pageSize}
+                    pageCount={paginationReady.getPageCount(approvedSpm.length)}
+                    totalItems={approvedSpm.length}
+                    onPageChange={paginationReady.goToPage}
+                    onPageSizeChange={paginationReady.setPageSize}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -370,7 +388,7 @@ const Sp2dList = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        sp2dTerbit?.map((sp2d) => (
+                        paginationTerbit.paginateData(sp2dTerbit)?.map((sp2d) => (
                           <TableRow key={sp2d.id}>
                             <TableCell className="font-medium">
                               {sp2d.nomor_sp2d || "-"}
@@ -404,6 +422,16 @@ const Sp2dList = () => {
                       )}
                     </TableBody>
                   </Table>
+                )}
+                {sp2dTerbit && sp2dTerbit.length > 0 && (
+                  <DataTablePagination
+                    pageIndex={paginationTerbit.pagination.pageIndex}
+                    pageSize={paginationTerbit.pagination.pageSize}
+                    pageCount={paginationTerbit.getPageCount(sp2dTerbit.length)}
+                    totalItems={sp2dTerbit.length}
+                    onPageChange={paginationTerbit.goToPage}
+                    onPageSizeChange={paginationTerbit.setPageSize}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -448,7 +476,7 @@ const Sp2dList = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        sp2dUjiBank?.map((sp2d) => (
+                        paginationUjiBank.paginateData(sp2dUjiBank)?.map((sp2d) => (
                           <TableRow key={sp2d.id}>
                             <TableCell className="font-medium">
                               {sp2d.nomor_sp2d || "-"}
@@ -482,6 +510,16 @@ const Sp2dList = () => {
                       )}
                     </TableBody>
                   </Table>
+                )}
+                {sp2dUjiBank && sp2dUjiBank.length > 0 && (
+                  <DataTablePagination
+                    pageIndex={paginationUjiBank.pagination.pageIndex}
+                    pageSize={paginationUjiBank.pagination.pageSize}
+                    pageCount={paginationUjiBank.getPageCount(sp2dUjiBank.length)}
+                    totalItems={sp2dUjiBank.length}
+                    onPageChange={paginationUjiBank.goToPage}
+                    onPageSizeChange={paginationUjiBank.setPageSize}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -527,7 +565,7 @@ const Sp2dList = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        sp2dCair?.map((sp2d) => (
+                        paginationCair.paginateData(sp2dCair)?.map((sp2d) => (
                           <TableRow key={sp2d.id}>
                             <TableCell className="font-medium">
                               {sp2d.nomor_sp2d || "-"}
@@ -564,6 +602,16 @@ const Sp2dList = () => {
                       )}
                     </TableBody>
                   </Table>
+                )}
+                {sp2dCair && sp2dCair.length > 0 && (
+                  <DataTablePagination
+                    pageIndex={paginationCair.pagination.pageIndex}
+                    pageSize={paginationCair.pagination.pageSize}
+                    pageCount={paginationCair.getPageCount(sp2dCair.length)}
+                    totalItems={sp2dCair.length}
+                    onPageChange={paginationCair.goToPage}
+                    onPageSizeChange={paginationCair.setPageSize}
+                  />
                 )}
               </CardContent>
             </Card>
