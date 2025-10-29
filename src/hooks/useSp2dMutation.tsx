@@ -250,6 +250,19 @@ export const useSp2dMutation = () => {
 
       if (error) throw error;
 
+      // Send WhatsApp notification to bendahara
+      try {
+        await supabase.functions.invoke('send-workflow-notification', {
+          body: {
+            type: 'sp2d',
+            documentId: id,
+            action: 'disbursed',
+          },
+        });
+      } catch (notifError) {
+        console.error('Failed to send bendahara notification:', notifError);
+      }
+
       // Send WhatsApp notification to vendor
       try {
         console.log('Sending disbursement notification for SP2D:', id);
@@ -261,12 +274,12 @@ export const useSp2dMutation = () => {
         );
 
         if (notifError) {
-          console.error('Failed to send disbursement notification:', notifError);
+          console.error('Failed to send vendor notification:', notifError);
         } else {
-          console.log('Disbursement notification sent:', notifResult);
+          console.log('Vendor notification sent:', notifResult);
         }
       } catch (notifError) {
-        console.error('Error sending disbursement notification:', notifError);
+        console.error('Error sending vendor notification:', notifError);
         // Don't throw error - notification failure shouldn't block disbursement
       }
 
@@ -302,6 +315,20 @@ export const useSp2dMutation = () => {
         .single();
 
       if (error) throw error;
+
+      // Send notification to bendahara
+      try {
+        await supabase.functions.invoke('send-workflow-notification', {
+          body: {
+            type: 'sp2d',
+            documentId: id,
+            action: 'sent_to_bank',
+          },
+        });
+      } catch (notifError) {
+        console.error('Failed to send notification:', notifError);
+      }
+
       return result;
     },
     onSuccess: () => {

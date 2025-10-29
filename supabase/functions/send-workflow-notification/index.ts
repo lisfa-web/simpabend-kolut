@@ -10,7 +10,7 @@ const corsHeaders = {
 interface NotificationRequest {
   type: 'spm' | 'sp2d';
   documentId: string;
-  action: 'created' | 'submitted' | 'verified' | 'approved' | 'rejected' | 'revised';
+  action: 'created' | 'submitted' | 'verified' | 'approved' | 'rejected' | 'revised' | 'sent_to_bank' | 'disbursed';
   stage?: string;
   verifiedBy?: string;
   notes?: string;
@@ -240,6 +240,34 @@ serve(async (req) => {
         if (sp2d.spm?.bendahara_id) {
           recipientIds = [sp2d.spm.bendahara_id];
           messageTemplate = `❌ *SP2D Ditolak*\n\nNomor: ${sp2d.nomor_sp2d}\nNomor SPM: ${sp2d.spm?.nomor_spm}\nCatatan: ${notes || '-'}\n\nSilakan cek kembali dokumen SPM.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+        }
+      
+      } else if (action === 'sent_to_bank') {
+        // Notify bendahara when SP2D is sent to bank
+        if (sp2d.spm?.bendahara_id) {
+          recipientIds = [sp2d.spm.bendahara_id];
+          const tanggalKirim = sp2d.tanggal_kirim_bank 
+            ? new Date(sp2d.tanggal_kirim_bank).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              })
+            : '-';
+          messageTemplate = `🏦 *SP2D Dikirim ke Bank*\n\nNomor SP2D: ${sp2d.nomor_sp2d}\nNomor SPM: ${sp2d.spm?.nomor_spm}\nNilai: ${formatCurrency(sp2d.nilai_sp2d)}\nTanggal Kirim: ${tanggalKirim}\n\nSP2D sedang diproses di Bank Sultra untuk pengujian.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
+        }
+      
+      } else if (action === 'disbursed') {
+        // Notify bendahara when SP2D is disbursed
+        if (sp2d.spm?.bendahara_id) {
+          recipientIds = [sp2d.spm.bendahara_id];
+          const tanggalCair = sp2d.tanggal_cair 
+            ? new Date(sp2d.tanggal_cair).toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+              })
+            : '-';
+          messageTemplate = `💰 *SP2D Telah Dicairkan*\n\nNomor SP2D: ${sp2d.nomor_sp2d}\nNomor SPM: ${sp2d.spm?.nomor_spm}\nNilai: ${formatCurrency(sp2d.nilai_sp2d)}\nBank: ${sp2d.nama_bank}\nRekening: ${sp2d.nomor_rekening}\nNama Rekening: ${sp2d.nama_rekening}\nTanggal Cair: ${tanggalCair}\n\nDana telah ditransfer ke rekening.\n\nSent via\nSIMPA BEND BKAD KOLUT`;
         }
       }
     }
