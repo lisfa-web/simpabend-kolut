@@ -231,7 +231,7 @@ const InputSpmForm = () => {
           <TabsContent value="pajak" className="mt-6">
             {formData && (
               <SpmPajakForm
-                jenisSpm={formData.jenis_spm}
+                jenisSpm={formData.jenis_spm_id}
                 nilaiSpm={formData.nilai_spm}
                 potonganPajak={potonganPajak}
                 onPotonganChange={setPotonganPajak}
@@ -244,7 +244,7 @@ const InputSpmForm = () => {
 
           <TabsContent value="lampiran" className="mt-6">
             <SpmLampiranForm
-              jenisSpm={formData?.jenis_spm}
+              jenisSpm={formData?.jenis_spm_id}
               files={files}
               onFilesChange={setFiles}
               onNext={() => setActiveTab("review")}
@@ -259,9 +259,7 @@ const InputSpmForm = () => {
                 files={files}
                 potonganPajak={potonganPajak}
                 opdName={opdName}
-                programName={programName}
-                kegiatanName={kegiatanName}
-                subkegiatanName={subkegiatanName}
+                jenisSpmLabel={jenisSpmLabel}
                 vendorName={vendorName}
                 onSubmit={handleFinalSubmit}
                 onBack={() => setActiveTab("lampiran")}

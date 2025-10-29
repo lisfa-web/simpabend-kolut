@@ -33,7 +33,7 @@ const LaporanSpm = () => {
     tanggal_sampai: tanggalSampai,
     status: statusFilter,
     opd_id: opdFilter,
-    jenis_spm: jenisSpmFilter,
+    jenis_spm_id: jenisSpmFilter,
   });
 
   const totalSpm = spmList?.length || 0;
