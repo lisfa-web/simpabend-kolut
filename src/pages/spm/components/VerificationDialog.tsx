@@ -31,6 +31,13 @@ interface VerificationDialogProps {
   isLoading?: boolean;
   onRequestPin?: () => void;
   isRequestingPin?: boolean;
+  spmInfo?: {
+    nomor_spm?: string;
+    nilai_spm?: number;
+    uraian?: string;
+    nama_penerima?: string;
+    opd_nama?: string;
+  };
 }
 
 export const VerificationDialog = ({
@@ -44,6 +51,7 @@ export const VerificationDialog = ({
   isLoading = false,
   onRequestPin,
   isRequestingPin = false,
+  spmInfo,
 }: VerificationDialogProps) => {
   const [action, setAction] = useState<"approve" | "revise" | null>(null);
   const [catatan, setCatatan] = useState("");
@@ -114,6 +122,42 @@ export const VerificationDialog = ({
         </DialogHeader>
 
         <div className="space-y-4 py-4">
+          {/* SPM Info */}
+          {spmInfo && (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-2">
+              <div className="flex justify-between items-start">
+                <span className="text-sm font-medium">Nomor SPM:</span>
+                <span className="text-sm font-semibold">{spmInfo.nomor_spm || "DRAFT"}</span>
+              </div>
+              {spmInfo.opd_nama && (
+                <div className="flex justify-between items-start">
+                  <span className="text-sm font-medium">OPD:</span>
+                  <span className="text-sm text-right">{spmInfo.opd_nama}</span>
+                </div>
+              )}
+              {spmInfo.nama_penerima && (
+                <div className="flex justify-between items-start">
+                  <span className="text-sm font-medium">Penerima:</span>
+                  <span className="text-sm text-right">{spmInfo.nama_penerima}</span>
+                </div>
+              )}
+              {spmInfo.nilai_spm && (
+                <div className="flex justify-between items-start">
+                  <span className="text-sm font-medium">Nilai SPM:</span>
+                  <span className="text-sm font-semibold">
+                    {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(spmInfo.nilai_spm)}
+                  </span>
+                </div>
+              )}
+              {spmInfo.uraian && (
+                <div className="pt-2 border-t">
+                  <span className="text-sm font-medium block mb-1">Uraian:</span>
+                  <p className="text-sm text-muted-foreground">{spmInfo.uraian}</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {!action && (
             <div className="grid grid-cols-2 gap-3">
               <Button

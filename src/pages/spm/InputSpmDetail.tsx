@@ -683,6 +683,13 @@ const InputSpmDetail = () => {
           isLoading={verifySpm.isPending}
           onRequestPin={verificationConfig.showPin ? handleRequestPin : undefined}
           isRequestingPin={requestPinMutation.isPending}
+          spmInfo={{
+            nomor_spm: spm?.nomor_spm,
+            nilai_spm: spm?.nilai_spm,
+            uraian: spm?.uraian,
+            nama_penerima: spm?.nama_penerima,
+            opd_nama: spm?.opd?.nama_opd,
+          }}
         />
       )}
     </DashboardLayout>
