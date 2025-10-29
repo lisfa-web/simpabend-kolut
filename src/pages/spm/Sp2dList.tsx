@@ -57,6 +57,32 @@ const Sp2dList = () => {
     status: statusFilter,
   });
 
+  // Query for SP2D in bank testing phase
+  const { data: sp2dUjiBank, isLoading: isLoadingUjiBank } = useQuery({
+    queryKey: ["sp2d-uji-bank", search],
+    queryFn: async () => {
+      let query = supabase
+        .from("sp2d")
+        .select(`
+          *,
+          spm:spm_id(
+            nomor_spm,
+            opd:opd_id(nama_opd)
+          )
+        `)
+        .eq("status", "diuji_bank")
+        .order("tanggal_kirim_bank", { ascending: false });
+
+      if (search) {
+        query = query.or(`nomor_sp2d.ilike.%${search}%,spm.nomor_spm.ilike.%${search}%`);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { disburseSp2d } = useSp2dMutation();
 
   // Query untuk logo dan nama instansi
@@ -195,12 +221,19 @@ const Sp2dList = () => {
         </div>
 
         <Tabs defaultValue="ready" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3">
             <TabsTrigger value="ready" className="gap-2">
               <FileCheck className="h-4 w-4" />
               SPM Siap Diproses
               {approvedSpm && approvedSpm.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{approvedSpm.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="uji" className="gap-2">
+              <Banknote className="h-4 w-4" />
+              Tahap Uji SP2D
+              {sp2dUjiBank && sp2dUjiBank.length > 0 && (
+                <Badge variant="secondary" className="ml-1">{sp2dUjiBank.length}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="list">Daftar SP2D Terbit</TabsTrigger>
@@ -275,6 +308,86 @@ const Sp2dList = () => {
                                 >
                                   <Plus className="h-4 w-4 mr-1" />
                                   Terbit SP2D
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="uji" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>SP2D dalam Tahap Uji Bank</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  SP2D yang sedang dalam proses uji di Bank Sultra untuk pemindahbukuan
+                </p>
+              </CardHeader>
+              <CardContent className="p-0">
+                {isLoadingUjiBank ? (
+                  <div className="flex justify-center items-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nomor SP2D</TableHead>
+                        <TableHead>Nomor SPM</TableHead>
+                        <TableHead>OPD</TableHead>
+                        <TableHead>Nilai SP2D</TableHead>
+                        <TableHead>Dikirim ke Bank</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sp2dUjiBank?.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="flex flex-col items-center gap-2">
+                              <Banknote className="h-12 w-12 text-muted-foreground/50" />
+                              <p className="text-muted-foreground">
+                                Tidak ada SP2D dalam tahap uji bank
+                              </p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        sp2dUjiBank?.map((sp2d) => (
+                          <TableRow key={sp2d.id}>
+                            <TableCell className="font-medium">
+                              {sp2d.nomor_sp2d || "-"}
+                            </TableCell>
+                            <TableCell>{sp2d.spm?.nomor_spm || "-"}</TableCell>
+                            <TableCell>{sp2d.spm?.opd?.nama_opd || "-"}</TableCell>
+                            <TableCell>
+                              {formatCurrency(Number(sp2d.nilai_sp2d))}
+                            </TableCell>
+                            <TableCell>
+                              {(sp2d as any).tanggal_kirim_bank
+                                ? format(new Date((sp2d as any).tanggal_kirim_bank), "dd MMM yyyy HH:mm", {
+                                    locale: localeId,
+                                  })
+                                : "-"}
+                            </TableCell>
+                            <TableCell>
+                              <Sp2dStatusBadge status={sp2d.status || "pending"} />
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => navigate(`/sp2d/${sp2d.id}`)}
+                                >
+                                  <Eye className="h-4 w-4" />
                                 </Button>
                               </div>
                             </TableCell>
