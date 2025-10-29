@@ -25,6 +25,7 @@ import { PeriodComparisonWidget } from "./Dashboard/components/PeriodComparisonW
 import { RejectionAnalysisWidget } from "./Dashboard/components/RejectionAnalysisWidget";
 import { QuickActions } from "./Dashboard/components/QuickActions";
 import { PeriodFilter } from "./Dashboard/components/PeriodFilter";
+import { SpmSp2dTableWidget } from "./Dashboard/components/SpmSp2dTableWidget";
 import { cn } from "@/lib/utils";
 import { Sparkline } from "@/components/Sparkline";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -76,6 +77,9 @@ const WIDGET_LABELS = [{
 }, {
   id: "action-items",
   label: "Action Items"
+}, {
+  id: "spm-sp2d-table",
+  label: "Tabel SPM & SP2D"
 }];
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -562,6 +566,13 @@ const Dashboard = () => {
                 <div className="p-4">
                   <ActionItemsWidget />
                 </div>
+              </WidgetContainer>
+            </div>}
+
+          {/* SPM & SP2D Table Widget */}
+          {!isWidgetHidden("spm-sp2d-table") && <div key="spm-sp2d-table">
+              <WidgetContainer isEditMode={isEditMode} title="Tabel SPM & SP2D">
+                <SpmSp2dTableWidget />
               </WidgetContainer>
             </div>}
         </GridLayout>

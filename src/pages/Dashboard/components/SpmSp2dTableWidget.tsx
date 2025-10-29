@@ -78,14 +78,21 @@ export const SpmSp2dTableWidget = () => {
       const { data, error, count } = await supabase
         .from("spm")
         .select(`
-          *,
+          id,
+          nomor_antrian,
+          tanggal_ajuan,
+          nomor_spm,
+          nama_penerima,
+          verified_by_pbmd,
+          verified_by_akuntansi,
+          verified_by_perbendaharaan,
+          status,
           opd:opd_id(nama_opd),
           sp2d(
             id,
             nomor_sp2d,
             nilai_sp2d,
-            status,
-            tanggal_sp2d
+            status
           )
         `, { count: 'exact' })
         .not("status", "eq", "draft")
@@ -95,6 +102,8 @@ export const SpmSp2dTableWidget = () => {
       if (error) throw error;
       return { data: data || [], count: count || 0 };
     },
+    staleTime: 30000,
+    refetchInterval: 60000,
   });
 
   const totalPages = Math.ceil((data?.count || 0) / pageSize);
