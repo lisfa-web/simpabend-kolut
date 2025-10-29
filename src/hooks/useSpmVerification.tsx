@@ -131,8 +131,13 @@ export const useSpmVerification = (role: string) => {
               throw new Error("Nomor antrian hari ini sudah mencapai batas maksimal (999)");
             }
             
-            // Format 3 digit: 001, 002, ..., 999
-            updateData.nomor_antrian = String(nextNumber).padStart(3, "0");
+            // Format: 001-291025 (nomor-DDMMYY)
+            const day = String(now.getDate()).padStart(2, "0");
+            const month = String(now.getMonth() + 1).padStart(2, "0");
+            const year = String(now.getFullYear()).slice(-2);
+            const dateSuffix = `${day}${month}${year}`;
+            
+            updateData.nomor_antrian = `${String(nextNumber).padStart(3, "0")}-${dateSuffix}`;
           }
           break;
         case "pbmd":

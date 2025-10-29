@@ -144,7 +144,7 @@ export const VerificationDialog = ({
                     <div className="space-y-1">
                       <p className="text-sm font-medium">Nomor Antrian Otomatis</p>
                       <p className="text-sm text-muted-foreground">
-                        Nomor Antrian (001-999) akan digenerate otomatis dan reset setiap hari.
+                        Nomor Antrian (contoh: 001-291025) akan digenerate otomatis dengan format: nomor-tanggal (DDMMYY), reset setiap hari.
                       </p>
                     </div>
                   </div>
