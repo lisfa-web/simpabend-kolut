@@ -29,12 +29,8 @@ import OpdList from "./pages/masterdata/OpdList";
 import OpdForm from "./pages/masterdata/OpdForm";
 import VendorForm from "./pages/masterdata/VendorForm";
 import VendorList from "./pages/masterdata/VendorList";
-import ProgramList from "./pages/masterdata/ProgramList";
-import ProgramForm from "./pages/masterdata/ProgramForm";
-import KegiatanList from "./pages/masterdata/KegiatanList";
-import KegiatanForm from "./pages/masterdata/KegiatanForm";
-import SubkegiatanList from "./pages/masterdata/SubkegiatanList";
-import SubkegiatanForm from "./pages/masterdata/SubkegiatanForm";
+import JenisSpmList from "./pages/masterdata/JenisSpmList";
+import JenisSpmForm from "./pages/masterdata/JenisSpmForm";
 import MasterPajakList from "./pages/masterdata/MasterPajakList";
 import MasterPajakForm from "./pages/masterdata/MasterPajakForm";
 import PajakPerJenisSpmList from "./pages/masterdata/PajakPerJenisSpmList";
@@ -136,20 +132,9 @@ const App = () => (
             <Route path="/masterdata/vendor/create" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
             <Route path="/masterdata/vendor/:id/edit" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
             
-            <Route path="/masterdata/program" element={<ProtectedRoute><ProgramList /></ProtectedRoute>} />
-            <Route path="/masterdata/program/new" element={<ProtectedRoute><ProgramForm /></ProtectedRoute>} />
-            <Route path="/masterdata/program/:id" element={<ProtectedRoute><ProgramForm /></ProtectedRoute>} />
-            <Route path="/masterdata/program/:id/edit" element={<ProtectedRoute><ProgramForm /></ProtectedRoute>} />
-            
-            <Route path="/masterdata/kegiatan" element={<ProtectedRoute><KegiatanList /></ProtectedRoute>} />
-            <Route path="/masterdata/kegiatan/new" element={<ProtectedRoute><KegiatanForm /></ProtectedRoute>} />
-            <Route path="/masterdata/kegiatan/:id" element={<ProtectedRoute><KegiatanForm /></ProtectedRoute>} />
-            <Route path="/masterdata/kegiatan/:id/edit" element={<ProtectedRoute><KegiatanForm /></ProtectedRoute>} />
-            
-            <Route path="/masterdata/subkegiatan" element={<ProtectedRoute><SubkegiatanList /></ProtectedRoute>} />
-            <Route path="/masterdata/subkegiatan/new" element={<ProtectedRoute><SubkegiatanForm /></ProtectedRoute>} />
-            <Route path="/masterdata/subkegiatan/:id" element={<ProtectedRoute><SubkegiatanForm /></ProtectedRoute>} />
-            <Route path="/masterdata/subkegiatan/:id/edit" element={<ProtectedRoute><SubkegiatanForm /></ProtectedRoute>} />
+            <Route path="/masterdata/jenis-spm" element={<ProtectedRoute><JenisSpmList /></ProtectedRoute>} />
+            <Route path="/masterdata/jenis-spm/tambah" element={<ProtectedRoute><JenisSpmForm /></ProtectedRoute>} />
+            <Route path="/masterdata/jenis-spm/edit/:id" element={<ProtectedRoute><JenisSpmForm /></ProtectedRoute>} />
             
             <Route path="/masterdata/pajak" element={<ProtectedRoute><MasterPajakList /></ProtectedRoute>} />
             <Route path="/masterdata/pajak/tambah" element={<ProtectedRoute><MasterPajakForm /></ProtectedRoute>} />

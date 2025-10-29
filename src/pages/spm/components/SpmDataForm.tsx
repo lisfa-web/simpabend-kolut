@@ -71,7 +71,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
 
   const { data: opdList, isLoading: opdLoading } = useOpdList({ is_active: true });
   const { data: jenisSpmList, isLoading: jenisSpmLoading } = useJenisSpmList({ is_active: true });
-  const { data: vendorList } = useVendorList({ is_active: true });
+  const { data: vendorList, isLoading: vendorLoading } = useVendorList({ is_active: true });
 
   // Reset form dengan defaultValues saat mode edit
   useEffect(() => {
@@ -121,7 +121,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
     setPendingData(null);
   };
 
-  if (opdLoading || programLoading) {
+  if (opdLoading || jenisSpmLoading || vendorLoading) {
     return (
       <div className="flex justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

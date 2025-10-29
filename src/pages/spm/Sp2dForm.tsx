@@ -78,9 +78,7 @@ const Sp2dForm = () => {
         .select(`
           *,
           opd:opd_id(nama_opd),
-          program:program_id(nama_program),
-          kegiatan:kegiatan_id(nama_kegiatan),
-          subkegiatan:subkegiatan_id(nama_subkegiatan),
+          jenis_spm:jenis_spm_id(nama_jenis),
           vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening),
           potongan_pajak_spm(*)
         `)
@@ -250,15 +248,11 @@ const Sp2dForm = () => {
                     <div className="p-4 bg-muted rounded-lg space-y-2">
                       <p className="text-sm">
                         <span className="font-semibold">Jenis SPM:</span>{" "}
-                        {selectedSpm.jenis_spm?.toUpperCase().replace(/_/g, ' ')}
+                        {selectedSpm.jenis_spm?.nama_jenis}
                       </p>
                       <p className="text-sm">
                         <span className="font-semibold">OPD:</span>{" "}
                         {selectedSpm.opd?.nama_opd}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-semibold">Program:</span>{" "}
-                        {selectedSpm.program?.nama_program || "-"}
                       </p>
                       <p className="text-sm">
                         <span className="font-semibold">Vendor:</span>{" "}

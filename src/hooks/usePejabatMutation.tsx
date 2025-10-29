@@ -72,23 +72,10 @@ export const usePejabatMutation = () => {
 
   const deletePejabat = useMutation({
     mutationFn: async (id: string) => {
-      // Check dependencies before deactivating
-      const { data: dependencies, error: depsError } = await supabase
-        .rpc("check_pejabat_dependencies", { pejabat_id_param: id });
-
-      if (depsError) throw depsError;
-
-      const deps = dependencies as any;
-      if (!deps.can_deactivate) {
-        throw new Error(
-          `Tidak dapat menonaktifkan pejabat. Masih digunakan di: ${deps.surat_count} surat`
-        );
-      }
-
-      // Soft delete (set is_active to false)
+      // Simply delete the pejabat - no dependency check needed
       const { error } = await supabase
         .from("pejabat")
-        .update({ is_active: false })
+        .delete()
         .eq("id", id);
 
       if (error) throw error;
@@ -97,7 +84,7 @@ export const usePejabatMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["pejabat"] });
       toast({
         title: "Berhasil",
-        description: "Data pejabat berhasil dinonaktifkan",
+        description: "Data pejabat berhasil dihapus",
       });
     },
     onError: (error: Error) => {

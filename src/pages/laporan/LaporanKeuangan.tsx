@@ -6,7 +6,6 @@ import { ArrowLeft, Loader2, DollarSign, TrendingUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useLaporanKeuangan } from "@/hooks/useLaporanKeuangan";
 import { useOpdList } from "@/hooks/useOpdList";
-import { useProgramList } from "@/hooks/useProgramList";
 import { FilterPeriode } from "./components/FilterPeriode";
 import { SummaryCard } from "./components/SummaryCard";
 import { ExportButton } from "./components/ExportButton";
@@ -20,15 +19,12 @@ const LaporanKeuangan = () => {
   const [tanggalDari, setTanggalDari] = useState("");
   const [tanggalSampai, setTanggalSampai] = useState("");
   const [opdFilter, setOpdFilter] = useState("all");
-  const [programFilter, setProgramFilter] = useState("all");
 
   const { data: opdList } = useOpdList();
-  const { data: programList } = useProgramList();
   const { data, isLoading, error } = useLaporanKeuangan({
     tanggal_dari: tanggalDari,
     tanggal_sampai: tanggalSampai,
     opd_id: opdFilter,
-    program_id: programFilter,
   });
 
   const spmData = data?.spm || [];
@@ -112,22 +108,6 @@ const LaporanKeuangan = () => {
                     {opdList?.map((opd) => (
                       <SelectItem key={opd.id} value={opd.id}>
                         {opd.nama_opd}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Program</Label>
-                <Select value={programFilter} onValueChange={setProgramFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Semua Program" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Program</SelectItem>
-                    {programList?.map((program) => (
-                      <SelectItem key={program.id} value={program.id}>
-                        {program.nama_program}
                       </SelectItem>
                     ))}
                   </SelectContent>
