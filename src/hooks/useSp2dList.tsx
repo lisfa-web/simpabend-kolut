@@ -4,9 +4,10 @@ import { useAuth } from "./useAuth";
 
 interface Sp2dListFilters {
   search?: string;
-  status?: string;
+  status?: string | string[];
   tanggal_dari?: string;
   tanggal_sampai?: string;
+  opd_id?: string;
 }
 
 export const useSp2dList = (filters?: Sp2dListFilters) => {
@@ -35,8 +36,16 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
           query = query.or(`nomor_sp2d.ilike.%${filters.search}%,spm.nomor_spm.ilike.%${filters.search}%`);
         }
 
-        if (filters?.status && filters.status !== "" && filters.status !== "all") {
-          query = query.eq("status", filters.status as any);
+        if (filters?.status) {
+          if (Array.isArray(filters.status)) {
+            query = query.in("status", filters.status as any);
+          } else if (filters.status !== "" && filters.status !== "all") {
+            query = query.eq("status", filters.status as any);
+          }
+        }
+
+        if (filters?.opd_id) {
+          query = query.eq("spm.opd_id", filters.opd_id);
         }
 
         if (filters?.tanggal_dari) {

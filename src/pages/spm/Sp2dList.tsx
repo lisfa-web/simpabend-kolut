@@ -13,13 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -32,7 +25,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Eye, Loader2, FileCheck, Banknote, Printer } from "lucide-react";
+import { Plus, Search, Eye, Loader2, FileCheck, Banknote } from "lucide-react";
 import { useSp2dList } from "@/hooks/useSp2dList";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
@@ -48,39 +41,25 @@ const Sp2dList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("");
   const [selectedSp2dId, setSelectedSp2dId] = useState<string | null>(null);
   const [showDisburseDialog, setShowDisburseDialog] = useState(false);
 
-  const { data: sp2dList, isLoading, error } = useSp2dList({
+  // Query for SP2D Terbit (pending & diterbitkan)
+  const { data: sp2dTerbit, isLoading: isLoadingTerbit } = useSp2dList({
     search,
-    status: statusFilter,
+    status: ["pending", "diterbitkan"],
   });
 
   // Query for SP2D in bank testing phase
-  const { data: sp2dUjiBank, isLoading: isLoadingUjiBank } = useQuery({
-    queryKey: ["sp2d-uji-bank", search],
-    queryFn: async () => {
-      let query = supabase
-        .from("sp2d")
-        .select(`
-          *,
-          spm:spm_id(
-            nomor_spm,
-            opd:opd_id(nama_opd)
-          )
-        `)
-        .eq("status", "diuji_bank")
-        .order("tanggal_kirim_bank", { ascending: false });
+  const { data: sp2dUjiBank, isLoading: isLoadingUjiBank } = useSp2dList({
+    search,
+    status: "diuji_bank",
+  });
 
-      if (search) {
-        query = query.or(`nomor_sp2d.ilike.%${search}%,spm.nomor_spm.ilike.%${search}%`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
-    },
+  // Query for SP2D Cair
+  const { data: sp2dCair, isLoading: isLoadingCair } = useSp2dList({
+    search,
+    status: "cair",
   });
 
   const { disburseSp2d } = useSp2dMutation();
@@ -209,7 +188,7 @@ const Sp2dList = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Daftar SP2D Terbit</h1>
+            <h1 className="text-3xl font-bold text-foreground">Pengelolaan SP2D</h1>
             <p className="text-muted-foreground">
               Kelola Surat Perintah Pencairan Dana
             </p>
@@ -221,7 +200,7 @@ const Sp2dList = () => {
         </div>
 
         <Tabs defaultValue="ready" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-3">
+          <TabsList className="grid w-full max-w-2xl grid-cols-4">
             <TabsTrigger value="ready" className="gap-2">
               <FileCheck className="h-4 w-4" />
               SPM Siap Diproses
@@ -229,14 +208,27 @@ const Sp2dList = () => {
                 <Badge variant="secondary" className="ml-1">{approvedSpm.length}</Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="terbit" className="gap-2">
+              <FileCheck className="h-4 w-4" />
+              SP2D Terbit
+              {sp2dTerbit && sp2dTerbit.length > 0 && (
+                <Badge variant="secondary" className="ml-1">{sp2dTerbit.length}</Badge>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="uji" className="gap-2">
               <Banknote className="h-4 w-4" />
-              Tahap Uji SP2D
+              Uji Bank
               {sp2dUjiBank && sp2dUjiBank.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{sp2dUjiBank.length}</Badge>
               )}
             </TabsTrigger>
-            <TabsTrigger value="list">Daftar SP2D Terbit</TabsTrigger>
+            <TabsTrigger value="cair" className="gap-2">
+              <Banknote className="h-4 w-4" />
+              SP2D Cair
+              {sp2dCair && sp2dCair.length > 0 && (
+                <Badge variant="secondary" className="ml-1">{sp2dCair.length}</Badge>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="ready" className="space-y-4">
@@ -321,6 +313,84 @@ const Sp2dList = () => {
             </Card>
           </TabsContent>
 
+          <TabsContent value="terbit" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Daftar SP2D Terbit</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  SP2D yang baru dibuat atau sudah terbit, siap dikirim ke bank
+                </p>
+              </CardHeader>
+              <CardContent className="p-0">
+                {isLoadingTerbit ? (
+                  <div className="flex justify-center items-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nomor SP2D</TableHead>
+                        <TableHead>Nomor SPM</TableHead>
+                        <TableHead>OPD</TableHead>
+                        <TableHead>Nilai SP2D</TableHead>
+                        <TableHead>Tanggal Terbit</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sp2dTerbit?.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <div className="flex flex-col items-center gap-2">
+                              <FileCheck className="h-12 w-12 text-muted-foreground/50" />
+                              <p className="text-muted-foreground">
+                                Tidak ada SP2D yang terbit
+                              </p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        sp2dTerbit?.map((sp2d) => (
+                          <TableRow key={sp2d.id}>
+                            <TableCell className="font-medium">
+                              {sp2d.nomor_sp2d || "-"}
+                            </TableCell>
+                            <TableCell>{sp2d.spm?.nomor_spm || "-"}</TableCell>
+                            <TableCell>{sp2d.spm?.opd?.nama_opd || "-"}</TableCell>
+                            <TableCell>
+                              {formatCurrency(Number(sp2d.nilai_sp2d))}
+                            </TableCell>
+                            <TableCell>
+                              {sp2d.tanggal_sp2d
+                                ? format(new Date(sp2d.tanggal_sp2d), "dd MMM yyyy HH:mm", {
+                                    locale: localeId,
+                                  })
+                                : "-"}
+                            </TableCell>
+                            <TableCell>
+                              <Sp2dStatusBadge status={sp2d.status || "pending"} />
+                            </TableCell>
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate(`/sp2d/${sp2d.id}`)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="uji" className="space-y-4">
             <Card>
               <CardHeader>
@@ -371,8 +441,8 @@ const Sp2dList = () => {
                               {formatCurrency(Number(sp2d.nilai_sp2d))}
                             </TableCell>
                             <TableCell>
-                              {(sp2d as any).tanggal_kirim_bank
-                                ? format(new Date((sp2d as any).tanggal_kirim_bank), "dd MMM yyyy HH:mm", {
+                              {sp2d.tanggal_kirim_bank
+                                ? format(new Date(sp2d.tanggal_kirim_bank), "dd MMM yyyy HH:mm", {
                                     locale: localeId,
                                   })
                                 : "-"}
@@ -381,15 +451,13 @@ const Sp2dList = () => {
                               <Sp2dStatusBadge status={sp2d.status || "pending"} />
                             </TableCell>
                             <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => navigate(`/sp2d/${sp2d.id}`)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate(`/sp2d/${sp2d.id}`)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))
@@ -401,54 +469,18 @@ const Sp2dList = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="list" className="space-y-4">
+          <TabsContent value="cair" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Filter & Pencarian</CardTitle>
+                <CardTitle>Daftar SP2D Cair</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  SP2D yang sudah dicairkan ke rekening vendor
+                </p>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Cari nomor SP2D/SPM..."
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                  <Select 
-                    value={statusFilter || "all"} 
-                    onValueChange={(value) => setStatusFilter(value === "all" ? "" : value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Semua Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Semua Status</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="diproses">Diproses</SelectItem>
-                      <SelectItem value="diterbitkan">Diterbitkan</SelectItem>
-                      <SelectItem value="cair">Dicairkan</SelectItem>
-                      <SelectItem value="gagal">Gagal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
               <CardContent className="p-0">
-                {isLoading ? (
+                {isLoadingCair ? (
                   <div className="flex justify-center items-center p-8">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  </div>
-                ) : error ? (
-                  <div className="flex flex-col justify-center items-center p-8 text-center">
-                    <p className="text-destructive mb-4">Gagal memuat data SP2D</p>
-                    <Button variant="outline" onClick={() => window.location.reload()}>
-                      Coba Lagi
-                    </Button>
                   </div>
                 ) : (
                   <Table>
@@ -460,20 +492,24 @@ const Sp2dList = () => {
                         <TableHead>Nilai SP2D</TableHead>
                         <TableHead>Total Potongan</TableHead>
                         <TableHead>Nilai Diterima</TableHead>
-                        <TableHead>Tanggal SP2D</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>Tanggal Cair</TableHead>
                         <TableHead>Aksi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {sp2dList?.length === 0 ? (
+                      {sp2dCair?.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={9} className="text-center py-8">
-                            Tidak ada data SP2D
+                          <TableCell colSpan={8} className="text-center py-8">
+                            <div className="flex flex-col items-center gap-2">
+                              <Banknote className="h-12 w-12 text-muted-foreground/50" />
+                              <p className="text-muted-foreground">
+                                Tidak ada SP2D yang sudah cair
+                              </p>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ) : (
-                        sp2dList?.map((sp2d) => (
+                        sp2dCair?.map((sp2d) => (
                           <TableRow key={sp2d.id}>
                             <TableCell className="font-medium">
                               {sp2d.nomor_sp2d || "-"}
@@ -490,39 +526,20 @@ const Sp2dList = () => {
                               {formatCurrency(Number(sp2d.nilai_diterima || sp2d.nilai_sp2d))}
                             </TableCell>
                             <TableCell>
-                              {sp2d.tanggal_sp2d
-                                ? format(new Date(sp2d.tanggal_sp2d), "dd MMM yyyy", {
+                              {sp2d.tanggal_cair
+                                ? format(new Date(sp2d.tanggal_cair), "dd MMM yyyy HH:mm", {
                                     locale: localeId,
                                   })
                                 : "-"}
                             </TableCell>
                             <TableCell>
-                              <Sp2dStatusBadge status={sp2d.status || "pending"} />
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => navigate(`/sp2d/${sp2d.id}`)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                
-                                {sp2d.status === "diterbitkan" && (
-                                  <Button
-                                    variant="default"
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedSp2dId(sp2d.id);
-                                      setShowDisburseDialog(true);
-                                    }}
-                                  >
-                                    <Banknote className="h-4 w-4 mr-1" />
-                                    Cairkan Dana
-                                  </Button>
-                                )}
-                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => navigate(`/sp2d/${sp2d.id}`)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))
