@@ -36,6 +36,16 @@ interface SpmLampiranFormProps {
   existingLampiran?: ExistingLampiran[];
 }
 
+// Normalisasi tipe lampiran agar kompatibel dengan berbagai nilai di database
+const normalizeJenisLampiran = (jenis: string) => {
+  const j = (jenis || '').toLowerCase().trim().replace(/\s+/g, "_");
+  if (j === "spm" || j === "dokumen" || j === "dokumen_spm") return "dokumen_spm";
+  if (j === "tbk" || j === "kuitansi" || j === "tbk_kuitansi") return "tbk";
+  if (j === "spj") return "spj";
+  if (j === "lainnya" || j === "lain_lain" || j === "other") return "lainnya";
+  return j; // fallback: pakai apa adanya
+};
+
 export const SpmLampiranForm = ({
   jenisSpm,
   spmId,
@@ -88,7 +98,7 @@ export const SpmLampiranForm = ({
       toast({ title: "Tidak ada ID SPM", description: "Tidak bisa mengganti lampiran tanpa ID SPM", variant: "destructive" });
       return;
     }
-    const rule = getFileValidationRule(l.jenis_lampiran, maxSizeInMB);
+    const rule = getFileValidationRule(normalizeJenisLampiran(l.jenis_lampiran), maxSizeInMB);
     const validation = validateFile(file, rule);
     if (!validation.valid) {
       toast({ title: "File tidak valid", description: validation.error, variant: "destructive" });
@@ -109,7 +119,7 @@ export const SpmLampiranForm = ({
   };
 
   const handleNext = () => {
-    const hasExisting = (jenis: string) => existing.some((l) => l.jenis_lampiran === jenis);
+    const hasExisting = (jenis: string) => existing.some((l) => normalizeJenisLampiran(l.jenis_lampiran) === jenis);
 
     if (files.dokumen_spm.length === 0 && !hasExisting("dokumen_spm")) {
       alert("Dokumen SPM wajib diupload");
@@ -132,14 +142,15 @@ export const SpmLampiranForm = ({
           <div className="space-y-3">
             <div className="text-sm font-medium">Lampiran tersimpan</div>
             {(["dokumen_spm", "tbk", "spj", "lainnya"] as const).map((jenis) => {
-              const list = existing.filter((l) => l.jenis_lampiran === jenis);
+              const list = existing.filter((l) => normalizeJenisLampiran(l.jenis_lampiran) === jenis);
               if (list.length === 0) return null;
               return (
                 <div key={jenis} className="space-y-2">
                   <div className="text-xs text-muted-foreground uppercase">{jenis.replace(/_/g, " ")}</div>
                   <div className="space-y-2">
                     {list.map((l) => {
-                      const accept = getFileValidationRule(l.jenis_lampiran, maxSizeInMB).allowedTypes.join(",");
+                      const normalized = normalizeJenisLampiran(l.jenis_lampiran);
+                      const accept = getFileValidationRule(normalized, maxSizeInMB).allowedTypes.join(",");
                       return (
                         <div key={l.id} className="flex items-center justify-between rounded-md border bg-muted/50 p-2">
                           <div className="min-w-0">
