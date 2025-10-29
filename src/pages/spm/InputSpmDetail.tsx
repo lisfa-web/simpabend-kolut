@@ -468,7 +468,7 @@ const InputSpmDetail = () => {
                 </div>
                 <div>
                   <dt className="text-sm text-muted-foreground">Jenis SPM</dt>
-                  <dd className="font-medium">{spm.jenis_spm?.nama_jenis}</dd>
+                  <dd className="font-medium">{spm.jenis_spm?.nama_jenis || "Belum ditentukan"}</dd>
                 </div>
                 <div>
                   <dt className="text-sm text-muted-foreground">Nilai SPM</dt>
