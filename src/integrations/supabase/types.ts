@@ -166,43 +166,35 @@ export type Database = {
         }
         Relationships: []
       }
-      kegiatan: {
+      jenis_spm: {
         Row: {
+          ada_pajak: boolean | null
           created_at: string | null
+          deskripsi: string | null
           id: string
           is_active: boolean | null
-          kode_kegiatan: string
-          nama_kegiatan: string
-          program_id: string
+          nama_jenis: string
           updated_at: string | null
         }
         Insert: {
+          ada_pajak?: boolean | null
           created_at?: string | null
+          deskripsi?: string | null
           id?: string
           is_active?: boolean | null
-          kode_kegiatan: string
-          nama_kegiatan: string
-          program_id: string
+          nama_jenis: string
           updated_at?: string | null
         }
         Update: {
+          ada_pajak?: boolean | null
           created_at?: string | null
+          deskripsi?: string | null
           id?: string
           is_active?: boolean | null
-          kode_kegiatan?: string
-          nama_kegiatan?: string
-          program_id?: string
+          nama_jenis?: string
           updated_at?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "kegiatan_program_id_fkey"
-            columns: ["program_id"]
-            isOneToOne: false
-            referencedRelation: "program"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       lampiran_spm: {
         Row: {
@@ -252,6 +244,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           jenis_pajak: string
+          kategori: string | null
           kode_pajak: string
           nama_pajak: string
           rekening_pajak: string
@@ -264,6 +257,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           jenis_pajak: string
+          kategori?: string | null
           kode_pajak: string
           nama_pajak: string
           rekening_pajak: string
@@ -276,6 +270,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           jenis_pajak?: string
+          kategori?: string | null
           kode_pajak?: string
           nama_pajak?: string
           rekening_pajak?: string
@@ -720,36 +715,6 @@ export type Database = {
         }
         Relationships: []
       }
-      program: {
-        Row: {
-          created_at: string | null
-          id: string
-          is_active: boolean | null
-          kode_program: string
-          nama_program: string
-          tahun_anggaran: number
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          kode_program: string
-          nama_program: string
-          tahun_anggaran: number
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          kode_program?: string
-          nama_program?: string
-          tahun_anggaran?: number
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       public_token: {
         Row: {
           created_at: string | null
@@ -918,18 +883,19 @@ export type Database = {
           catatan_resepsionis: string | null
           created_at: string | null
           id: string
-          jenis_spm: Database["public"]["Enums"]["jenis_spm"]
-          kegiatan_id: string | null
+          is_aset: boolean | null
+          jenis_spm_id: string | null
+          nama_bank: string | null
+          nama_rekening: string | null
           nilai_bersih: number | null
           nilai_spm: number
           nomor_antrian: string | null
           nomor_berkas: string | null
+          nomor_rekening: string | null
           nomor_spm: string | null
           opd_id: string
           pin_verified_at: string | null
-          program_id: string | null
           status: Database["public"]["Enums"]["status_spm"] | null
-          subkegiatan_id: string | null
           tanggal_ajuan: string | null
           tanggal_akuntansi: string | null
           tanggal_disetujui: string | null
@@ -956,18 +922,19 @@ export type Database = {
           catatan_resepsionis?: string | null
           created_at?: string | null
           id?: string
-          jenis_spm: Database["public"]["Enums"]["jenis_spm"]
-          kegiatan_id?: string | null
+          is_aset?: boolean | null
+          jenis_spm_id?: string | null
+          nama_bank?: string | null
+          nama_rekening?: string | null
           nilai_bersih?: number | null
           nilai_spm: number
           nomor_antrian?: string | null
           nomor_berkas?: string | null
+          nomor_rekening?: string | null
           nomor_spm?: string | null
           opd_id: string
           pin_verified_at?: string | null
-          program_id?: string | null
           status?: Database["public"]["Enums"]["status_spm"] | null
-          subkegiatan_id?: string | null
           tanggal_ajuan?: string | null
           tanggal_akuntansi?: string | null
           tanggal_disetujui?: string | null
@@ -994,18 +961,19 @@ export type Database = {
           catatan_resepsionis?: string | null
           created_at?: string | null
           id?: string
-          jenis_spm?: Database["public"]["Enums"]["jenis_spm"]
-          kegiatan_id?: string | null
+          is_aset?: boolean | null
+          jenis_spm_id?: string | null
+          nama_bank?: string | null
+          nama_rekening?: string | null
           nilai_bersih?: number | null
           nilai_spm?: number
           nomor_antrian?: string | null
           nomor_berkas?: string | null
+          nomor_rekening?: string | null
           nomor_spm?: string | null
           opd_id?: string
           pin_verified_at?: string | null
-          program_id?: string | null
           status?: Database["public"]["Enums"]["status_spm"] | null
-          subkegiatan_id?: string | null
           tanggal_ajuan?: string | null
           tanggal_akuntansi?: string | null
           tanggal_disetujui?: string | null
@@ -1032,10 +1000,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "spm_kegiatan_id_fkey"
-            columns: ["kegiatan_id"]
+            foreignKeyName: "spm_jenis_spm_id_fkey"
+            columns: ["jenis_spm_id"]
             isOneToOne: false
-            referencedRelation: "kegiatan"
+            referencedRelation: "jenis_spm"
             referencedColumns: ["id"]
           },
           {
@@ -1043,20 +1011,6 @@ export type Database = {
             columns: ["opd_id"]
             isOneToOne: false
             referencedRelation: "opd"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "spm_program_id_fkey"
-            columns: ["program_id"]
-            isOneToOne: false
-            referencedRelation: "program"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "spm_subkegiatan_id_fkey"
-            columns: ["subkegiatan_id"]
-            isOneToOne: false
-            referencedRelation: "subkegiatan"
             referencedColumns: ["id"]
           },
           {
@@ -1099,44 +1053,6 @@ export type Database = {
             columns: ["verified_by_resepsionis"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      subkegiatan: {
-        Row: {
-          created_at: string | null
-          id: string
-          is_active: boolean | null
-          kegiatan_id: string
-          kode_subkegiatan: string
-          nama_subkegiatan: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          kegiatan_id: string
-          kode_subkegiatan: string
-          nama_subkegiatan: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          kegiatan_id?: string
-          kode_subkegiatan?: string
-          nama_subkegiatan?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "subkegiatan_kegiatan_id_fkey"
-            columns: ["kegiatan_id"]
-            isOneToOne: false
-            referencedRelation: "kegiatan"
             referencedColumns: ["id"]
           },
         ]
@@ -1344,13 +1260,6 @@ export type Database = {
         | "verifikasi_pin"
         | "verifikasi_otp"
       jenis_pajak: "pph_21" | "pph_22" | "pph_23" | "pph_4_ayat_2" | "ppn"
-      jenis_spm:
-        | "UP"
-        | "GU"
-        | "TU"
-        | "LS_Gaji"
-        | "LS_Barang_Jasa"
-        | "LS_Belanja_Modal"
       status_sp2d: "pending" | "diproses" | "diterbitkan" | "cair" | "gagal"
       status_spm:
         | "draft"
@@ -1513,14 +1422,6 @@ export const Constants = {
         "verifikasi_otp",
       ],
       jenis_pajak: ["pph_21", "pph_22", "pph_23", "pph_4_ayat_2", "ppn"],
-      jenis_spm: [
-        "UP",
-        "GU",
-        "TU",
-        "LS_Gaji",
-        "LS_Barang_Jasa",
-        "LS_Belanja_Modal",
-      ],
       status_sp2d: ["pending", "diproses", "diterbitkan", "cair", "gagal"],
       status_spm: [
         "draft",

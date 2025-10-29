@@ -6,7 +6,6 @@ interface LaporanKeuanganFilters {
   tanggal_dari?: string;
   tanggal_sampai?: string;
   opd_id?: string;
-  program_id?: string;
 }
 
 export const useLaporanKeuangan = (filters?: LaporanKeuanganFilters) => {
@@ -24,9 +23,7 @@ export const useLaporanKeuangan = (filters?: LaporanKeuanganFilters) => {
           .select(`
             *,
             opd:opd_id(nama_opd, id),
-            program:program_id(nama_program, id),
-            kegiatan:kegiatan_id(nama_kegiatan),
-            subkegiatan:subkegiatan_id(nama_subkegiatan)
+            jenis_spm:jenis_spm_id(nama_jenis)
           `);
 
         if (filters?.tanggal_dari) {
@@ -39,10 +36,6 @@ export const useLaporanKeuangan = (filters?: LaporanKeuanganFilters) => {
 
         if (filters?.opd_id && filters.opd_id !== "all") {
           spmQuery = spmQuery.eq("opd_id", filters.opd_id);
-        }
-
-        if (filters?.program_id && filters.program_id !== "all") {
-          spmQuery = spmQuery.eq("program_id", filters.program_id);
         }
 
         const { data: spmData, error: spmError } = await spmQuery;
@@ -58,8 +51,7 @@ export const useLaporanKeuangan = (filters?: LaporanKeuanganFilters) => {
           .select(`
             *,
             spm:spm_id(
-              opd:opd_id(nama_opd, id),
-              program:program_id(nama_program, id)
+              opd:opd_id(nama_opd, id)
             )
           `);
 

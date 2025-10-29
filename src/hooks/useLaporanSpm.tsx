@@ -7,7 +7,7 @@ interface LaporanSpmFilters {
   tanggal_sampai?: string;
   status?: string;
   opd_id?: string;
-  jenis_spm?: string;
+  jenis_spm_id?: string;
 }
 
 export const useLaporanSpm = (filters?: LaporanSpmFilters) => {
@@ -23,11 +23,9 @@ export const useLaporanSpm = (filters?: LaporanSpmFilters) => {
           .from("spm")
           .select(`
             *,
-            opd:opd!spm_opd_id_fkey(nama_opd, kode_opd),
-            program:program!spm_program_id_fkey(nama_program),
-            kegiatan:kegiatan!spm_kegiatan_id_fkey(nama_kegiatan),
-            subkegiatan:subkegiatan!spm_subkegiatan_id_fkey(nama_subkegiatan),
-            vendor:vendor!spm_vendor_id_fkey(nama_vendor),
+            opd:opd_id(nama_opd, kode_opd),
+            jenis_spm:jenis_spm_id(nama_jenis),
+            vendor:vendor_id(nama_vendor),
             bendahara:profiles!spm_bendahara_id_fkey(full_name),
             resepsionis:profiles!spm_verified_by_resepsionis_fkey(full_name),
             pbmd:profiles!spm_verified_by_pbmd_fkey(full_name),
@@ -55,8 +53,8 @@ export const useLaporanSpm = (filters?: LaporanSpmFilters) => {
           query = query.eq("opd_id", filters.opd_id);
         }
 
-        if (filters?.jenis_spm && filters.jenis_spm !== "all") {
-          query = query.eq("jenis_spm", filters.jenis_spm as any);
+        if (filters?.jenis_spm_id && filters.jenis_spm_id !== "all") {
+          query = query.eq("jenis_spm_id", filters.jenis_spm_id);
         }
 
         const { data, error } = await query;

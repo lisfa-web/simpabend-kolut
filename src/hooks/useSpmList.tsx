@@ -34,7 +34,7 @@ export const useSpmList = (filters?: SpmListFilters) => {
       }
 
       if (filters?.jenis_spm) {
-        query = query.eq("jenis_spm", filters.jenis_spm as any);
+        query = query.eq("jenis_spm_id", filters.jenis_spm);
       }
 
       if (filters?.status) {
