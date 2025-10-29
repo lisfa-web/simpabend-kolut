@@ -462,9 +462,13 @@ const InputSpmDetail = () => {
                     }
                   </dd>
                 </div>
-                <div>
+              <div>
                   <dt className="text-sm text-muted-foreground">OPD</dt>
                   <dd className="font-medium">{spm.opd?.nama_opd}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-muted-foreground">Kode OPD</dt>
+                  <dd className="font-medium">{spm.opd?.kode_opd || "-"}</dd>
                 </div>
                 <div>
                   <dt className="text-sm text-muted-foreground">Jenis SPM</dt>
@@ -475,17 +479,48 @@ const InputSpmDetail = () => {
                   <dd className="font-medium text-lg">{formatCurrency(spm.nilai_spm)}</dd>
                 </div>
                 {spm.nama_penerima && (
-                  <div className="col-span-2">
-                    <dt className="text-sm text-muted-foreground">Penerima</dt>
-                    <dd className="font-medium">{spm.nama_penerima} ({spm.tipe_penerima})</dd>
+                  <>
+                    <div>
+                      <dt className="text-sm text-muted-foreground">Nama Penerima</dt>
+                      <dd className="font-medium">{spm.nama_penerima}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-sm text-muted-foreground">Tipe Penerima</dt>
+                      <dd className="font-medium">
+                        {spm.tipe_penerima === 'vendor' ? 'Vendor/Pihak Ketiga' : 
+                         spm.tipe_penerima === 'pegawai' ? 'Pegawai' : 
+                         spm.tipe_penerima}
+                      </dd>
+                    </div>
+                  </>
+                )}
+                <div className="col-span-2">
+                  <dt className="text-sm text-muted-foreground">Uraian</dt>
+                  <dd className="font-medium">{spm.uraian}</dd>
                 </div>
-              )}
-              <div className="col-span-2">
-                <dt className="text-sm text-muted-foreground">Uraian</dt>
-                <dd className="font-medium">{spm.uraian}</dd>
-              </div>
-            </dl>
-          </Card>
+              </dl>
+            </Card>
+
+            {/* Informasi Rekening Penerima */}
+            {(spm.nama_bank || spm.nomor_rekening || spm.nama_rekening) && (
+              <Card className="p-6">
+                <h3 className="font-semibold mb-4">Informasi Rekening Penerima</h3>
+                <dl className="grid grid-cols-2 gap-4">
+                  <div>
+                    <dt className="text-sm text-muted-foreground">Nama Bank</dt>
+                    <dd className="font-medium">{spm.nama_bank || "-"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">Nomor Rekening</dt>
+                    <dd className="font-medium font-mono">{spm.nomor_rekening || "-"}</dd>
+                  </div>
+                  <div className="col-span-2">
+                    <dt className="text-sm text-muted-foreground">Nama Rekening</dt>
+                    <dd className="font-medium">{spm.nama_rekening || "-"}</dd>
+                  </div>
+                </dl>
+              </Card>
+            )}
 
           {/* Potongan Pajak */}
           {spm.potongan_pajak_spm && spm.potongan_pajak_spm.length > 0 && (
