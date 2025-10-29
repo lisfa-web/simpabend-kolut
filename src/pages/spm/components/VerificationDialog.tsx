@@ -161,12 +161,6 @@ export const VerificationDialog = ({
                   </span>
                 </div>
               )}
-              {spmInfo.uraian && (
-                <div className="pt-2 border-t">
-                  <span className="text-sm font-medium block mb-1">Uraian:</span>
-                  <p className="text-sm text-muted-foreground">{spmInfo.uraian}</p>
-                </div>
-              )}
             </div>
           )}
 
@@ -241,26 +235,21 @@ export const VerificationDialog = ({
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="catatan">
-                  Catatan {action === "approve" ? "(Opsional)" : ""}
-                  {action === "revise" && (
-                    <span className="text-destructive"> *</span>
-                  )}
-                </Label>
-                <Textarea
-                  id="catatan"
-                  placeholder={
-                    action === "approve"
-                      ? "Tambahkan catatan jika diperlukan..."
-                      : "Jelaskan alasan revisi yang diperlukan..."
-                  }
-                  value={catatan}
-                  onChange={(e) => setCatatan(e.target.value)}
-                  rows={4}
-                  required={action === "revise"}
-                />
-              </div>
+              {action === "revise" && (
+                <div className="space-y-2">
+                  <Label htmlFor="catatan">
+                    Pesan <span className="text-destructive">*</span>
+                  </Label>
+                  <Textarea
+                    id="catatan"
+                    placeholder="Jelaskan alasan revisi yang diperlukan..."
+                    value={catatan}
+                    onChange={(e) => setCatatan(e.target.value)}
+                    rows={4}
+                    required
+                  />
+                </div>
+              )}
             </>
           )}
         </div>
