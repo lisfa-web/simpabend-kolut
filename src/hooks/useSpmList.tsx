@@ -23,8 +23,7 @@ export const useSpmList = (filters?: SpmListFilters) => {
         .select(`
           *,
           opd:opd_id(nama_opd),
-          jenis_spm:jenis_spm_id(nama_jenis, ada_pajak, deskripsi),
-          vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening)
+          jenis_spm:jenis_spm_id(nama_jenis, ada_pajak, deskripsi)
         `)
         .order("created_at", { ascending: false });
 
