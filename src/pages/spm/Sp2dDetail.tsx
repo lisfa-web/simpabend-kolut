@@ -142,9 +142,6 @@ const Sp2dDetail = () => {
           <TabsList className="print:hidden">
             <TabsTrigger value="informasi">Informasi</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            {sp2d.status === "pending" && canVerify && (
-              <TabsTrigger value="verifikasi">Verifikasi</TabsTrigger>
-            )}
           </TabsList>
 
           <TabsContent value="informasi" className="space-y-4 print:block print:space-y-6">
@@ -326,35 +323,14 @@ const Sp2dDetail = () => {
               <CardContent>
                 <Sp2dTimeline
                   createdAt={sp2d.created_at}
-                  otpVerifiedAt={sp2d.otp_verified_at}
                   tanggalKirimBank={(sp2d as any).tanggal_kirim_bank}
                   tanggalKonfirmasiBank={(sp2d as any).tanggal_konfirmasi_bank}
                   tanggalCair={sp2d.tanggal_cair}
-                  status={sp2d.status || "pending"}
+                  status={sp2d.status || "diterbitkan"}
                 />
               </CardContent>
             </Card>
           </TabsContent>
-
-          {sp2d.status === "pending" && canVerify && (
-            <TabsContent value="verifikasi" className="print:hidden">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Verifikasi OTP</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">
-                    SP2D ini memerlukan verifikasi OTP sebelum dana dapat dicairkan.
-                    Klik tombol di bawah untuk melakukan verifikasi.
-                  </p>
-                  <Button onClick={() => setShowVerifyDialog(true)}>
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
-                    Verifikasi OTP
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
         </Tabs>
 
         {/* Uji Bank Section - Show after SP2D is issued */}

@@ -4,7 +4,6 @@ import { id as localeId } from "date-fns/locale";
 
 interface Sp2dTimelineProps {
   createdAt: string;
-  otpVerifiedAt?: string | null;
   tanggalKirimBank?: string | null;
   tanggalKonfirmasiBank?: string | null;
   tanggalCair?: string | null;
@@ -13,7 +12,6 @@ interface Sp2dTimelineProps {
 
 export const Sp2dTimeline = ({
   createdAt,
-  otpVerifiedAt,
   tanggalKirimBank,
   tanggalKonfirmasiBank,
   tanggalCair,
@@ -21,14 +19,9 @@ export const Sp2dTimeline = ({
 }: Sp2dTimelineProps) => {
   const steps = [
     {
-      label: "SP2D Dibuat",
+      label: "SP2D Dibuat & Diterbitkan",
       timestamp: createdAt,
       completed: true,
-    },
-    {
-      label: "OTP Terverifikasi & SP2D Diterbitkan",
-      timestamp: otpVerifiedAt,
-      completed: !!otpVerifiedAt,
     },
     {
       label: "Dikirim ke Bank Sultra",
