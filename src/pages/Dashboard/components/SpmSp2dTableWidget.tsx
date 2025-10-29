@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,7 +65,7 @@ const Sp2dStatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-export const SpmSp2dTableWidget = () => {
+const SpmSp2dTableWidget = memo(() => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -103,8 +103,8 @@ export const SpmSp2dTableWidget = () => {
       if (error) throw error;
       return { data: data || [], count: count || 0 };
     },
-    staleTime: 30000,
-    refetchInterval: 60000,
+    staleTime: 5 * 60 * 1000, // 5 menit
+    refetchInterval: 5 * 60 * 1000, // Refresh setiap 5 menit (bukan 1 menit)
   });
 
   const totalPages = Math.ceil((data?.count || 0) / pageSize);
@@ -314,4 +314,8 @@ export const SpmSp2dTableWidget = () => {
       </CardContent>
     </Card>
   );
-};
+});
+
+SpmSp2dTableWidget.displayName = "SpmSp2dTableWidget";
+
+export { SpmSp2dTableWidget };
