@@ -3,41 +3,46 @@ import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 
 interface Sp2dTimelineProps {
-  createdAt: string;
-  tanggalKirimBank?: string | null;
-  tanggalKonfirmasiBank?: string | null;
-  tanggalCair?: string | null;
-  status: string;
+  sp2d: any;
 }
 
-export const Sp2dTimeline = ({
-  createdAt,
-  tanggalKirimBank,
-  tanggalKonfirmasiBank,
-  tanggalCair,
-  status,
-}: Sp2dTimelineProps) => {
+export const Sp2dTimeline = ({ sp2d }: Sp2dTimelineProps) => {
   const steps = [
     {
       label: "SP2D Dibuat & Diterbitkan",
-      timestamp: createdAt,
+      timestamp: sp2d.created_at,
       completed: true,
+      icon: <CheckCircle2 className="h-6 w-6 text-green-600" />,
     },
     {
       label: "Dikirim ke Bank Sultra",
-      timestamp: tanggalKirimBank,
-      completed: !!tanggalKirimBank,
-      showIcon: true,
+      timestamp: sp2d.tanggal_kirim_bank,
+      completed: !!sp2d.tanggal_kirim_bank,
+      icon: sp2d.tanggal_kirim_bank ? (
+        <Banknote className="h-6 w-6 text-blue-600" />
+      ) : (
+        <Circle className="h-6 w-6 text-muted-foreground" />
+      ),
     },
     {
       label: "Konfirmasi Pemindahbukuan dari Bank",
-      timestamp: tanggalKonfirmasiBank,
-      completed: !!tanggalKonfirmasiBank,
+      timestamp: sp2d.tanggal_konfirmasi_bank,
+      completed: !!sp2d.tanggal_konfirmasi_bank,
+      icon: sp2d.tanggal_konfirmasi_bank ? (
+        <CheckCircle2 className="h-6 w-6 text-orange-600" />
+      ) : (
+        <Circle className="h-6 w-6 text-muted-foreground" />
+      ),
     },
     {
       label: "Dana Dicairkan",
-      timestamp: tanggalCair,
-      completed: status === "cair",
+      timestamp: sp2d.tanggal_cair,
+      completed: sp2d.status === "cair",
+      icon: sp2d.status === "cair" ? (
+        <CheckCircle2 className="h-6 w-6 text-green-600" />
+      ) : (
+        <Circle className="h-6 w-6 text-muted-foreground" />
+      ),
     },
   ];
 
@@ -46,17 +51,11 @@ export const Sp2dTimeline = ({
       {steps.map((step, index) => (
         <div key={index} className="flex gap-4">
           <div className="flex flex-col items-center">
-            {(step as any).showIcon && step.completed ? (
-              <Banknote className="h-6 w-6 text-warning" />
-            ) : step.completed ? (
-              <CheckCircle2 className="h-6 w-6 text-success" />
-            ) : (
-              <Circle className="h-6 w-6 text-muted-foreground" />
-            )}
+            {step.icon}
             {index < steps.length - 1 && (
               <div
                 className={`w-0.5 h-12 ${
-                  step.completed ? "bg-success" : "bg-muted"
+                  step.completed ? "bg-primary" : "bg-muted"
                 }`}
               />
             )}
@@ -66,14 +65,14 @@ export const Sp2dTimeline = ({
               {step.label}
             </p>
             {step.timestamp ? (
-              <p className="text-sm text-muted-foreground flex items-center gap-1">
+              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                 <Clock className="h-3 w-3" />
                 {format(new Date(step.timestamp), "dd MMMM yyyy, HH:mm", {
                   locale: localeId,
                 })}
               </p>
             ) : (
-              <p className="text-sm text-muted-foreground">Belum dilakukan</p>
+              <p className="text-sm text-muted-foreground mt-1">Belum dilakukan</p>
             )}
           </div>
         </div>

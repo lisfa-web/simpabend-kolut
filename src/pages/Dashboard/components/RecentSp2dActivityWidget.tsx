@@ -126,7 +126,7 @@ export const RecentSp2dActivityWidget = () => {
             {activities?.map((activity) => (
               <Link
                 key={activity.id}
-                to={`/input-spm/timeline/${activity.id}`}
+                to={`/sp2d/timeline/${activity.id}`}
                 className={`flex items-start gap-3 p-3 rounded-lg border transition-all hover:shadow-md cursor-pointer ${getActivityBgColor(activity.status)}`}
               >
                 <div className="mt-0.5">{getActivityIcon(activity.status)}</div>

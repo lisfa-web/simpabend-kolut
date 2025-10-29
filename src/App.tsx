@@ -38,6 +38,7 @@ import PajakPerJenisSpmForm from "./pages/masterdata/PajakPerJenisSpmForm";
 import Sp2dList from "./pages/spm/Sp2dList";
 import Sp2dForm from "./pages/spm/Sp2dForm";
 import Sp2dDetail from "./pages/spm/Sp2dDetail";
+import Sp2dTimelineDetail from "./pages/spm/Sp2dTimelineDetail";
 import SpmTimelineDetail from "./pages/spm/SpmTimelineDetail";
 import LaporanIndex from "./pages/laporan/LaporanIndex";
 import LaporanSpm from "./pages/laporan/LaporanSpm";
@@ -109,6 +110,8 @@ const App = () => (
             <Route path="/sp2d" element={<ProtectedRoute><Sp2dList /></ProtectedRoute>} />
             <Route path="/sp2d/new" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
             <Route path="/sp2d/buat" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
+            <Route path="/sp2d/detail/:id" element={<ProtectedRoute><Sp2dDetail /></ProtectedRoute>} />
+            <Route path="/sp2d/timeline/:id" element={<ProtectedRoute><Sp2dTimelineDetail /></ProtectedRoute>} />
             <Route path="/sp2d/:id" element={<ProtectedRoute><Sp2dDetail /></ProtectedRoute>} />
             <Route path="/sp2d/:id/edit" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
             

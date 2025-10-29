@@ -330,13 +330,7 @@ const Sp2dDetail = () => {
                 <CardTitle>Timeline SP2D</CardTitle>
               </CardHeader>
               <CardContent>
-                <Sp2dTimeline
-                  createdAt={sp2d.created_at}
-                  tanggalKirimBank={(sp2d as any).tanggal_kirim_bank}
-                  tanggalKonfirmasiBank={(sp2d as any).tanggal_konfirmasi_bank}
-                  tanggalCair={sp2d.tanggal_cair}
-                  status={sp2d.status || "diterbitkan"}
-                />
+                <Sp2dTimeline sp2d={sp2d} />
               </CardContent>
             </Card>
           </TabsContent>
