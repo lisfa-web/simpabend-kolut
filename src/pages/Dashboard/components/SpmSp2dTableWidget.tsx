@@ -115,7 +115,7 @@ export const SpmSp2dTableWidget = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">Tabel SPM & SP2D</CardTitle>
+            <CardTitle className="text-lg">Tabel Timeline SPM & SP2D</CardTitle>
           </div>
           <Badge variant="secondary" className="font-mono">
             {data?.count || 0} Records
