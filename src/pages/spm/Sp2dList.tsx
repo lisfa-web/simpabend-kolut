@@ -151,7 +151,17 @@ const Sp2dList = () => {
     queryKey: ["approved-spm-for-sp2d", search],
     queryFn: async () => {
       try {
-        // Fetch approved SPM with left join to sp2d to check if SP2D exists
+        // Ambil semua SPM ID yang sudah punya SP2D
+        const { data: sp2dList, error: sp2dError } = await supabase
+          .from("sp2d")
+          .select("spm_id");
+        if (sp2dError) throw sp2dError;
+
+        const usedSpmIds = (sp2dList || [])
+          .map((s) => s.spm_id)
+          .filter(Boolean);
+
+        // Ambil SPM yang statusnya sudah di tahap akhir (siap SP2D)
         let query = supabase
           .from("spm")
           .select(`
@@ -159,26 +169,24 @@ const Sp2dList = () => {
             opd:opd_id(nama_opd, kode_opd),
             jenis_spm:jenis_spm_id(nama_jenis, ada_pajak, deskripsi),
             vendor:vendor_id(nama_vendor, npwp, nama_bank, nomor_rekening, nama_rekening),
-            potongan_pajak_spm(*),
-            sp2d!left(id)
+            potongan_pajak_spm(*)
           `)
-          .eq("status", "disetujui")
-          .is("sp2d.id", null)
+          .in("status", ["disetujui", "kepala_bkad_review"])
           .order("tanggal_disetujui", { ascending: false });
+
+        if (usedSpmIds.length > 0) {
+          query = query.not("id", "in", `(${usedSpmIds.join(",")})`);
+        }
 
         if (search) {
           query = query.ilike("nomor_spm", `%${search}%`);
         }
 
         const { data, error } = await query;
-
-        if (error) {
-          console.error("Error fetching approved SPM:", error);
-          throw error;
-        }
+        if (error) throw error;
         return data || [];
-      } catch (error) {
-        console.error("Error in approved SPM query:", error);
+      } catch (err) {
+        console.error("Error fetching approved SPM:", err);
         return [];
       }
     },
