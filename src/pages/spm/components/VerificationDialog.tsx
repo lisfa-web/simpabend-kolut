@@ -142,9 +142,9 @@ export const VerificationDialog = ({
                   <div className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">Nomor Otomatis</p>
+                      <p className="text-sm font-medium">Nomor Antrian Otomatis</p>
                       <p className="text-sm text-muted-foreground">
-                        Nomor Antrian dan Nomor Berkas akan digenerate secara otomatis oleh sistem setelah persetujuan.
+                        Nomor Antrian (001-999) akan digenerate otomatis dan reset setiap hari.
                       </p>
                     </div>
                   </div>

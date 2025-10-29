@@ -100,46 +100,39 @@ export const useSpmVerification = (role: string) => {
           updateData.tanggal_resepsionis = new Date().toISOString();
           updateData.verified_by_resepsionis = user.id;
           
-          // Auto-generate nomor antrian dan nomor berkas jika approve
+          // Auto-generate nomor antrian jika approve (format: 001-999, reset harian)
           if (data.action === "approve") {
-            // Get current year and month for nomor antrian
+            // Get current date (YYYY-MM-DD)
             const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, "0");
+            const today = now.toISOString().split('T')[0];
             
-            // Generate nomor antrian
-            const antrianPrefix = `ANTRIAN/${year}/${month}/`;
-            const { data: existingAntrian } = await supabase
+            // Query SPM yang diverifikasi resepsionis hari ini
+            const { data: existingToday } = await supabase
               .from("spm")
               .select("nomor_antrian")
-              .like("nomor_antrian", `${antrianPrefix}%`)
+              .gte("tanggal_resepsionis", `${today}T00:00:00`)
+              .lte("tanggal_resepsionis", `${today}T23:59:59`)
+              .not("nomor_antrian", "is", null)
               .order("nomor_antrian", { ascending: false })
               .limit(1)
               .maybeSingle();
-
-            let nextAntrianNumber = 1;
-            if (existingAntrian?.nomor_antrian) {
-              const lastNumber = parseInt(existingAntrian.nomor_antrian.split("/").pop() || "0");
-              nextAntrianNumber = lastNumber + 1;
-            }
-            updateData.nomor_antrian = `${antrianPrefix}${String(nextAntrianNumber).padStart(3, "0")}`;
             
-            // Generate nomor berkas
-            const berkasPrefix = `BERKAS/${year}/`;
-            const { data: existingBerkas } = await supabase
-              .from("spm")
-              .select("nomor_berkas")
-              .like("nomor_berkas", `${berkasPrefix}%`)
-              .order("nomor_berkas", { ascending: false })
-              .limit(1)
-              .maybeSingle();
-
-            let nextBerkasNumber = 1;
-            if (existingBerkas?.nomor_berkas) {
-              const lastBerkasNumber = parseInt(existingBerkas.nomor_berkas.split("/").pop() || "0");
-              nextBerkasNumber = lastBerkasNumber + 1;
+            // Hitung nomor berikutnya
+            let nextNumber = 1;
+            if (existingToday?.nomor_antrian) {
+              const lastNumber = parseInt(existingToday.nomor_antrian);
+              if (!isNaN(lastNumber)) {
+                nextNumber = lastNumber + 1;
+              }
             }
-            updateData.nomor_berkas = `${berkasPrefix}${String(nextBerkasNumber).padStart(4, "0")}`;
+            
+            // Validasi maksimal 999 per hari
+            if (nextNumber > 999) {
+              throw new Error("Nomor antrian hari ini sudah mencapai batas maksimal (999)");
+            }
+            
+            // Format 3 digit: 001, 002, ..., 999
+            updateData.nomor_antrian = String(nextNumber).padStart(3, "0");
           }
           break;
         case "pbmd":
