@@ -59,6 +59,18 @@ export const VerificationDialog = ({
   const [nomorBerkas, setNomorBerkas] = useState("");
   const [pin, setPin] = useState("");
 
+  // Reset state when dialog is closed
+  const handleOpenChange = (isOpen: boolean) => {
+    if (!isOpen) {
+      setAction(null);
+      setCatatan("");
+      setNomorAntrian("");
+      setNomorBerkas("");
+      setPin("");
+    }
+    onOpenChange(isOpen);
+  };
+
   const handleSubmit = () => {
     if (!action) {
       toast.error("Pilih tindakan terlebih dahulu");
@@ -112,7 +124,7 @@ export const VerificationDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -274,7 +286,7 @@ export const VerificationDialog = ({
             </>
           )}
           {!action && (
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button variant="outline" onClick={() => handleOpenChange(false)}>
               Batal
             </Button>
           )}
