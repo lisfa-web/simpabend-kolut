@@ -31,11 +31,14 @@ import {
 import { useSpmList } from "@/hooks/useSpmList";
 import { useSpmMutation } from "@/hooks/useSpmMutation";
 import { SpmStatusBadge } from "./components/SpmStatusBadge";
+import { SubmitSpmDialog } from "./components/SubmitSpmDialog";
 import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Plus, Eye, Edit, Trash2, Send, Search, Loader2 } from "lucide-react";
 import { JENIS_SPM_OPTIONS, getJenisSpmLabel } from "@/lib/jenisSpmOptions";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const InputSpmList = () => {
   const navigate = useNavigate();
@@ -43,6 +46,9 @@ const InputSpmList = () => {
   const [jenisSpmFilter, setJenisSpmFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [submitSpmId, setSubmitSpmId] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isValidating, setIsValidating] = useState(false);
 
   const { data: spmList, isLoading } = useSpmList({
     search,
@@ -59,11 +65,101 @@ const InputSpmList = () => {
     }
   };
 
-  const handleSubmit = async (id: string) => {
-    await updateSpm.mutateAsync({
-      id,
-      data: { status: "diajukan", tanggal_ajuan: new Date().toISOString() },
-    });
+  const validateSpmBeforeSubmit = async (spmId: string) => {
+    const errors: string[] = [];
+    
+    try {
+      // Get SPM detail
+      const { data: spm, error: spmError } = await supabase
+        .from("spm")
+        .select("*, jenis_spm:jenis_spm_id(nama_jenis)")
+        .eq("id", spmId)
+        .single();
+
+      if (spmError || !spm) {
+        errors.push("Data SPM tidak ditemukan");
+        return errors;
+      }
+
+      // Check lampiran
+      const { data: lampiran, error: lampiranError } = await supabase
+        .from("lampiran_spm")
+        .select("jenis_lampiran")
+        .eq("spm_id", spmId);
+
+      if (lampiranError) {
+        errors.push("Gagal memeriksa lampiran");
+        return errors;
+      }
+
+      const jenisSpm = spm.jenis_spm?.nama_jenis?.toLowerCase() || "";
+      const isLsType = jenisSpm.startsWith("ls");
+
+      // Check required documents
+      const hasDokumenSpm = lampiran?.some(l => 
+        l.jenis_lampiran === "spm"
+      );
+      const hasTbk = lampiran?.some(l => 
+        l.jenis_lampiran === "tbk" || l.jenis_lampiran === "kwitansi"
+      );
+
+      if (!hasDokumenSpm) {
+        errors.push("Dokumen SPM wajib diupload");
+      }
+
+      if (isLsType && !hasTbk) {
+        errors.push("TBK/Kuitansi wajib diupload untuk SPM LS");
+      }
+
+      // Check basic data
+      if (!spm.nilai_spm || spm.nilai_spm <= 0) {
+        errors.push("Nilai SPM harus lebih dari 0");
+      }
+
+      if (!spm.uraian || spm.uraian.trim().length < 10) {
+        errors.push("Uraian minimal 10 karakter");
+      }
+
+    } catch (error: any) {
+      console.error("Validation error:", error);
+      errors.push("Terjadi kesalahan saat validasi");
+    }
+
+    return errors;
+  };
+
+  const handleInitiateSubmit = async (id: string) => {
+    setIsValidating(true);
+    setSubmitSpmId(id);
+    
+    const errors = await validateSpmBeforeSubmit(id);
+    setValidationErrors(errors);
+    setIsValidating(false);
+  };
+
+  const handleConfirmSubmit = async () => {
+    if (!submitSpmId) return;
+
+    try {
+      await updateSpm.mutateAsync({
+        id: submitSpmId,
+        data: { status: "diajukan", tanggal_ajuan: new Date().toISOString() },
+      });
+
+      toast({
+        title: "Berhasil",
+        description: "SPM berhasil diajukan dan masuk ke proses verifikasi",
+      });
+
+      setSubmitSpmId(null);
+      setValidationErrors([]);
+    } catch (error: any) {
+      toast({
+        title: "Gagal",
+        description: error.message || "Gagal mengajukan SPM",
+        variant: "destructive",
+      });
+    }
   };
 
   const canEdit = (status: string) => 
@@ -170,58 +266,56 @@ const InputSpmList = () => {
                     </TableCell>
                     <TableCell>{spm.jenis_spm?.nama_jenis || "-"}</TableCell>
                     <TableCell>{formatCurrency(spm.nilai_spm)}</TableCell>
-                    {(() => {
-                      const effectiveStatus = spm.status === "diajukan" && !spm.tanggal_resepsionis ? "draft" : spm.status;
-                      return (
-                        <>
-                          <TableCell>
-                            <SpmStatusBadge status={effectiveStatus} />
-                          </TableCell>
-                          <TableCell>
-                            {spm.tanggal_ajuan
-                              ? format(new Date(spm.tanggal_ajuan), "dd MMM yyyy", { locale: id })
-                              : "-"}
-                          </TableCell>
-                          <TableCell className="text-right space-x-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => navigate(`/input-spm/detail/${spm.id}`)}
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            {canEdit(effectiveStatus) && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => navigate(`/input-spm/edit/${spm.id}`)}
-                              >
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {canSubmit(effectiveStatus) && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => handleSubmit(spm.id)}
-                                title={effectiveStatus === "draft" ? "Ajukan SPM" : "Ajukan Ulang"}
-                              >
-                                <Send className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {canDelete(effectiveStatus) && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setDeleteId(spm.id)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </TableCell>
-                        </>
-                      );
-                    })()}
+                    <TableCell>
+                      <SpmStatusBadge status={spm.status} />
+                    </TableCell>
+                    <TableCell>
+                      {spm.tanggal_ajuan
+                        ? format(new Date(spm.tanggal_ajuan), "dd MMM yyyy", { locale: id })
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => navigate(`/input-spm/detail/${spm.id}`)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      {canEdit(spm.status) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => navigate(`/input-spm/edit/${spm.id}`)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {canSubmit(spm.status) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleInitiateSubmit(spm.id)}
+                          disabled={isValidating}
+                          title={spm.status === "draft" ? "Ajukan SPM" : "Ajukan Ulang SPM"}
+                        >
+                          {isValidating && submitSpmId === spm.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Send className="h-4 w-4" />
+                          )}
+                        </Button>
+                      )}
+                      {canDelete(spm.status) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeleteId(spm.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))
               )}
@@ -245,6 +339,27 @@ const InputSpmList = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Submit SPM Dialog with Validation */}
+      {submitSpmId && (
+        <SubmitSpmDialog
+          open={!!submitSpmId}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSubmitSpmId(null);
+              setValidationErrors([]);
+            }
+          }}
+          onConfirm={handleConfirmSubmit}
+          spmData={{
+            nomor_spm: spmList?.find((s: any) => s.id === submitSpmId)?.nomor_spm || "Draft",
+            nilai_spm: spmList?.find((s: any) => s.id === submitSpmId)?.nilai_spm || 0,
+            uraian: spmList?.find((s: any) => s.id === submitSpmId)?.uraian || "",
+          }}
+          validationErrors={validationErrors}
+          isSubmitting={updateSpm.isPending}
+        />
+      )}
     </DashboardLayout>
   );
 };

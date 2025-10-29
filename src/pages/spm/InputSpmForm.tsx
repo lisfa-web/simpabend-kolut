@@ -36,15 +36,19 @@ const InputSpmForm = () => {
   const { data: jenisSpmList } = useJenisSpmList({ is_active: true });
   const { data: vendorList } = useVendorList({ is_active: true });
 
-  // Block access if SPM status is "perlu_revisi" (cannot edit)
+  // Allow edit for draft and perlu_revisi status only
+  // Block access for other statuses
   useEffect(() => {
-    if (id && spmDetail && spmDetail.status === "perlu_revisi") {
-      toast({
-        title: "Tidak Dapat Diedit",
-        description: "SPM yang perlu revisi harus dibuat ulang. Silakan buat pengajuan SPM baru.",
-        variant: "destructive",
-      });
-      navigate(`/input-spm/detail/${id}`);
+    if (id && spmDetail) {
+      const editableStatuses = ["draft", "perlu_revisi"];
+      if (!editableStatuses.includes(spmDetail.status)) {
+        toast({
+          title: "Tidak Dapat Diedit",
+          description: "SPM dengan status ini tidak dapat diedit. Hanya draft dan perlu revisi yang dapat diedit.",
+          variant: "destructive",
+        });
+        navigate(`/input-spm/detail/${id}`);
+      }
     }
   }, [id, spmDetail, navigate]);
 
@@ -103,14 +107,17 @@ const InputSpmForm = () => {
   const handleFinalSubmit = async (nomorSpm: string) => {
     if (!formData) return;
 
-    // Defensive check: prevent saving/submitting if status is "perlu_revisi"
-    if (id && spmDetail && spmDetail.status === "perlu_revisi") {
-      toast({
-        title: "Tidak Dapat Disimpan",
-        description: "SPM yang perlu revisi tidak dapat diedit atau diajukan ulang.",
-        variant: "destructive",
-      });
-      return;
+    // Only allow saving for editable statuses
+    if (id && spmDetail) {
+      const editableStatuses = ["draft", "perlu_revisi"];
+      if (!editableStatuses.includes(spmDetail.status)) {
+        toast({
+          title: "Tidak Dapat Disimpan",
+          description: "SPM dengan status ini tidak dapat diubah.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     try {
