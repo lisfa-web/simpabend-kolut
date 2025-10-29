@@ -10,6 +10,7 @@ import { FilterPeriode } from "./components/FilterPeriode";
 import { SummaryCard } from "./components/SummaryCard";
 import { ExportButton } from "./components/ExportButton";
 import { ChartSpm } from "./components/ChartSpm";
+import { TablePagination } from "./components/TablePagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -26,18 +27,29 @@ const LaporanSpm = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [opdFilter, setOpdFilter] = useState("all");
   const [jenisSpmFilter, setJenisSpmFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const { data: opdList } = useOpdList();
-  const { data: spmList, isLoading, error } = useLaporanSpm({
+  const { data: spmData, isLoading, error } = useLaporanSpm({
     tanggal_dari: tanggalDari,
     tanggal_sampai: tanggalSampai,
     status: statusFilter,
     opd_id: opdFilter,
     jenis_spm_id: jenisSpmFilter,
+    page: currentPage,
+    pageSize: pageSize,
   });
 
-  const totalSpm = spmList?.length || 0;
+  const spmList = spmData?.data || [];
+  const totalCount = spmData?.count || 0;
   const totalNilai = spmList?.reduce((sum, item) => sum + Number(item.nilai_spm || 0), 0) || 0;
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
@@ -83,13 +95,13 @@ const LaporanSpm = () => {
             <FilterPeriode
               tanggalDari={tanggalDari}
               tanggalSampai={tanggalSampai}
-              onTanggalDariChange={setTanggalDari}
-              onTanggalSampaiChange={setTanggalSampai}
+              onTanggalDariChange={handleFilterChange(setTanggalDari)}
+              onTanggalSampaiChange={handleFilterChange(setTanggalSampai)}
             />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Status</Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={handleFilterChange(setStatusFilter)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Semua Status" />
                   </SelectTrigger>
@@ -104,7 +116,7 @@ const LaporanSpm = () => {
               </div>
               <div className="space-y-2">
                 <Label>OPD</Label>
-                <Select value={opdFilter} onValueChange={setOpdFilter}>
+                <Select value={opdFilter} onValueChange={handleFilterChange(setOpdFilter)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Semua OPD" />
                   </SelectTrigger>
@@ -120,7 +132,7 @@ const LaporanSpm = () => {
               </div>
               <div className="space-y-2">
                 <Label>Jenis SPM</Label>
-                <Select value={jenisSpmFilter} onValueChange={setJenisSpmFilter}>
+                <Select value={jenisSpmFilter} onValueChange={handleFilterChange(setJenisSpmFilter)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Semua Jenis" />
                   </SelectTrigger>
@@ -142,7 +154,7 @@ const LaporanSpm = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <SummaryCard
             title="Total SPM"
-            value={totalSpm}
+            value={totalCount}
             icon={FileText}
             description={`Dari filter yang dipilih`}
           />
@@ -215,6 +227,13 @@ const LaporanSpm = () => {
                     ))}
                   </TableBody>
                 </Table>
+                <TablePagination
+                  currentPage={currentPage}
+                  pageSize={pageSize}
+                  totalItems={totalCount}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={setPageSize}
+                />
               </div>
             ) : (
               <div className="text-center p-8 text-muted-foreground">

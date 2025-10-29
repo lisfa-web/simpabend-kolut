@@ -8,6 +8,8 @@ interface LaporanSpmFilters {
   status?: string;
   opd_id?: string;
   jenis_spm_id?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export const useLaporanSpm = (filters?: LaporanSpmFilters) => {
@@ -16,9 +18,14 @@ export const useLaporanSpm = (filters?: LaporanSpmFilters) => {
   return useQuery({
     queryKey: ["laporan-spm", user?.id, filters],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id) return { data: [], count: 0 };
 
       try {
+        const page = filters?.page || 1;
+        const pageSize = filters?.pageSize || 10;
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
         let query = supabase
           .from("spm")
           .select(`
@@ -32,7 +39,7 @@ export const useLaporanSpm = (filters?: LaporanSpmFilters) => {
             perbendaharaan:profiles!spm_verified_by_perbendaharaan_fkey(full_name),
             kepala_bkad:profiles!spm_verified_by_kepala_bkad_fkey(full_name),
             potongan_pajak_spm(*)
-          `)
+          `, { count: 'exact' })
           .order("tanggal_ajuan", { ascending: false });
 
         // Apply filters
@@ -56,17 +63,20 @@ export const useLaporanSpm = (filters?: LaporanSpmFilters) => {
           query = query.eq("jenis_spm_id", filters.jenis_spm_id);
         }
 
-        const { data, error } = await query;
+        // Apply pagination
+        query = query.range(from, to);
+
+        const { data, error, count } = await query;
 
         if (error) {
           console.error("Error fetching laporan SPM:", error);
           throw error;
         }
 
-        return data || [];
+        return { data: data || [], count: count || 0 };
       } catch (error) {
         console.error("Error in useLaporanSpm:", error);
-        return [];
+        return { data: [], count: 0 };
       }
     },
     enabled: !!user?.id,
