@@ -65,6 +65,21 @@ const InputSpmForm = () => {
     }
   }, [id, spmDetail, formData]);
 
+  // Initialize potongan pajak dari detail SPM saat edit
+  useEffect(() => {
+    if (id && spmDetail?.potongan_pajak_spm && potonganPajak.length === 0) {
+      const mapped = (spmDetail.potongan_pajak_spm as any[]).map((p) => ({
+        jenis_pajak: p.jenis_pajak,
+        rekening_pajak: p.rekening_pajak || "",
+        uraian: p.uraian || "",
+        tarif: Number(p.tarif) || 0,
+        dasar_pengenaan: Number(p.dasar_pengenaan) || 0,
+        jumlah_pajak: Number(p.jumlah_pajak) || 0,
+      }));
+      setPotonganPajak(mapped);
+    }
+  }, [id, spmDetail, potonganPajak.length]);
+
   const handleToggleOptionalTax = (taxId: string, checked: boolean) => {
     setSelectedOptionalTaxIds(prev => 
       checked 

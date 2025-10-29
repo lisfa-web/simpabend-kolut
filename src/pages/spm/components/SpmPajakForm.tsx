@@ -66,6 +66,12 @@ export const SpmPajakForm = ({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedOptionalTaxes, setSelectedOptionalTaxes] = useState<string[]>([]);
   
+  // Sync state dengan data potongan dari parent saat edit
+  useEffect(() => {
+    if (potonganPajak && potonganPajak.length > 0) {
+      setPajaks(potonganPajak);
+    }
+  }, [potonganPajak]);
   // Use ada_pajak from jenis_spm master data
   const requiresPajak = adaPajak;
   
