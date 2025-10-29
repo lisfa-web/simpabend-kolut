@@ -42,6 +42,7 @@ interface PajakFormData {
 
 interface SpmPajakFormProps {
   jenisSpm: string;
+  adaPajak?: boolean;
   nilaiSpm: number;
   potonganPajak: PajakFormData[];
   onPotonganChange: (pajak: PajakFormData[]) => void;
@@ -52,6 +53,7 @@ interface SpmPajakFormProps {
 
 export const SpmPajakForm = ({
   jenisSpm,
+  adaPajak = true,
   nilaiSpm,
   potonganPajak,
   onPotonganChange,
@@ -64,8 +66,8 @@ export const SpmPajakForm = ({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [selectedOptionalTaxes, setSelectedOptionalTaxes] = useState<string[]>([]);
   
-  // Jenis SPM yang memerlukan pajak
-  const requiresPajak = ['LS_Gaji', 'LS_Barang_Jasa', 'LS_Belanja_Modal'].includes(jenisSpm);
+  // Use ada_pajak from jenis_spm master data
+  const requiresPajak = adaPajak;
   
   const { speak } = useSpeechSynthesis();
   

@@ -157,7 +157,8 @@ const InputSpmForm = () => {
   };
 
   const opdName = opdList?.find((o) => o.id === formData?.opd_id)?.nama_opd;
-  const jenisSpmName = jenisSpmList?.find((j) => j.id === formData?.jenis_spm_id)?.nama_jenis;
+  const jenisSpmData = jenisSpmList?.find((j) => j.id === formData?.jenis_spm_id);
+  const jenisSpmName = jenisSpmData?.nama_jenis;
 
   // Tampilkan loading saat fetch data SPM untuk mode edit
   if (id && isLoadingSpm) {
@@ -248,9 +249,10 @@ const InputSpmForm = () => {
           </TabsContent>
 
           <TabsContent value="pajak" className="mt-6">
-            {formData && (
+            {formData && jenisSpmData && (
               <SpmPajakForm
-                jenisSpm={formData.jenis_spm_id}
+                jenisSpm={jenisSpmData.nama_jenis}
+                adaPajak={jenisSpmData.ada_pajak}
                 nilaiSpm={formData.nilai_spm}
                 potonganPajak={potonganPajak}
                 onPotonganChange={setPotonganPajak}
