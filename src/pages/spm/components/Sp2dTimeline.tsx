@@ -1,10 +1,12 @@
-import { CheckCircle2, Circle, Clock } from "lucide-react";
+import { CheckCircle2, Circle, Clock, Banknote } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 
 interface Sp2dTimelineProps {
   createdAt: string;
   otpVerifiedAt?: string | null;
+  tanggalKirimBank?: string | null;
+  tanggalKonfirmasiBank?: string | null;
   tanggalCair?: string | null;
   status: string;
 }
@@ -12,6 +14,8 @@ interface Sp2dTimelineProps {
 export const Sp2dTimeline = ({
   createdAt,
   otpVerifiedAt,
+  tanggalKirimBank,
+  tanggalKonfirmasiBank,
   tanggalCair,
   status,
 }: Sp2dTimelineProps) => {
@@ -22,9 +26,20 @@ export const Sp2dTimeline = ({
       completed: true,
     },
     {
-      label: "OTP Terverifikasi",
+      label: "OTP Terverifikasi & SP2D Diterbitkan",
       timestamp: otpVerifiedAt,
       completed: !!otpVerifiedAt,
+    },
+    {
+      label: "Dikirim ke Bank Sultra",
+      timestamp: tanggalKirimBank,
+      completed: !!tanggalKirimBank,
+      showIcon: true,
+    },
+    {
+      label: "Konfirmasi Pemindahbukuan dari Bank",
+      timestamp: tanggalKonfirmasiBank,
+      completed: !!tanggalKonfirmasiBank,
     },
     {
       label: "Dana Dicairkan",
@@ -38,7 +53,9 @@ export const Sp2dTimeline = ({
       {steps.map((step, index) => (
         <div key={index} className="flex gap-4">
           <div className="flex flex-col items-center">
-            {step.completed ? (
+            {(step as any).showIcon && step.completed ? (
+              <Banknote className="h-6 w-6 text-warning" />
+            ) : step.completed ? (
               <CheckCircle2 className="h-6 w-6 text-success" />
             ) : (
               <Circle className="h-6 w-6 text-muted-foreground" />

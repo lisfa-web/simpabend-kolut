@@ -207,7 +207,7 @@ const Sp2dDetail = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Data OPD</CardTitle>
+                <CardTitle>Data OPD & Penerima</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -216,10 +216,52 @@ const Sp2dDetail = () => {
                     <p className="font-medium">{sp2d.spm?.opd?.nama_opd || "-"}</p>
                   </div>
                   <div>
+                    <p className="text-sm text-muted-foreground">Kode OPD</p>
+                    <p className="font-medium">{sp2d.spm?.opd?.kode_opd || "-"}</p>
+                  </div>
+                  <div>
                     <p className="text-sm text-muted-foreground">Jenis SPM</p>
                     <p className="font-medium">
                       {(sp2d.spm as any)?.jenis_spm?.nama_jenis || "-"}
                     </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Nama Penerima</p>
+                    <p className="font-medium">{sp2d.spm?.nama_penerima || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Tipe Penerima</p>
+                    <p className="font-medium">
+                      {sp2d.spm?.tipe_penerima === 'vendor' ? 'Vendor/Pihak Ketiga' : 
+                       sp2d.spm?.tipe_penerima === 'pegawai' ? 'Pegawai' : 
+                       sp2d.spm?.tipe_penerima || "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Uraian SPM</p>
+                    <p className="font-medium line-clamp-2">{sp2d.spm?.uraian || "-"}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Informasi Rekening Penerima</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Nama Bank</p>
+                    <p className="font-medium">{sp2d.nama_bank || sp2d.spm?.nama_bank || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Nomor Rekening</p>
+                    <p className="font-medium font-mono">{sp2d.nomor_rekening || sp2d.spm?.nomor_rekening || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Nama Rekening</p>
+                    <p className="font-medium">{sp2d.nama_rekening || sp2d.spm?.nama_rekening || "-"}</p>
                   </div>
                 </div>
               </CardContent>
@@ -307,6 +349,8 @@ const Sp2dDetail = () => {
                 <Sp2dTimeline
                   createdAt={sp2d.created_at}
                   otpVerifiedAt={sp2d.otp_verified_at}
+                  tanggalKirimBank={(sp2d as any).tanggal_kirim_bank}
+                  tanggalKonfirmasiBank={(sp2d as any).tanggal_konfirmasi_bank}
                   tanggalCair={sp2d.tanggal_cair}
                   status={sp2d.status || "pending"}
                 />

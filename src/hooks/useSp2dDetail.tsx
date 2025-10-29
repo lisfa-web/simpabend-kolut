@@ -14,7 +14,7 @@ export const useSp2dDetail = (sp2dId: string | undefined) => {
           spm:spm_id(
             *,
             opd:opd_id(nama_opd, kode_opd),
-            jenis_spm:jenis_spm_id(nama_jenis),
+            jenis_spm:jenis_spm_id(nama_jenis, ada_pajak),
             bendahara:profiles!spm_bendahara_id_fkey(full_name, email)
           )
         `)
