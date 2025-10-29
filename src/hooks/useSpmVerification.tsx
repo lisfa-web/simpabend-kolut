@@ -19,12 +19,12 @@ export const useSpmVerification = (role: string) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const getNextStatus = (currentStatus: StatusSpm, action: string): StatusSpm => {
+  const getNextStatus = (currentStatus: StatusSpm, action: string, isAset: boolean): StatusSpm => {
     if (action === "revise") return "perlu_revisi";
 
     const statusFlow: Record<string, StatusSpm> = {
       diajukan: "resepsionis_verifikasi",
-      resepsionis_verifikasi: "pbmd_verifikasi",
+      resepsionis_verifikasi: isAset ? "pbmd_verifikasi" : "akuntansi_validasi",
       pbmd_verifikasi: "akuntansi_validasi",
       akuntansi_validasi: "perbendaharaan_verifikasi",
       perbendaharaan_verifikasi: "kepala_bkad_review",
@@ -80,13 +80,13 @@ export const useSpmVerification = (role: string) => {
       // Get current SPM data
       const { data: spm, error: fetchError } = await supabase
         .from("spm")
-        .select("status")
+        .select("status, is_aset")
         .eq("id", data.spmId)
         .single();
 
       if (fetchError) throw fetchError;
 
-      const nextStatus = getNextStatus(spm.status, data.action);
+      const nextStatus = getNextStatus(spm.status, data.action, spm.is_aset || false);
 
       // Prepare update object based on role
       const updateData: any = {
