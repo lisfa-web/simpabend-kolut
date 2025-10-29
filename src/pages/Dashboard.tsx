@@ -37,31 +37,63 @@ import { useDashboardLayout } from "@/hooks/useDashboardLayout";
 import { WidgetContainer } from "@/components/dashboard/WidgetContainer";
 import { LayoutSettingsDialog } from "@/components/dashboard/LayoutSettingsDialog";
 import { useUserRole } from "@/hooks/useUserRole";
-
-const WIDGET_LABELS = [
-  { id: "stats", label: "Statistik Utama" },
-  { id: "quick-actions", label: "Quick Actions & Filters" },
-  { id: "performance", label: "Performance Metrics" },
-  { id: "charts", label: "Grafik SPM" },
-  { id: "analytics", label: "Advanced Analytics" },
-  { id: "financial", label: "Financial Breakdown" },
-  { id: "activity", label: "Recent Activity" },
-  { id: "sp2d-activity", label: "Aktivitas SP2D Terbaru" },
-  { id: "sp2d-stats", label: "Statistik SP2D" },
-  { id: "opd-breakdown", label: "OPD Breakdown" },
-  { id: "vendors", label: "Top Vendors" },
-  { id: "alerts", label: "Alerts & Peringatan" },
-  { id: "action-items", label: "Action Items" },
-];
-
+const WIDGET_LABELS = [{
+  id: "stats",
+  label: "Statistik Utama"
+}, {
+  id: "quick-actions",
+  label: "Quick Actions & Filters"
+}, {
+  id: "performance",
+  label: "Performance Metrics"
+}, {
+  id: "charts",
+  label: "Grafik SPM"
+}, {
+  id: "analytics",
+  label: "Advanced Analytics"
+}, {
+  id: "financial",
+  label: "Financial Breakdown"
+}, {
+  id: "activity",
+  label: "Recent Activity"
+}, {
+  id: "sp2d-activity",
+  label: "Aktivitas SP2D Terbaru"
+}, {
+  id: "sp2d-stats",
+  label: "Statistik SP2D"
+}, {
+  id: "opd-breakdown",
+  label: "OPD Breakdown"
+}, {
+  id: "vendors",
+  label: "Top Vendors"
+}, {
+  id: "alerts",
+  label: "Alerts & Peringatan"
+}, {
+  id: "action-items",
+  label: "Action Items"
+}];
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { data: profile } = useUserProfile();
-  const { data: stats, isLoading, refetch } = useDashboardStats();
-  const { isAdmin: checkIsAdmin } = useUserRole();
+  const {
+    toast
+  } = useToast();
+  const {
+    data: profile
+  } = useUserProfile();
+  const {
+    data: stats,
+    isLoading,
+    refetch
+  } = useDashboardStats();
+  const {
+    isAdmin: checkIsAdmin
+  } = useUserRole();
   const isAdmin = checkIsAdmin();
-  
   const {
     currentLayout,
     hiddenWidgets,
@@ -71,14 +103,13 @@ const Dashboard = () => {
     handleSaveLayout,
     handleResetLayout,
     toggleWidget,
-    isSaving,
+    isSaving
   } = useDashboardLayout();
-
   const [settingsOpen, setSettingsOpen] = useState(false);
-  
+
   // Period filter state
   const [selectedPeriod, setSelectedPeriod] = useState("month");
-  
+
   // Auto-refresh state
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -89,7 +120,6 @@ const Dashboard = () => {
       refetch();
       setLastRefresh(Date.now());
     }, 5 * 60 * 1000);
-
     return () => clearInterval(interval);
   }, [refetch]);
 
@@ -101,7 +131,7 @@ const Dashboard = () => {
     setIsRefreshing(false);
     toast({
       title: "Data diperbarui",
-      description: "Dashboard telah diperbarui dengan data terbaru",
+      description: "Dashboard telah diperbarui dengan data terbaru"
     });
   };
 
@@ -126,24 +156,19 @@ const Dashboard = () => {
       approved: "/spm/list?status=disetujui",
       inProgress: "/spm/list?status=dalam_proses",
       revision: "/spm/list?status=revisi",
-      rejected: "/spm/list?status=ditolak",
+      rejected: "/spm/list?status=ditolak"
     };
     navigate(routes[type] || "/spm/list");
   };
-
   const isWidgetHidden = (widgetId: string) => hiddenWidgets.includes(widgetId);
-
-  return (
-    <DashboardLayout>
+  return <DashboardLayout>
       <CommandPalette />
       <div className="space-y-6">
         {/* Enhanced Header with Actions */}
         <div className="space-y-4 pb-6 border-b">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
-                Dashboard Monitoring SPM
-              </h1>
+              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">Dashboard Monitoring SPM &amp; SP2D</h1>
               <p className="text-base text-muted-foreground flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-500" />
                 Selamat datang, <span className="font-semibold text-foreground">{profile?.full_name || "User"}</span>
@@ -153,62 +178,36 @@ const Dashboard = () => {
             <div className="flex items-center gap-3">
               <Badge variant="outline" className="px-4 py-2">
                 <Calendar className="h-3 w-3 mr-2" />
-                {new Date().toLocaleDateString('id-ID', { 
-                  weekday: 'long', 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
+                {new Date().toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
               </Badge>
               
-              {isAdmin && (
-                <div className="flex gap-2">
-                  {isEditMode ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setIsEditMode(false)}
-                      >
+              {isAdmin && <div className="flex gap-2">
+                  {isEditMode ? <>
+                      <Button variant="outline" size="sm" onClick={() => setIsEditMode(false)}>
                         Batal
                       </Button>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={handleSaveLayout}
-                        disabled={isSaving}
-                        className="gap-2"
-                      >
+                      <Button variant="default" size="sm" onClick={handleSaveLayout} disabled={isSaving} className="gap-2">
                         <Save className="h-4 w-4" />
                         {isSaving ? "Menyimpan..." : "Simpan Layout"}
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSettingsOpen(true)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => setSettingsOpen(true)}>
                         <Settings className="h-4 w-4" />
                       </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditMode(true)}
-                      className="gap-2"
-                    >
+                    </> : <Button variant="outline" size="sm" onClick={() => setIsEditMode(true)} className="gap-2">
                       <Edit className="h-4 w-4" />
                       Edit Layout
-                    </Button>
-                  )}
-                </div>
-              )}
+                    </Button>}
+                </div>}
             </div>
           </div>
 
           {/* Quick Actions & Filters Bar */}
-          {!isWidgetHidden("quick-actions") && (
-            <WidgetContainer isEditMode={isEditMode} isHidden={isWidgetHidden("quick-actions")} title="Quick Actions">
+          {!isWidgetHidden("quick-actions") && <WidgetContainer isEditMode={isEditMode} isHidden={isWidgetHidden("quick-actions")} title="Quick Actions">
               <div className="flex items-center justify-between bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-lg p-4 glass">
                 <QuickActions />
                 
@@ -217,49 +216,23 @@ const Dashboard = () => {
                     <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                     Diperbarui {getTimeSinceRefresh()}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleManualRefresh}
-                    disabled={isRefreshing}
-                    className="gap-2"
-                  >
+                  <Button variant="ghost" size="sm" onClick={handleManualRefresh} disabled={isRefreshing} className="gap-2">
                     <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
                     Refresh
                   </Button>
-                  <PeriodFilter 
-                    selectedPeriod={selectedPeriod} 
-                    onPeriodChange={setSelectedPeriod}
-                  />
+                  <PeriodFilter selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} />
                 </div>
               </div>
-            </WidgetContainer>
-          )}
+            </WidgetContainer>}
         </div>
 
         {/* Drag & Drop Grid Layout */}
-        <GridLayout
-          className="layout"
-          layout={currentLayout}
-          cols={12}
-          rowHeight={80}
-          width={1200}
-          onLayoutChange={handleLayoutChange}
-          isDraggable={isEditMode}
-          isResizable={isEditMode}
-          compactType="vertical"
-          preventCollision={false}
-        >
+        <GridLayout className="layout" layout={currentLayout} cols={12} rowHeight={80} width={1200} onLayoutChange={handleLayoutChange} isDraggable={isEditMode} isResizable={isEditMode} compactType="vertical" preventCollision={false}>
           {/* Stats Cards Widget */}
-          {!isWidgetHidden("stats") && (
-            <div key="stats">
+          {!isWidgetHidden("stats") && <div key="stats">
               <WidgetContainer isEditMode={isEditMode} title="Statistik Utama">
                 <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-5 p-4">
-                  <Card 
-                    variant="interactive" 
-                    className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-blue-500"
-                    onClick={() => handleCardClick("total")}
-                  >
+                  <Card variant="interactive" className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-blue-500" onClick={() => handleCardClick("total")}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Total SPM</CardTitle>
                       <div className="p-2 rounded-full bg-blue-50 group-hover:bg-blue-100 transition-colors">
@@ -267,14 +240,11 @@ const Dashboard = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {isLoading ? (
-                        <div className="animate-pulse">
+                      {isLoading ? <div className="animate-pulse">
                           <Skeleton className="h-8 w-16 mb-2" />
                           <Skeleton className="h-3 w-32 mb-2" />
                           <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
-                        </div>
-                      ) : (
-                        <>
+                        </div> : <>
                           <div className="flex items-start justify-between">
                             <div>
                               <div className="text-2xl font-bold group-hover:text-blue-600 transition-colors">
@@ -284,11 +254,7 @@ const Dashboard = () => {
                                 {formatCurrency(stats?.totalSpmValue || 0)}
                               </p>
                             </div>
-                            <Sparkline 
-                              data={generateSparklineData('diajukan')} 
-                              color="#3b82f6"
-                              className="h-8 w-20"
-                            />
+                            <Sparkline data={generateSparklineData('diajukan')} color="#3b82f6" className="h-8 w-20" />
                           </div>
                           <div className="flex items-center justify-between mt-2">
                             <div className="flex items-center gap-1 text-xs text-green-600">
@@ -297,16 +263,11 @@ const Dashboard = () => {
                             </div>
                             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                           </div>
-                        </>
-                      )}
+                        </>}
                     </CardContent>
                   </Card>
 
-                  <Card 
-                    variant="interactive"
-                    className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-green-500"
-                    onClick={() => handleCardClick("approved")}
-                  >
+                  <Card variant="interactive" className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-green-500" onClick={() => handleCardClick("approved")}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Disetujui</CardTitle>
                       <div className="p-2 rounded-full bg-green-50 group-hover:bg-green-100 transition-colors">
@@ -314,14 +275,11 @@ const Dashboard = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {isLoading ? (
-                        <div className="animate-pulse">
+                      {isLoading ? <div className="animate-pulse">
                           <Skeleton className="h-8 w-16 mb-2" />
                           <Skeleton className="h-3 w-32 mb-2" />
                           <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
-                        </div>
-                      ) : (
-                        <>
+                        </div> : <>
                           <div className="flex items-start justify-between">
                             <div>
                               <div className="text-2xl font-bold text-green-600 group-hover:scale-105 transition-transform">
@@ -331,11 +289,7 @@ const Dashboard = () => {
                                 {formatCurrency(stats?.approvedSpmValue || 0)}
                               </p>
                             </div>
-                            <Sparkline 
-                              data={generateSparklineData('disetujui')} 
-                              color="#22c55e"
-                              className="h-8 w-20"
-                            />
+                            <Sparkline data={generateSparklineData('disetujui')} color="#22c55e" className="h-8 w-20" />
                           </div>
                           <div className="flex items-center justify-between mt-2">
                             <Badge variant="secondary" className="text-xs bg-green-50 text-green-700 border-green-200">
@@ -343,16 +297,11 @@ const Dashboard = () => {
                             </Badge>
                             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                           </div>
-                        </>
-                      )}
+                        </>}
                     </CardContent>
                   </Card>
 
-                  <Card 
-                    variant="interactive"
-                    className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-orange-500"
-                    onClick={() => handleCardClick("inProgress")}
-                  >
+                  <Card variant="interactive" className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-orange-500" onClick={() => handleCardClick("inProgress")}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Dalam Proses</CardTitle>
                       <div className="p-2 rounded-full bg-orange-50 group-hover:bg-orange-100 transition-colors">
@@ -360,14 +309,11 @@ const Dashboard = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {isLoading ? (
-                        <div className="animate-pulse">
+                      {isLoading ? <div className="animate-pulse">
                           <Skeleton className="h-8 w-16 mb-2" />
                           <Skeleton className="h-3 w-32 mb-2" />
                           <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
-                        </div>
-                      ) : (
-                        <>
+                        </div> : <>
                           <div className="flex items-start justify-between">
                             <div>
                               <div className="text-2xl font-bold text-orange-600 group-hover:scale-105 transition-transform">
@@ -377,17 +323,7 @@ const Dashboard = () => {
                                 {formatCurrency(stats?.inProgressSpmValue || 0)}
                               </p>
                             </div>
-                            <Sparkline 
-                              data={[
-                                stats?.inProgressSpm || 0,
-                                Math.max(0, (stats?.inProgressSpm || 0) - 2),
-                                Math.max(0, (stats?.inProgressSpm || 0) + 1),
-                                Math.max(0, (stats?.inProgressSpm || 0) - 1),
-                                stats?.inProgressSpm || 0
-                              ]} 
-                              color="#ea580c"
-                              className="h-8 w-20"
-                            />
+                            <Sparkline data={[stats?.inProgressSpm || 0, Math.max(0, (stats?.inProgressSpm || 0) - 2), Math.max(0, (stats?.inProgressSpm || 0) + 1), Math.max(0, (stats?.inProgressSpm || 0) - 1), stats?.inProgressSpm || 0]} color="#ea580c" className="h-8 w-20" />
                           </div>
                           <div className="flex items-center justify-between mt-2">
                             <Badge variant="secondary" className="text-xs bg-orange-50 text-orange-700 border-orange-200">
@@ -395,16 +331,11 @@ const Dashboard = () => {
                             </Badge>
                             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                           </div>
-                        </>
-                      )}
+                        </>}
                     </CardContent>
                   </Card>
 
-                  <Card 
-                    variant="interactive"
-                    className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-amber-500"
-                    onClick={() => handleCardClick("revision")}
-                  >
+                  <Card variant="interactive" className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-amber-500" onClick={() => handleCardClick("revision")}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Perlu Revisi</CardTitle>
                       <div className="p-2 rounded-full bg-amber-50 group-hover:bg-amber-100 transition-colors">
@@ -412,14 +343,11 @@ const Dashboard = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {isLoading ? (
-                        <div className="animate-pulse">
+                      {isLoading ? <div className="animate-pulse">
                           <Skeleton className="h-8 w-16 mb-2" />
                           <Skeleton className="h-3 w-32 mb-2" />
                           <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
-                        </div>
-                      ) : (
-                        <>
+                        </div> : <>
                           <div className="flex items-start justify-between">
                             <div>
                               <div className="text-2xl font-bold text-amber-600 group-hover:scale-105 transition-transform">
@@ -429,11 +357,7 @@ const Dashboard = () => {
                                 {formatCurrency(stats?.revisionSpmValue || 0)}
                               </p>
                             </div>
-                            <Sparkline 
-                              data={generateSparklineData('ditolak')} 
-                              color="#f59e0b"
-                              className="h-8 w-20"
-                            />
+                            <Sparkline data={generateSparklineData('ditolak')} color="#f59e0b" className="h-8 w-20" />
                           </div>
                           <div className="flex items-center justify-between mt-2">
                             <Badge variant="secondary" className="text-xs bg-amber-50 text-amber-700 border-amber-200">
@@ -441,15 +365,11 @@ const Dashboard = () => {
                             </Badge>
                             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                           </div>
-                        </>
-                      )}
+                        </>}
                     </CardContent>
                   </Card>
 
-                  <Card 
-                    variant="interactive"
-                    className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-emerald-500"
-                  >
+                  <Card variant="interactive" className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-emerald-500">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Disetujui Kepala BKAD</CardTitle>
                       <div className="p-2 rounded-full bg-emerald-50 group-hover:bg-emerald-100 transition-colors">
@@ -457,14 +377,11 @@ const Dashboard = () => {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      {isLoading ? (
-                        <div className="animate-pulse">
+                      {isLoading ? <div className="animate-pulse">
                           <Skeleton className="h-8 w-16 mb-2" />
                           <Skeleton className="h-3 w-32 mb-2" />
                           <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
-                        </div>
-                      ) : (
-                        <>
+                        </div> : <>
                           <div className="flex items-start justify-between">
                             <div>
                               <div className="text-2xl font-bold text-emerald-600 group-hover:scale-105 transition-transform">
@@ -481,18 +398,15 @@ const Dashboard = () => {
                             </Badge>
                             <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                           </div>
-                        </>
-                      )}
+                        </>}
                     </CardContent>
                   </Card>
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* Performance Metrics Widget */}
-          {!isWidgetHidden("performance") && (
-            <div key="performance">
+          {!isWidgetHidden("performance") && <div key="performance">
               <WidgetContainer isEditMode={isEditMode} title="Performance Metrics">
                 <div className="p-4">
                   <div className="grid gap-6 md:grid-cols-3">
@@ -502,12 +416,10 @@ const Dashboard = () => {
                   </div>
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* Charts Widget */}
-          {!isWidgetHidden("charts") && (
-            <div key="charts">
+          {!isWidgetHidden("charts") && <div key="charts">
               <WidgetContainer isEditMode={isEditMode} title="Grafik SPM">
                 <div className="grid gap-6 md:grid-cols-3 p-4">
                   <Card className="md:col-span-2">
@@ -515,10 +427,7 @@ const Dashboard = () => {
                       <CardTitle>Statistik SPM (5 Bulan Terakhir)</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {isLoading ? (
-                        <Skeleton className="h-[300px] w-full" />
-                      ) : (
-                        <ResponsiveContainer width="100%" height={300}>
+                      {isLoading ? <Skeleton className="h-[300px] w-full" /> : <ResponsiveContainer width="100%" height={300}>
                           <BarChart data={stats?.monthlyTrend || []}>
                             <CartesianGrid strokeDasharray="3 3" />
                             <XAxis dataKey="month" />
@@ -529,8 +438,7 @@ const Dashboard = () => {
                             <Bar dataKey="disetujui" fill="#22c55e" name="Disetujui" />
                             <Bar dataKey="ditolak" fill="#ef4444" name="Ditolak/Revisi" />
                           </BarChart>
-                        </ResponsiveContainer>
-                      )}
+                        </ResponsiveContainer>}
                     </CardContent>
                   </Card>
 
@@ -539,13 +447,10 @@ const Dashboard = () => {
                       <CardTitle>Status SPM Terkini</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {isLoading ? (
-                        <>
+                      {isLoading ? <>
                           <Skeleton className="h-20 w-full" />
                           <Skeleton className="h-20 w-full" />
-                        </>
-                      ) : (
-                        <>
+                        </> : <>
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <span className="text-sm text-muted-foreground">Total SPM Bulan Ini</span>
@@ -565,150 +470,105 @@ const Dashboard = () => {
                             </div>
                             <p className="text-xs text-green-600 flex items-center gap-1">
                               <TrendingUp className="h-3 w-3" />
-                              {stats?.avgProcessDays && stats.avgProcessDays <= 4 
-                                ? "Sesuai target" 
-                                : "Perlu dipercepat"}
+                              {stats?.avgProcessDays && stats.avgProcessDays <= 4 ? "Sesuai target" : "Perlu dipercepat"}
                             </p>
                           </div>
-                        </>
-                      )}
+                        </>}
                     </CardContent>
                   </Card>
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* Advanced Analytics Widget */}
-          {!isWidgetHidden("analytics") && (
-            <div key="analytics">
+          {!isWidgetHidden("analytics") && <div key="analytics">
               <WidgetContainer isEditMode={isEditMode} title="Advanced Analytics">
                 <div className="p-4 space-y-4">
                   <div className="grid gap-6 lg:grid-cols-2">
                     <BottleneckAnalysisWidget data={stats?.bottleneckAnalysis} isLoading={isLoading} />
-                    <PeriodComparisonWidget 
-                      weeklyData={stats?.periodComparison.weekly} 
-                      monthlyData={stats?.periodComparison.monthly}
-                      isLoading={isLoading} 
-                    />
+                    <PeriodComparisonWidget weeklyData={stats?.periodComparison.weekly} monthlyData={stats?.periodComparison.monthly} isLoading={isLoading} />
                   </div>
                   <RejectionAnalysisWidget data={stats?.rejectionAnalysis} isLoading={isLoading} />
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* Financial Breakdown Widget */}
-          {!isWidgetHidden("financial") && (
-            <div key="financial" className="h-full">
+          {!isWidgetHidden("financial") && <div key="financial" className="h-full">
               <WidgetContainer isEditMode={isEditMode} title="Financial Breakdown">
                 <div className="p-4 h-full">
                   <FinancialBreakdownChart data={stats?.financialBreakdown} isLoading={isLoading} />
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* Recent Activity Widget */}
-          {!isWidgetHidden("activity") && (
-            <div key="activity" className="h-full">
+          {!isWidgetHidden("activity") && <div key="activity" className="h-full">
               <WidgetContainer isEditMode={isEditMode} title="Recent Activity">
                 <div className="p-4 h-full">
                   <RecentActivityWidget />
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* Recent SP2D Activity Widget */}
-          {!isWidgetHidden("sp2d-activity") && (
-            <div key="sp2d-activity" className="h-full">
+          {!isWidgetHidden("sp2d-activity") && <div key="sp2d-activity" className="h-full">
               <WidgetContainer isEditMode={isEditMode} title="Aktivitas SP2D Terbaru">
                 <div className="p-4 h-full">
                   <RecentSp2dActivityWidget />
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* SP2D Stats Widget */}
-          {!isWidgetHidden("sp2d-stats") && (
-            <div key="sp2d-stats">
+          {!isWidgetHidden("sp2d-stats") && <div key="sp2d-stats">
               <WidgetContainer isEditMode={isEditMode} title="Statistik SP2D">
                 <div className="p-4">
-                  <Sp2dStatsSection
-                    totalSp2d={stats?.totalSp2d || 0}
-                    totalValue={stats?.totalSp2dValue || 0}
-                    issuedSp2d={stats?.issuedSp2d || 0}
-                    issuedValue={stats?.issuedSp2dValue || 0}
-                    testingBankSp2d={stats?.testingBankSp2d || 0}
-                    testingBankValue={stats?.testingBankValue || 0}
-                    disbursedSp2d={stats?.disbursedSp2d || 0}
-                    disbursedValue={stats?.disbursedValue || 0}
-                    isLoading={isLoading}
-                  />
+                  <Sp2dStatsSection totalSp2d={stats?.totalSp2d || 0} totalValue={stats?.totalSp2dValue || 0} issuedSp2d={stats?.issuedSp2d || 0} issuedValue={stats?.issuedSp2dValue || 0} testingBankSp2d={stats?.testingBankSp2d || 0} testingBankValue={stats?.testingBankValue || 0} disbursedSp2d={stats?.disbursedSp2d || 0} disbursedValue={stats?.disbursedValue || 0} isLoading={isLoading} />
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* OPD Breakdown Widget */}
-          {!isWidgetHidden("opd-breakdown") && (
-            <div key="opd-breakdown">
+          {!isWidgetHidden("opd-breakdown") && <div key="opd-breakdown">
               <WidgetContainer isEditMode={isEditMode} title="OPD Breakdown">
                 <div className="p-4">
                   <OpdBreakdownChart data={stats?.opdBreakdown || []} isLoading={isLoading} />
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* Top Vendors Widget */}
-          {!isWidgetHidden("vendors") && (
-            <div key="vendors">
+          {!isWidgetHidden("vendors") && <div key="vendors">
               <WidgetContainer isEditMode={isEditMode} title="Top Vendors">
                 <div className="p-4">
                   <TopVendorsWidget data={stats?.topVendors} isLoading={isLoading} />
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* Alerts Widget */}
-          {!isWidgetHidden("alerts") && (
-            <div key="alerts">
+          {!isWidgetHidden("alerts") && <div key="alerts">
               <WidgetContainer isEditMode={isEditMode} title="Alerts & Peringatan">
                 <div className="p-4">
                   <AlertWidget data={stats?.alerts} isLoading={isLoading} />
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
 
           {/* Action Items Widget */}
-          {!isWidgetHidden("action-items") && (
-            <div key="action-items">
+          {!isWidgetHidden("action-items") && <div key="action-items">
               <WidgetContainer isEditMode={isEditMode} title="Action Items">
                 <div className="p-4">
                   <ActionItemsWidget />
                 </div>
               </WidgetContainer>
-            </div>
-          )}
+            </div>}
         </GridLayout>
       </div>
 
       {/* Layout Settings Dialog */}
-      <LayoutSettingsDialog
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        widgets={WIDGET_LABELS}
-        hiddenWidgets={hiddenWidgets}
-        onToggleWidget={toggleWidget}
-        onReset={handleResetLayout}
-      />
-    </DashboardLayout>
-  );
+      <LayoutSettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} widgets={WIDGET_LABELS} hiddenWidgets={hiddenWidgets} onToggleWidget={toggleWidget} onReset={handleResetLayout} />
+    </DashboardLayout>;
 };
-
 export default Dashboard;
