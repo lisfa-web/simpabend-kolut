@@ -281,6 +281,7 @@ const InputSpmForm = () => {
           <TabsContent value="lampiran" className="mt-6">
             <SpmLampiranForm
               jenisSpm={jenisSpmData?.nama_jenis}
+              spmId={id}
               files={files}
               onFilesChange={setFiles}
               onNext={() => setActiveTab("review")}

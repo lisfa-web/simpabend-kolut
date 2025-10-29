@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUploadCard } from "./FileUploadCard";
 import { useConfigSistem, getFileSizeInMB } from "@/hooks/useConfigSistem";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { useSpmMutation } from "@/hooks/useSpmMutation";
+import { toast } from "@/hooks/use-toast";
+import { getFileValidationRule, validateFile } from "@/lib/fileValidation";
 
 interface ExistingLampiran {
   id: string;
@@ -15,6 +18,7 @@ interface ExistingLampiran {
 
 interface SpmLampiranFormProps {
   jenisSpm?: string;
+  spmId?: string;
   files: {
     dokumen_spm: File[];
     tbk: File[];
@@ -34,6 +38,7 @@ interface SpmLampiranFormProps {
 
 export const SpmLampiranForm = ({
   jenisSpm,
+  spmId,
   files,
   onFilesChange,
   onNext,
@@ -47,6 +52,14 @@ export const SpmLampiranForm = ({
   // Gunakan getFileSizeInMB untuk mendapatkan ukuran file dalam MB (auto-sync dari max_file_size)
   const maxSizeInMB = getFileSizeInMB(configs);
 
+  const { uploadFile, deleteFile } = useSpmMutation();
+  const [existing, setExisting] = useState<ExistingLampiran[]>(existingLampiran || []);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setExisting(existingLampiran || []);
+  }, [existingLampiran]);
+
   const openSignedUrl = async (path: string) => {
     const { data, error } = await supabase.storage
       .from("spm-documents")
@@ -55,15 +68,55 @@ export const SpmLampiranForm = ({
       window.open(data.signedUrl, "_blank");
     }
   };
+
+  const handleDelete = async (l: ExistingLampiran) => {
+    setBusyId(l.id);
+    try {
+      await deleteFile(l.id, l.file_url);
+      setExisting((prev) => prev.filter((x) => x.id !== l.id));
+      toast({ title: "Lampiran dihapus" });
+    } catch (e: any) {
+      toast({ title: "Gagal menghapus lampiran", description: e.message, variant: "destructive" });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleReplace = async (l: ExistingLampiran, file?: File) => {
+    if (!file) return;
+    if (!spmId) {
+      toast({ title: "Tidak ada ID SPM", description: "Tidak bisa mengganti lampiran tanpa ID SPM", variant: "destructive" });
+      return;
+    }
+    const rule = getFileValidationRule(l.jenis_lampiran, maxSizeInMB);
+    const validation = validateFile(file, rule);
+    if (!validation.valid) {
+      toast({ title: "File tidak valid", description: validation.error, variant: "destructive" });
+      return;
+    }
+
+    setBusyId(l.id);
+    try {
+      const newLamp: any = await uploadFile(file, spmId, l.jenis_lampiran);
+      await deleteFile(l.id, l.file_url);
+      setExisting((prev) => prev.map((x) => (x.id === l.id ? newLamp : x)));
+      toast({ title: "Lampiran diganti" });
+    } catch (e: any) {
+      toast({ title: "Gagal mengganti lampiran", description: e.message, variant: "destructive" });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const handleNext = () => {
-    // Validasi: dokumen_spm wajib
-    if (files.dokumen_spm.length === 0) {
+    const hasExisting = (jenis: string) => existing.some((l) => l.jenis_lampiran === jenis);
+
+    if (files.dokumen_spm.length === 0 && !hasExisting("dokumen_spm")) {
       alert("Dokumen SPM wajib diupload");
       return;
     }
 
-    // Validasi: TBK wajib untuk LS
-    if (isLsType && files.tbk.length === 0) {
+    if (isLsType && files.tbk.length === 0 && !hasExisting("tbk")) {
       alert("TBK/Kuitansi wajib diupload untuk SPM LS");
       return;
     }
@@ -74,30 +127,52 @@ export const SpmLampiranForm = ({
   return (
     <div className="space-y-6">
       {/* Lampiran yang sudah diunggah */}
-      {existingLampiran && existingLampiran.length > 0 && (
+      {existing && existing.length > 0 && (
         <Card className="p-4">
           <div className="space-y-3">
             <div className="text-sm font-medium">Lampiran tersimpan</div>
             {(["dokumen_spm", "tbk", "spj", "lainnya"] as const).map((jenis) => {
-              const list = existingLampiran.filter((l) => l.jenis_lampiran === jenis);
+              const list = existing.filter((l) => l.jenis_lampiran === jenis);
               if (list.length === 0) return null;
               return (
                 <div key={jenis} className="space-y-2">
                   <div className="text-xs text-muted-foreground uppercase">{jenis.replace(/_/g, " ")}</div>
                   <div className="space-y-2">
-                    {list.map((l) => (
-                      <div key={l.id} className="flex items-center justify-between rounded-md border bg-muted/50 p-2">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{l.nama_file}</p>
-                          {typeof l.file_size === "number" && (
-                            <p className="text-xs text-muted-foreground">{(l.file_size / 1024 / 1024).toFixed(1)} MB</p>
-                          )}
+                    {list.map((l) => {
+                      const accept = getFileValidationRule(l.jenis_lampiran, maxSizeInMB).allowedTypes.join(",");
+                      return (
+                        <div key={l.id} className="flex items-center justify-between rounded-md border bg-muted/50 p-2">
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium truncate">{l.nama_file}</p>
+                            {typeof l.file_size === "number" && (
+                              <p className="text-xs text-muted-foreground">{(l.file_size / 1024 / 1024).toFixed(1)} MB</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              id={`replace-${l.id}`}
+                              type="file"
+                              className="hidden"
+                              accept={accept}
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                e.currentTarget.value = "";
+                                handleReplace(l, file);
+                              }}
+                            />
+                            <Button type="button" size="sm" variant="outline" onClick={() => openSignedUrl(l.file_url)}>
+                              Lihat/Unduh
+                            </Button>
+                            <Button type="button" size="sm" variant="secondary" disabled={busyId === l.id} onClick={() => document.getElementById(`replace-${l.id}`)?.click()}>
+                              Ganti
+                            </Button>
+                            <Button type="button" size="sm" variant="destructive" disabled={busyId === l.id} onClick={() => handleDelete(l)}>
+                              Hapus
+                            </Button>
+                          </div>
                         </div>
-                        <Button type="button" size="sm" variant="outline" onClick={() => openSignedUrl(l.file_url)}>
-                          Lihat/Unduh
-                        </Button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               );
