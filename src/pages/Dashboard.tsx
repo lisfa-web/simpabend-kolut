@@ -446,47 +446,6 @@ const Dashboard = () => {
 
                   <Card 
                     variant="interactive"
-                    className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-red-500"
-                    onClick={() => handleCardClick("rejected")}
-                  >
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Ditolak</CardTitle>
-                      <div className="p-2 rounded-full bg-red-50 group-hover:bg-red-100 transition-colors">
-                        <AlertCircle className="h-4 w-4 text-red-600" />
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      {isLoading ? (
-                        <div className="animate-pulse">
-                          <Skeleton className="h-8 w-16 mb-2" />
-                          <Skeleton className="h-3 w-32 mb-2" />
-                          <div className="h-4 bg-gradient-to-r from-transparent via-muted to-transparent" />
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <div className="text-2xl font-bold text-red-600 group-hover:scale-105 transition-transform">
-                                {stats?.rejectedSpm || 0}
-                              </div>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {formatCurrency(stats?.rejectedSpmValue || 0)}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <Badge variant="destructive" className="text-xs">
-                              Perhatian khusus
-                            </Badge>
-                            <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card 
-                    variant="interactive"
                     className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-emerald-500"
                   >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

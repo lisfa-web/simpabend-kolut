@@ -14,8 +14,6 @@ interface DashboardStats {
   inProgressSpmValue: number;
   revisionSpm: number;
   revisionSpmValue: number;
-  rejectedSpm: number;
-  rejectedSpmValue: number;
   totalSp2d: number;
   totalSp2dValue: number;
   issuedSp2d: number;
@@ -138,8 +136,10 @@ export const useDashboardStats = () => {
     queryFn: async (): Promise<DashboardStats> => {
       if (!user) throw new Error("User not authenticated");
 
-      // Build base query with role-based filtering
-      let spmQuery = supabase.from("spm").select("*", { count: "exact" });
+      // Build base query with role-based filtering - include jenis_spm join
+      let spmQuery = supabase
+        .from("spm")
+        .select("*, jenis_spm:jenis_spm_id(id, nama_jenis)", { count: "exact" });
 
       // Role-based filtering
       if (hasRole("bendahara_opd")) {
@@ -189,11 +189,6 @@ export const useDashboardStats = () => {
 
       const revisionSpm = allSpm?.filter((s) => s.status === "perlu_revisi").length || 0;
       const revisionSpmValue = allSpm
-        ?.filter((s) => s.status === "perlu_revisi")
-        .reduce((sum, spm) => sum + Number(spm.nilai_spm || 0), 0) || 0;
-
-      const rejectedSpm = allSpm?.filter((s) => s.status === "perlu_revisi").length || 0;
-      const rejectedSpmValue = allSpm
         ?.filter((s) => s.status === "perlu_revisi")
         .reduce((sum, spm) => sum + Number(spm.nilai_spm || 0), 0) || 0;
 
@@ -286,9 +281,10 @@ export const useDashboardStats = () => {
         .sort((a, b) => b.total_nilai - a.total_nilai)
         .slice(0, 5);
 
-      // Financial Breakdown by Jenis SPM
+      // Financial Breakdown by Jenis SPM - Now properly joined
       const financialMap = new Map<string, { total_spm: number; total_nilai: number }>();
       allSpm?.forEach((spm: any) => {
+        // Access nested jenis_spm from join
         const jenis = spm.jenis_spm?.nama_jenis || "Lainnya";
         if (!financialMap.has(jenis)) {
           financialMap.set(jenis, { total_spm: 0, total_nilai: 0 });
@@ -340,28 +336,21 @@ export const useDashboardStats = () => {
         }))
         .slice(0, 5) || [];
 
-      // Top Vendors
-      const { data: vendorData, error: vendorError } = await supabase
-        .from("spm")
-        .select("vendor_id, nilai_spm, vendor:vendor_id(nama_vendor)")
-        .not("vendor_id", "is", null)
-        .neq("status", "draft");
-
-      if (vendorError) throw vendorError;
-
-      const vendorMap = new Map<string, { vendor_name: string; total_spm: number; total_nilai: number }>();
-      vendorData?.forEach((spm: any) => {
-        const vendorId = spm.vendor_id;
-        const vendorName = spm.vendor?.nama_vendor || "Unknown Vendor";
-        if (!vendorMap.has(vendorId)) {
-          vendorMap.set(vendorId, { vendor_name: vendorName, total_spm: 0, total_nilai: 0 });
+      // Top Vendors/Recipients - Use nama_penerima since no vendor FK exists
+      const recipientMap = new Map<string, { vendor_name: string; total_spm: number; total_nilai: number }>();
+      allSpm?.forEach((spm: any) => {
+        if (!spm.nama_penerima || spm.status === "draft") return;
+        
+        const recipientName = spm.nama_penerima;
+        if (!recipientMap.has(recipientName)) {
+          recipientMap.set(recipientName, { vendor_name: recipientName, total_spm: 0, total_nilai: 0 });
         }
-        const vendor = vendorMap.get(vendorId)!;
-        vendor.total_spm += 1;
-        vendor.total_nilai += Number(spm.nilai_spm || 0);
+        const recipient = recipientMap.get(recipientName)!;
+        recipient.total_spm += 1;
+        recipient.total_nilai += Number(spm.nilai_spm || 0);
       });
 
-      const topVendors = Array.from(vendorMap.entries())
+      const topVendors = Array.from(recipientMap.entries())
         .map(([vendor_id, data]) => ({ vendor_id, ...data }))
         .sort((a, b) => b.total_nilai - a.total_nilai)
         .slice(0, 5);
@@ -391,10 +380,9 @@ export const useDashboardStats = () => {
         perbendaharaan_to_kepala: calculateAvgDays("tanggal_perbendaharaan", "tanggal_kepala_bkad"),
       };
 
-      // Success Metrics
-      const totalCompleted = approvedSpm + rejectedSpm + revisionSpm || 1;
+      // Success Metrics - Only approved vs revision
+      const totalCompleted = approvedSpm + revisionSpm || 1;
       const successRate = (approvedSpm / totalCompleted) * 100;
-      const rejectionRate = (rejectedSpm / totalCompleted) * 100;
       const revisionRate = (revisionSpm / totalCompleted) * 100;
 
       // Compare with last month
@@ -487,7 +475,7 @@ export const useDashboardStats = () => {
       const calculatePeriodStats = (spmList: any[]) => {
         const submitted = spmList.length;
         const approved = spmList.filter((s) => s.status === "disetujui").length;
-        const rejected = spmList.filter((s) => s.status === "ditolak" || s.status === "perlu_revisi").length;
+        const rejected = spmList.filter((s) => s.status === "perlu_revisi").length;
         const totalValue = spmList.reduce((sum, s) => sum + Number(s.nilai_spm || 0), 0);
         
         const completedSpm = spmList.filter((s) => s.status === "disetujui" && s.tanggal_ajuan && s.tanggal_disetujui);
@@ -563,8 +551,6 @@ export const useDashboardStats = () => {
         inProgressSpmValue,
         revisionSpm,
         revisionSpmValue,
-        rejectedSpm,
-        rejectedSpmValue,
         totalSp2d,
         totalSp2dValue,
         issuedSp2d,
@@ -586,7 +572,7 @@ export const useDashboardStats = () => {
         processTimeline,
         successMetrics: {
           successRate,
-          rejectionRate,
+          rejectionRate: revisionRate, // rejectionRate sama dengan revisionRate
           revisionRate,
           trendVsLastMonth,
         },
