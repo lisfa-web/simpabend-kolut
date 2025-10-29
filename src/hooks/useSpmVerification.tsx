@@ -20,7 +20,7 @@ export const useSpmVerification = (role: string) => {
   const queryClient = useQueryClient();
 
   const getNextStatus = (currentStatus: StatusSpm, action: string): StatusSpm => {
-    if (action === "reject") return "ditolak";
+    if (action === "reject") return "perlu_revisi"; // reject now means revise
     if (action === "revise") return "perlu_revisi";
 
     const statusFlow: Record<string, StatusSpm> = {

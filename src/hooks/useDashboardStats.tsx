@@ -189,9 +189,9 @@ export const useDashboardStats = () => {
         ?.filter((s) => s.status === "perlu_revisi")
         .reduce((sum, spm) => sum + Number(spm.nilai_spm || 0), 0) || 0;
 
-      const rejectedSpm = allSpm?.filter((s) => s.status === "ditolak").length || 0;
+      const rejectedSpm = allSpm?.filter((s) => s.status === "perlu_revisi").length || 0;
       const rejectedSpmValue = allSpm
-        ?.filter((s) => s.status === "ditolak")
+        ?.filter((s) => s.status === "perlu_revisi")
         .reduce((sum, spm) => sum + Number(spm.nilai_spm || 0), 0) || 0;
 
       // Average process time
@@ -228,7 +228,7 @@ export const useDashboardStats = () => {
           month: monthName,
           diajukan: monthData.length,
           disetujui: monthData.filter((s) => s.status === "disetujui").length,
-          ditolak: monthData.filter((s) => s.status === "perlu_revisi" || s.status === "ditolak").length,
+          perlu_revisi: monthData.filter((s) => s.status === "perlu_revisi").length,
         };
       });
 
@@ -393,7 +393,7 @@ export const useDashboardStats = () => {
 
       const lastMonthApproved = lastMonthSpm.filter((s) => s.status === "disetujui").length;
       const lastMonthTotal = lastMonthSpm.filter(
-        (s) => s.status === "disetujui" || s.status === "ditolak" || s.status === "perlu_revisi"
+        (s) => s.status === "disetujui" || s.status === "perlu_revisi"
       ).length || 1;
       const lastMonthSuccessRate = (lastMonthApproved / lastMonthTotal) * 100;
       const trendVsLastMonth = successRate - lastMonthSuccessRate;
@@ -502,7 +502,7 @@ export const useDashboardStats = () => {
       }) || [];
 
       // Rejection Analysis
-      const rejectedSpmList = allSpm?.filter((s) => s.status === "ditolak" || s.status === "perlu_revisi") || [];
+      const rejectedSpmList = allSpm?.filter((s) => s.status === "perlu_revisi") || [];
       
       // Count rejections by stage (where they were rejected from)
       const rejectionByStage = new Map<string, number>();
@@ -529,8 +529,8 @@ export const useDashboardStats = () => {
         .sort((a, b) => b.count - a.count);
 
       // Calculate rejection trend vs last month
-      const lastMonthRejected = previousMonthSpm.filter((s) => s.status === "ditolak" || s.status === "perlu_revisi").length;
-      const currentMonthRejected = currentMonthSpm.filter((s) => s.status === "ditolak" || s.status === "perlu_revisi").length;
+      const lastMonthRejected = previousMonthSpm.filter((s) => s.status === "perlu_revisi").length;
+      const currentMonthRejected = currentMonthSpm.filter((s) => s.status === "perlu_revisi").length;
       const rejectionTrend = lastMonthRejected > 0 
         ? ((currentMonthRejected - lastMonthRejected) / lastMonthRejected) * 100 
         : 0;

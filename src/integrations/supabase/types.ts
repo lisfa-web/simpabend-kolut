@@ -365,33 +365,33 @@ export type Database = {
       pajak_per_jenis_spm: {
         Row: {
           created_at: string | null
+          deskripsi: string | null
           id: string
           is_default: boolean | null
           jenis_spm: string
           master_pajak_id: string
-          tarif_khusus: number | null
           updated_at: string | null
           uraian_template: string | null
           urutan: number | null
         }
         Insert: {
           created_at?: string | null
+          deskripsi?: string | null
           id?: string
           is_default?: boolean | null
           jenis_spm: string
           master_pajak_id: string
-          tarif_khusus?: number | null
           updated_at?: string | null
           uraian_template?: string | null
           urutan?: number | null
         }
         Update: {
           created_at?: string | null
+          deskripsi?: string | null
           id?: string
           is_default?: boolean | null
           jenis_spm?: string
           master_pajak_id?: string
-          tarif_khusus?: number | null
           updated_at?: string | null
           uraian_template?: string | null
           urutan?: number | null
@@ -753,7 +753,6 @@ export type Database = {
           created_at: string | null
           id: string
           revisi_by: string
-          revisi_dari_status: Database["public"]["Enums"]["status_spm"]
           spm_id: string
         }
         Insert: {
@@ -761,7 +760,6 @@ export type Database = {
           created_at?: string | null
           id?: string
           revisi_by: string
-          revisi_dari_status: Database["public"]["Enums"]["status_spm"]
           spm_id: string
         }
         Update: {
@@ -769,7 +767,6 @@ export type Database = {
           created_at?: string | null
           id?: string
           revisi_by?: string
-          revisi_dari_status?: Database["public"]["Enums"]["status_spm"]
           spm_id?: string
         }
         Relationships: [
@@ -886,6 +883,7 @@ export type Database = {
           is_aset: boolean | null
           jenis_spm_id: string | null
           nama_bank: string | null
+          nama_penerima: string | null
           nama_rekening: string | null
           nilai_bersih: number | null
           nilai_spm: number
@@ -903,10 +901,10 @@ export type Database = {
           tanggal_pbmd: string | null
           tanggal_perbendaharaan: string | null
           tanggal_resepsionis: string | null
+          tipe_penerima: string | null
           total_potongan: number | null
           updated_at: string | null
           uraian: string | null
-          vendor_id: string | null
           verified_by_akuntansi: string | null
           verified_by_kepala_bkad: string | null
           verified_by_pbmd: string | null
@@ -925,6 +923,7 @@ export type Database = {
           is_aset?: boolean | null
           jenis_spm_id?: string | null
           nama_bank?: string | null
+          nama_penerima?: string | null
           nama_rekening?: string | null
           nilai_bersih?: number | null
           nilai_spm: number
@@ -942,10 +941,10 @@ export type Database = {
           tanggal_pbmd?: string | null
           tanggal_perbendaharaan?: string | null
           tanggal_resepsionis?: string | null
+          tipe_penerima?: string | null
           total_potongan?: number | null
           updated_at?: string | null
           uraian?: string | null
-          vendor_id?: string | null
           verified_by_akuntansi?: string | null
           verified_by_kepala_bkad?: string | null
           verified_by_pbmd?: string | null
@@ -964,6 +963,7 @@ export type Database = {
           is_aset?: boolean | null
           jenis_spm_id?: string | null
           nama_bank?: string | null
+          nama_penerima?: string | null
           nama_rekening?: string | null
           nilai_bersih?: number | null
           nilai_spm?: number
@@ -981,10 +981,10 @@ export type Database = {
           tanggal_pbmd?: string | null
           tanggal_perbendaharaan?: string | null
           tanggal_resepsionis?: string | null
+          tipe_penerima?: string | null
           total_potongan?: number | null
           updated_at?: string | null
           uraian?: string | null
-          vendor_id?: string | null
           verified_by_akuntansi?: string | null
           verified_by_kepala_bkad?: string | null
           verified_by_pbmd?: string | null
@@ -1011,13 +1011,6 @@ export type Database = {
             columns: ["opd_id"]
             isOneToOne: false
             referencedRelation: "opd"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "spm_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
-            referencedRelation: "vendor"
             referencedColumns: ["id"]
           },
           {
@@ -1270,7 +1263,6 @@ export type Database = {
         | "perbendaharaan_verifikasi"
         | "kepala_bkad_review"
         | "disetujui"
-        | "ditolak"
         | "perlu_revisi"
     }
     CompositeTypes: {
@@ -1432,7 +1424,6 @@ export const Constants = {
         "perbendaharaan_verifikasi",
         "kepala_bkad_review",
         "disetujui",
-        "ditolak",
         "perlu_revisi",
       ],
     },

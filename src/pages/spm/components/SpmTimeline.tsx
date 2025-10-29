@@ -79,7 +79,7 @@ export const SpmTimeline = ({ currentStatus, spm }: SpmTimelineProps) => {
   const currentIndex = statusOrder.indexOf(currentStatus);
 
   const getStepStatus = (index: number) => {
-    if (currentStatus === "ditolak" || currentStatus === "perlu_revisi") {
+    if (currentStatus === "perlu_revisi") {
       return index <= currentIndex ? "completed" : "pending";
     }
     if (index < currentIndex) return "completed";

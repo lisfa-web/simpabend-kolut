@@ -17,7 +17,6 @@ const statusConfig: Record<StatusSpm, { label: string; variant: string }> = {
   perbendaharaan_verifikasi: { label: "Verifikasi Perbendaharaan", variant: "default" },
   kepala_bkad_review: { label: "Review Kepala BKAD", variant: "default" },
   disetujui: { label: "Disetujui", variant: "default" },
-  ditolak: { label: "Ditolak", variant: "destructive" },
   perlu_revisi: { label: "Perlu Revisi", variant: "destructive" },
 };
 
