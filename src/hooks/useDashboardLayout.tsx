@@ -73,7 +73,7 @@ export const useDashboardLayout = () => {
 
       const { error } = await supabase
         .from("dashboard_layout")
-        .upsert(payload);
+        .upsert(payload, { onConflict: "user_id" });
 
       if (error) throw error;
     },
