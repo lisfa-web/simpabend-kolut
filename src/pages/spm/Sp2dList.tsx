@@ -296,6 +296,10 @@ const Sp2dList = () => {
                                 ? format(new Date(spm.tanggal_disetujui), "dd MMM yyyy HH:mm", {
                                     locale: localeId,
                                   })
+                                : (spm as any).tanggal_kepala_bkad
+                                ? format(new Date((spm as any).tanggal_kepala_bkad), "dd MMM yyyy HH:mm", {
+                                    locale: localeId,
+                                  })
                                 : "-"}
                             </TableCell>
                             <TableCell>
