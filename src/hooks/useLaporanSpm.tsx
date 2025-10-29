@@ -25,7 +25,6 @@ export const useLaporanSpm = (filters?: LaporanSpmFilters) => {
             *,
             opd:opd_id(nama_opd, kode_opd),
             jenis_spm:jenis_spm_id(nama_jenis),
-            vendor:vendor_id(nama_vendor),
             bendahara:profiles!spm_bendahara_id_fkey(full_name),
             resepsionis:profiles!spm_verified_by_resepsionis_fkey(full_name),
             pbmd:profiles!spm_verified_by_pbmd_fkey(full_name),

@@ -26,7 +26,7 @@ export const useLaporanSp2d = (filters?: LaporanSp2dFilters) => {
             verifier:profiles!sp2d_verified_by_fkey(full_name),
             spm:spm!sp2d_spm_id_fkey(
               nomor_spm,
-              opd:opd!spm_opd_id_fkey(nama_opd, kode_opd, id),
+              opd:opd_id(nama_opd, kode_opd, id),
               bendahara:profiles!spm_bendahara_id_fkey(full_name)
             )
           `)
