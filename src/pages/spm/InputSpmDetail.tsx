@@ -290,6 +290,13 @@ const InputSpmDetail = () => {
   const verificationConfig = getVerificationConfig();
   const canVerify = shouldShowVerification && verificationConfig !== null;
 
+  // Auto-open verification dialog when action=verify
+  useEffect(() => {
+    if (shouldShowVerification && canVerify && !showVerifyDialog) {
+      setShowVerifyDialog(true);
+    }
+  }, [shouldShowVerification, canVerify, showVerifyDialog]);
+
   const handleRequestPin = async () => {
     if (!id || !user?.id) return;
     await requestPinMutation.mutateAsync({
