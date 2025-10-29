@@ -252,7 +252,7 @@ const Dashboard = () => {
           {!isWidgetHidden("stats") && (
             <div key="stats">
               <WidgetContainer isEditMode={isEditMode} title="Statistik Utama">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 p-4">
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-3 lg:grid-cols-5 p-4">
                   <Card 
                     variant="interactive" 
                     className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-blue-500"
