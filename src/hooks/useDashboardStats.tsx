@@ -555,7 +555,7 @@ export const useDashboardStats = () => {
         pendingSp2d,
         failedSp2d,
         avgProcessDays,
-        monthlyTrend,
+        monthlyTrend: monthlyTrend as any,
         opdBreakdown,
         financialBreakdown,
         alerts: {

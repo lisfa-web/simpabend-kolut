@@ -150,7 +150,6 @@ const InputSpmForm = () => {
 
   const opdName = opdList?.find((o) => o.id === formData?.opd_id)?.nama_opd;
   const jenisSpmName = jenisSpmList?.find((j) => j.id === formData?.jenis_spm_id)?.nama_jenis;
-  const vendorName = vendorList?.find((v) => v.id === formData?.vendor_id)?.nama_vendor;
 
   // Tampilkan loading saat fetch data SPM untuk mode edit
   if (id && isLoadingSpm) {
@@ -262,7 +261,6 @@ const InputSpmForm = () => {
                 potonganPajak={potonganPajak}
                 opdName={opdName}
                 jenisSpmLabel={jenisSpmName}
-                vendorName={vendorName}
                 onSubmit={handleFinalSubmit}
                 onBack={() => setActiveTab("lampiran")}
                 isSubmitting={createSpm.isPending || updateSpm.isPending}

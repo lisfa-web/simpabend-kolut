@@ -118,7 +118,13 @@ export default function SpmTimelineDetail() {
       nomor_berkas: spm.nomor_berkas,
       nomor_antrian: spm.nomor_antrian,
       opd: spm.opd,
-      vendor: spm.vendor,
+      penerima: {
+        tipe: spm.tipe_penerima,
+        nama: spm.nama_penerima,
+        nama_bank: spm.nama_bank,
+        nomor_rekening: spm.nomor_rekening,
+        nama_rekening: spm.nama_rekening,
+      },
       bendahara: spm.bendahara,
       potongan_pajak_spm: spm.potongan_pajak_spm,
     };
@@ -385,20 +391,32 @@ export default function SpmTimelineDetail() {
             </Card>
 
             {/* Vendor Info */}
-            {spm.vendor && (
+            {spm.nama_penerima && (
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Informasi Vendor</CardTitle>
+                  <CardTitle className="text-base">Informasi Penerima</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div>
-                    <p className="text-xs text-muted-foreground">Nama Vendor</p>
-                    <p className="text-sm font-medium">{spm.vendor.nama_vendor}</p>
+                    <p className="text-xs text-muted-foreground">Tipe Penerima</p>
+                    <p className="text-sm font-medium">{spm.tipe_penerima || "-"}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">NPWP</p>
-                    <p className="text-sm font-medium">{spm.vendor.npwp || "-"}</p>
+                    <p className="text-xs text-muted-foreground">Nama Penerima</p>
+                    <p className="text-sm font-medium">{spm.nama_penerima}</p>
                   </div>
+                  {spm.nama_bank && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Bank</p>
+                      <p className="text-sm font-medium">{spm.nama_bank}</p>
+                    </div>
+                  )}
+                  {spm.nomor_rekening && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">No. Rekening</p>
+                      <p className="text-sm font-medium">{spm.nomor_rekening}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}

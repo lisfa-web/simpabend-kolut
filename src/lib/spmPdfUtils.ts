@@ -16,9 +16,9 @@ interface SpmPrintData {
     nama_opd: string;
     kode_opd?: string;
   };
-  vendor?: {
-    nama_vendor?: string;
-    npwp?: string;
+  penerima?: {
+    tipe?: string;
+    nama?: string;
     nama_bank?: string;
     nomor_rekening?: string;
     nama_rekening?: string;
@@ -306,8 +306,8 @@ export const generateSpmPDF = (
         
         <!-- Bank / Pos dengan Border -->
         <div class="bank-instruction">
-          <strong>Bank / Pos:</strong> ${spmData.vendor?.nama_bank || '[Nama Bank]'}<br>
-          Hendaklah mencairkan/memindahbukukan dari baki Rekening Nomor <strong>${spmData.vendor?.nomor_rekening || '[No Rekening]'}</strong> 
+          <strong>Bank / Pos:</strong> ${spmData.penerima?.nama_bank || '[Nama Bank]'}<br>
+          Hendaklah mencairkan/memindahbukukan dari baki Rekening Nomor <strong>${spmData.penerima?.nomor_rekening || '[No Rekening]'}</strong> 
           Uang sebesar <strong>Rp ${formatAngka(nilaiBersih)}</strong> 
           (Terbilang: <strong>${nilaiBersihTerbilang}</strong>)
         </div>
@@ -316,19 +316,23 @@ export const generateSpmPDF = (
         <div class="data-penerima">
           <div class="row">
             <span class="label"><strong>Kepada</strong></span>
-            <span>: ${spmData.vendor?.nama_vendor || '-'}</span>
+            <span>: ${spmData.penerima?.nama || '-'}</span>
           </div>
           <div class="row">
-            <span class="label"><strong>NPWP</strong></span>
-            <span>: ${spmData.vendor?.npwp || '-'}</span>
+            <span class="label"><strong>Tipe Penerima</strong></span>
+            <span>: ${spmData.penerima?.tipe || '-'}</span>
+          </div>
+          <div class="row">
+            <span class="label"><strong>Nama Penerima</strong></span>
+            <span>: ${spmData.penerima?.nama || '-'}</span>
           </div>
           <div class="row">
             <span class="label"><strong>No. Rekening Bank</strong></span>
-            <span>: ${spmData.vendor?.nomor_rekening || '-'}</span>
+            <span>: ${spmData.penerima?.nomor_rekening || '-'}</span>
           </div>
           <div class="row">
             <span class="label"><strong>Bank / Pos</strong></span>
-            <span>: ${spmData.vendor?.nama_bank || '-'}</span>
+            <span>: ${spmData.penerima?.nama_bank || '-'}</span>
           </div>
           <div class="row">
             <span class="label"><strong>Keperluan Untuk</strong></span>

@@ -23,10 +23,8 @@ interface Sp2dPrintData {
     opd?: {
       nama_opd: string;
     };
-    vendor?: {
-      nama_vendor?: string;
-      npwp?: string;
-    };
+    tipe_penerima?: string;
+    nama_penerima?: string;
   };
 }
 
@@ -261,9 +259,9 @@ export const generateSp2dPDF = (
             <td><strong>${sp2dData.nama_rekening}</strong></td>
           </tr>
           <tr>
-            <td>NPWP</td>
+            <td>Tipe Penerima</td>
             <td>:</td>
-            <td>${sp2dData.spm?.vendor?.npwp || '-'}</td>
+            <td>${sp2dData.spm?.tipe_penerima || '-'}</td>
           </tr>
           <tr>
             <td>No. Rekening Bank</td>

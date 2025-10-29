@@ -197,28 +197,39 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
 
         <FormField
           control={form.control}
-          name="vendor_id"
+          name="tipe_penerima"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Vendor/Pihak Ketiga (Opsional)</FormLabel>
+              <FormLabel>Tipe Penerima</FormLabel>
               <Select 
-                onValueChange={(value) => field.onChange(value === "none" ? undefined : value)} 
-                value={field.value || "none"}
+                onValueChange={field.onChange} 
+                value={field.value}
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Pilih Vendor (jika ada)" />
+                    <SelectValue placeholder="Pilih Tipe Penerima" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="none">Tidak ada vendor</SelectItem>
-                  {vendorList?.map((vendor) => (
-                    <SelectItem key={vendor.id} value={vendor.id}>
-                      {vendor.nama_vendor}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="bendahara_pengeluaran">Bendahara Pengeluaran</SelectItem>
+                  <SelectItem value="vendor">Vendor (PT/CV)</SelectItem>
+                  <SelectItem value="pihak_ketiga">Pihak Ketiga</SelectItem>
                 </SelectContent>
               </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="nama_penerima"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nama Penerima</FormLabel>
+              <FormControl>
+                <Input {...field} placeholder="Masukkan nama penerima" />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

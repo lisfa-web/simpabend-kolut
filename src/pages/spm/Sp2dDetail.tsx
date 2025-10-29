@@ -218,10 +218,10 @@ const Sp2dDetail = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">
-                      Penerima (Vendor)
+                      Penerima
                     </p>
                     <p className="font-medium">
-                      {sp2d.spm?.vendor?.nama_vendor || "-"}
+                      {sp2d.spm?.nama_penerima || "-"} ({sp2d.spm?.tipe_penerima || "-"})
                     </p>
                   </div>
                 </div>

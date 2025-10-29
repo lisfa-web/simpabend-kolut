@@ -15,7 +15,6 @@ export const useSp2dDetail = (sp2dId: string | undefined) => {
             *,
             opd:opd_id(nama_opd, kode_opd),
             jenis_spm:jenis_spm_id(nama_jenis),
-            vendor:vendor_id(nama_vendor, npwp, nama_bank, nomor_rekening, nama_rekening),
             bendahara:profiles!spm_bendahara_id_fkey(full_name, email)
           )
         `)

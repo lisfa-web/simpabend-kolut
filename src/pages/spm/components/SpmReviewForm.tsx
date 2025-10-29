@@ -21,7 +21,6 @@ interface SpmReviewFormProps {
   potonganPajak?: any[];
   opdName?: string;
   jenisSpmLabel?: string;
-  vendorName?: string;
   onSubmit: (isDraft: boolean) => void;
   onBack: () => void;
   isSubmitting?: boolean;
@@ -33,7 +32,6 @@ export const SpmReviewForm = ({
   potonganPajak = [],
   opdName,
   jenisSpmLabel,
-  vendorName,
   onSubmit,
   onBack,
   isSubmitting = false,
@@ -76,10 +74,10 @@ export const SpmReviewForm = ({
             <dt className="text-sm text-muted-foreground">Nilai SPM</dt>
             <dd className="font-medium text-lg">{formatCurrency(formData.nilai_spm)}</dd>
           </div>
-          {vendorName && (
+          {formData.nama_penerima && (
             <div className="col-span-2">
-              <dt className="text-sm text-muted-foreground">Vendor</dt>
-              <dd className="font-medium">{vendorName}</dd>
+              <dt className="text-sm text-muted-foreground">Penerima</dt>
+              <dd className="font-medium">{formData.nama_penerima} ({formData.tipe_penerima})</dd>
             </div>
           )}
           <div className="col-span-2">

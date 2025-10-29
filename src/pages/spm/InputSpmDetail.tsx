@@ -152,13 +152,13 @@ const InputSpmDetail = () => {
         nama_opd: spm.opd?.nama_opd || "-",
         kode_opd: spm.opd?.kode_opd || "-",
       },
-      vendor: spm.vendor ? {
-        nama_vendor: spm.vendor.nama_vendor,
-        npwp: spm.vendor.npwp || "-",
-        nama_bank: spm.vendor.nama_bank || "-",
-        nomor_rekening: spm.vendor.nomor_rekening || "-",
-        nama_rekening: spm.vendor.nama_rekening || "-",
-      } : undefined,
+      penerima: {
+        tipe: spm.tipe_penerima || "-",
+        nama: spm.nama_penerima || "-",
+        nama_bank: spm.nama_bank || "-",
+        nomor_rekening: spm.nomor_rekening || "-",
+        nama_rekening: spm.nama_rekening || "-",
+      },
       uraian: spm.uraian || "-",
       nilai_spm: spm.nilai_spm,
       potongan_pajak: spm.potongan_pajak_spm?.map((pajak: any) => ({
@@ -387,7 +387,7 @@ const InputSpmDetail = () => {
 
           <TabsContent value="info" className="space-y-6">
             {/* Catatan Verifikasi */}
-            {(spm.status === "perlu_revisi" || spm.status === "ditolak") && (
+            {spm.status === "perlu_revisi" && (
               <Card className="p-6 border-destructive bg-destructive/5">
                 <div className="flex items-start gap-3 mb-4">
                   <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
@@ -461,10 +461,10 @@ const InputSpmDetail = () => {
                   <dt className="text-sm text-muted-foreground">Nilai SPM</dt>
                   <dd className="font-medium text-lg">{formatCurrency(spm.nilai_spm)}</dd>
                 </div>
-                {spm.vendor && (
+                {spm.nama_penerima && (
                   <div className="col-span-2">
-                    <dt className="text-sm text-muted-foreground">Vendor</dt>
-                    <dd className="font-medium">{spm.vendor.nama_vendor}</dd>
+                    <dt className="text-sm text-muted-foreground">Penerima</dt>
+                    <dd className="font-medium">{spm.nama_penerima} ({spm.tipe_penerima})</dd>
                 </div>
               )}
               <div className="col-span-2">
