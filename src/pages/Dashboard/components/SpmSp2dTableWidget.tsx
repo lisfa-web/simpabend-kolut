@@ -129,16 +129,14 @@ export const SpmSp2dTableWidget = () => {
               <TableRow className="bg-muted/50">
                 <TableHead className="font-semibold">Informasi SPM</TableHead>
                 <TableHead className="font-semibold">Penerima</TableHead>
-                <TableHead className="font-semibold text-center">PBMD</TableHead>
-                <TableHead className="font-semibold text-center">Akuntansi</TableHead>
-                <TableHead className="font-semibold text-center">Perbendaharaan</TableHead>
+                <TableHead className="font-semibold">Verifikasi</TableHead>
                 <TableHead className="font-semibold">Informasi SP2D</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                     Loading data...
                   </TableCell>
                 </TableRow>
@@ -176,41 +174,48 @@ export const SpmSp2dTableWidget = () => {
                           </p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-center">
-                        <VerificationBadge
-                          isVerified={
-                            // If SPM is approved or has SP2D, all verifications are done
-                            spm.status === "disetujui" || sp2d
-                              ? true
-                              : spm.verified_by_pbmd
-                              ? spm.status !== "perlu_revisi"
-                              : null
-                          }
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <VerificationBadge
-                          isVerified={
-                            // If SPM is approved or has SP2D, all verifications are done
-                            spm.status === "disetujui" || sp2d
-                              ? true
-                              : spm.verified_by_akuntansi
-                              ? spm.status !== "perlu_revisi"
-                              : null
-                          }
-                        />
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <VerificationBadge
-                          isVerified={
-                            // If SPM is approved or has SP2D, all verifications are done
-                            spm.status === "disetujui" || sp2d
-                              ? true
-                              : spm.verified_by_perbendaharaan
-                              ? spm.status !== "perlu_revisi"
-                              : null
-                          }
-                        />
+                      <TableCell>
+                        <div className="flex flex-col gap-1 min-w-[280px]">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">PBMD:</span>
+                            <VerificationBadge
+                              isVerified={
+                                // If SPM is approved or has SP2D, all verifications are done
+                                spm.status === "disetujui" || sp2d
+                                  ? true
+                                  : spm.verified_by_pbmd
+                                  ? spm.status !== "perlu_revisi"
+                                  : null
+                              }
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">Akuntansi:</span>
+                            <VerificationBadge
+                              isVerified={
+                                // If SPM is approved or has SP2D, all verifications are done
+                                spm.status === "disetujui" || sp2d
+                                  ? true
+                                  : spm.verified_by_akuntansi
+                                  ? spm.status !== "perlu_revisi"
+                                  : null
+                              }
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">Perbendaharaan:</span>
+                            <VerificationBadge
+                              isVerified={
+                                // If SPM is approved or has SP2D, all verifications are done
+                                spm.status === "disetujui" || sp2d
+                                  ? true
+                                  : spm.verified_by_perbendaharaan
+                                  ? spm.status !== "perlu_revisi"
+                                  : null
+                              }
+                            />
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell>
                         {sp2d ? (
@@ -246,7 +251,7 @@ export const SpmSp2dTableWidget = () => {
                 })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                     No data available
                   </TableCell>
                 </TableRow>
