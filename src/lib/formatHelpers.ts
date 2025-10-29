@@ -68,8 +68,12 @@ export const formatAngka = (amount: number): string => {
 };
 
 // Format jenis SPM ke label yang readable
-export const formatJenisSpm = (jenis: string | undefined): string => {
+export const formatJenisSpm = (jenis: string | { nama_jenis: string } | undefined): string => {
   if (!jenis) return "-";
+  
+  // Handle if jenis is an object with nama_jenis property
+  const jenisStr = typeof jenis === 'string' ? jenis : jenis.nama_jenis;
+  if (!jenisStr) return "-";
   
   const labels: Record<string, string> = {
     up: "UP",
@@ -80,5 +84,5 @@ export const formatJenisSpm = (jenis: string | undefined): string => {
     ls_belanja_modal: "LS Belanja Modal"
   };
   
-  return labels[jenis.toLowerCase()] || jenis;
+  return labels[jenisStr.toLowerCase()] || jenisStr;
 };
