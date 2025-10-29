@@ -401,14 +401,12 @@ export const SpmPajakForm = ({
                   </div>
                 </div>
 
-                {pajak.uraian && (
-                  <div className="space-y-2">
-                    <Label>Deskripsi</Label>
-                    <div className="p-3 bg-muted rounded-md text-sm">
-                      {pajak.uraian}
-                    </div>
+                <div className="space-y-2">
+                  <Label>Deskripsi</Label>
+                  <div className="p-3 bg-muted rounded-md text-sm text-muted-foreground">
+                    {pajak.uraian || "Pilih jenis pajak untuk melihat deskripsi"}
                   </div>
-                )}
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
