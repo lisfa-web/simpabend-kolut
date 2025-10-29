@@ -280,11 +280,12 @@ const InputSpmForm = () => {
 
           <TabsContent value="lampiran" className="mt-6">
             <SpmLampiranForm
-              jenisSpm={formData?.jenis_spm_id}
+              jenisSpm={jenisSpmData?.nama_jenis}
               files={files}
               onFilesChange={setFiles}
               onNext={() => setActiveTab("review")}
               onBack={() => setActiveTab("pajak")}
+              existingLampiran={(spmDetail as any)?.lampiran_spm || []}
             />
           </TabsContent>
 
