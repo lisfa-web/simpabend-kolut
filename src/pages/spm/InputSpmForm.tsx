@@ -78,14 +78,14 @@ const InputSpmForm = () => {
     setActiveTab("pajak");
   };
 
-  const handleNomorSubmit = (nomor: string, isDraft: boolean) => {
+  const handleNomorSubmit = (nomor: string) => {
     if (formData) {
       setFormData({ ...formData, nomor_spm: nomor });
-      handleFinalSubmit(nomor, isDraft);
+      handleFinalSubmit(nomor);
     }
   };
 
-  const handleFinalSubmit = async (nomorSpm: string, isDraft: boolean) => {
+  const handleFinalSubmit = async (nomorSpm: string) => {
     if (!formData) return;
 
     // Defensive check: prevent saving/submitting if status is "perlu_revisi"
@@ -108,8 +108,8 @@ const InputSpmForm = () => {
         nama_penerima: formData.nama_penerima,
         is_aset: formData.is_aset || false,
         nomor_spm: nomorSpm,
-        status: isDraft ? "draft" : "diajukan",
-        tanggal_ajuan: isDraft ? null : new Date().toISOString(),
+        status: "draft",
+        tanggal_ajuan: null,
         potongan_pajak: potonganPajak,
       };
 
@@ -142,7 +142,7 @@ const InputSpmForm = () => {
 
       toast({
         title: "Berhasil",
-        description: isDraft ? "SPM berhasil disimpan sebagai draft" : "SPM berhasil diajukan untuk verifikasi",
+        description: "SPM berhasil disimpan sebagai draft. Silakan ajukan dari halaman daftar SPM.",
       });
 
       navigate("/input-spm");

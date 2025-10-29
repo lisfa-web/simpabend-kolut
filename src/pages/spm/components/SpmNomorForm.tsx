@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SpmNomorFormProps {
   initialNomor?: string;
-  onSubmit: (nomor: string, isDraft: boolean) => void;
+  onSubmit: (nomor: string) => void;
   onBack: () => void;
   isSubmitting?: boolean;
 }
@@ -22,13 +22,13 @@ export const SpmNomorForm = ({
   const [nomorSpm, setNomorSpm] = useState(initialNomor || "");
   const [error, setError] = useState("");
 
-  const handleSubmit = (isDraft: boolean) => {
+  const handleSubmit = () => {
     if (!nomorSpm.trim()) {
       setError("Nomor SPM harus diisi");
       return;
     }
     setError("");
-    onSubmit(nomorSpm.trim(), isDraft);
+    onSubmit(nomorSpm.trim());
   };
 
   return (
@@ -85,20 +85,12 @@ export const SpmNomorForm = ({
 
       <Card className="p-6 border-primary">
         <div className="space-y-4">
-          <h4 className="font-semibold">Status Setelah Submit</h4>
-          <div className="grid gap-3">
-            <div className="p-3 bg-secondary/50 rounded-lg">
-              <p className="text-sm font-medium">Simpan sebagai Draft</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                SPM akan disimpan dengan status "Draft". Anda masih bisa mengedit dan mengajukan nanti.
-              </p>
-            </div>
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <p className="text-sm font-medium">Ajukan untuk Verifikasi</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                SPM akan langsung diajukan untuk verifikasi oleh Resepsionis. Tidak bisa diedit setelah diajukan.
-              </p>
-            </div>
+          <h4 className="font-semibold">Catatan Penting</h4>
+          <div className="p-3 bg-secondary/50 rounded-lg">
+            <p className="text-sm font-medium">Status: Draft</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              SPM akan disimpan dengan status "Draft". Setelah tersimpan, Anda dapat mengajukannya untuk verifikasi dari halaman daftar SPM.
+            </p>
           </div>
         </div>
       </Card>
@@ -112,37 +104,20 @@ export const SpmNomorForm = ({
         >
           Kembali
         </Button>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => handleSubmit(true)}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Menyimpan...
-              </>
-            ) : (
-              "Simpan sebagai Draft"
-            )}
-          </Button>
-          <Button
-            type="button"
-            onClick={() => handleSubmit(false)}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Mengajukan...
-              </>
-            ) : (
-              "Ajukan untuk Verifikasi"
-            )}
-          </Button>
-        </div>
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Menyimpan...
+            </>
+          ) : (
+            "Simpan SPM"
+          )}
+        </Button>
       </div>
     </div>
   );
