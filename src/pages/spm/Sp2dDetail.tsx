@@ -127,12 +127,6 @@ const Sp2dDetail = () => {
               <p className="text-muted-foreground">Detail SP2D</p>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handlePrint}>
-              <Printer className="h-4 w-4 mr-2" />
-              Cetak
-            </Button>
-          </div>
         </div>
 
         {/* Print Header - Only visible when printing */}
