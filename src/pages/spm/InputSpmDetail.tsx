@@ -26,7 +26,7 @@ import { useRequestPin } from "@/hooks/useRequestPin";
 const InputSpmDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { hasRole, user } = useAuth();
   const { data: spm, isLoading } = useSpmDetail(id);
@@ -674,7 +674,14 @@ const InputSpmDetail = () => {
       {verificationConfig && (
         <VerificationDialog
           open={showVerifyDialog}
-          onOpenChange={setShowVerifyDialog}
+          onOpenChange={(open) => {
+            setShowVerifyDialog(open);
+            if (!open) {
+              const params = new URLSearchParams(searchParams);
+              params.delete("action");
+              setSearchParams(params, { replace: true });
+            }
+          }}
           onSubmit={handleVerification}
           title={verificationConfig.title}
           showNomorAntrian={verificationConfig.showNomorAntrian}
