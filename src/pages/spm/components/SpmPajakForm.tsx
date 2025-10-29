@@ -410,7 +410,7 @@ export const SpmPajakForm = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Dasar Pengenaan *</Label>
+                    <Label>Nilai SPM *</Label>
                     <CurrencyInput
                       value={pajak.dasar_pengenaan}
                       onChange={(val) => handlePajakChange(index, "dasar_pengenaan", val)}
@@ -423,7 +423,7 @@ export const SpmPajakForm = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Jumlah Pajak *</Label>
+                    <Label>Potongan Pajak *</Label>
                     <CurrencyInput
                       value={pajak.jumlah_pajak}
                       onChange={(val) => handlePajakChange(index, "jumlah_pajak", val)}
@@ -528,9 +528,8 @@ export const SpmPajakForm = ({
                         
                         <div className="text-xs text-muted-foreground space-y-1">
                           <p><span className="font-medium">Uraian:</span> {pajak.uraian}</p>
-                          <p><span className="font-medium">Tarif:</span> {pajak.tarif}%</p>
                           <p>
-                            <span className="font-medium">Dasar Pengenaan:</span>{' '}
+                            <span className="font-medium">Nilai SPM:</span>{' '}
                             {formatCurrency(pajak.dasar_pengenaan)}
                           </p>
                         </div>
