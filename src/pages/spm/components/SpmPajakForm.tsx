@@ -33,6 +33,7 @@ import {
 
 interface PajakFormData {
   jenis_pajak: string;
+  nama_pajak?: string; // Add this for display
   rekening_pajak: string;
   uraian: string; // filled from master_pajak deskripsi
   tarif?: number; // optional, untuk backward compatibility
@@ -102,8 +103,10 @@ export const SpmPajakForm = ({
     // Auto-suggest pajak jika belum ada dan SPM type memerlukan pajak
     if (requiresPajak && pajaks.length === 0 && nilaiSpm > 0 && suggestedTaxes.length > 0) {
       const initialPajak = suggestedTaxes.map(sug => {
+        const pajakOption = pajakOptions.find(opt => opt.value === sug.jenis);
         return {
           jenis_pajak: sug.jenis,
+          nama_pajak: pajakOption?.label || sug.jenis,
           rekening_pajak: sug.rekening || "",
           uraian: sug.uraian,
           tarif: 0,
@@ -126,6 +129,7 @@ export const SpmPajakForm = ({
       if (optionalTax && optionalTax.master_pajak) {
         setPajaks(prev => [...prev, {
           jenis_pajak: optionalTax.master_pajak!.jenis_pajak,
+          nama_pajak: optionalTax.master_pajak!.nama_pajak,
           rekening_pajak: optionalTax.master_pajak!.rekening_pajak,
           uraian: optionalTax.uraian_template || optionalTax.master_pajak!.deskripsi || optionalTax.master_pajak!.nama_pajak,
           tarif: 0,
@@ -174,6 +178,7 @@ export const SpmPajakForm = ({
       const pajakOption = pajakOptions.find(opt => opt.value === value);
       updated[index].rekening_pajak = pajakOption?.rekening || "";
       updated[index].uraian = pajakOption?.deskripsi || pajakOption?.label || "";
+      updated[index].nama_pajak = pajakOption?.label || "";
     }
 
     setPajaks(updated);
@@ -519,7 +524,7 @@ export const SpmPajakForm = ({
                       <div key={index} className="border rounded-lg p-3 space-y-2 bg-background">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold text-primary">
-                            #{index + 1} {pajakOption?.label || pajak.jenis_pajak}
+                            #{index + 1} {pajak.nama_pajak || pajak.jenis_pajak}
                           </span>
                           <span className="text-sm font-bold text-destructive">
                             -{formatCurrency(pajak.jumlah_pajak)}

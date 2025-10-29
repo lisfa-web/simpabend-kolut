@@ -93,16 +93,14 @@ export const SpmReviewForm = ({
             <TableHeader>
               <TableRow>
                 <TableHead>Jenis Pajak</TableHead>
-                <TableHead>Tarif</TableHead>
-                <TableHead>Dasar Pengenaan</TableHead>
-                <TableHead className="text-right">Jumlah</TableHead>
+                <TableHead>Nilai SPM</TableHead>
+                <TableHead className="text-right">Potongan Pajak</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {potonganPajak.map((pajak, idx) => (
                 <TableRow key={idx}>
-                  <TableCell className="font-medium">{pajak.uraian}</TableCell>
-                  <TableCell>{pajak.tarif}%</TableCell>
+                  <TableCell className="font-medium">{pajak.nama_pajak || pajak.jenis_pajak}</TableCell>
                   <TableCell>{formatCurrency(pajak.dasar_pengenaan)}</TableCell>
                   <TableCell className="text-right font-semibold">
                     {formatCurrency(pajak.jumlah_pajak)}
