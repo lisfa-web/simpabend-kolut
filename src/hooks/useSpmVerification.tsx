@@ -258,6 +258,8 @@ export const useSpmVerification = (role: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["spm-list"] });
       queryClient.invalidateQueries({ queryKey: ["spm-detail"] });
+      queryClient.invalidateQueries({ queryKey: ["approved-spm-for-sp2d"] });
+      queryClient.invalidateQueries({ queryKey: ["sp2d-list"] });
       
       toast({
         title: "Berhasil",

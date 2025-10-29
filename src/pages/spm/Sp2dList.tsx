@@ -165,17 +165,20 @@ const Sp2dList = () => {
         let query = supabase
           .from("spm")
           .select(`
-            *,
+            id,
+            nomor_spm,
+            nilai_spm,
+            tanggal_disetujui,
             opd:opd_id(nama_opd, kode_opd),
-            jenis_spm:jenis_spm_id(nama_jenis, ada_pajak, deskripsi),
-            vendor:vendor_id(nama_vendor, npwp, nama_bank, nomor_rekening, nama_rekening),
-            potongan_pajak_spm(*)
+            jenis_spm:jenis_spm_id(nama_jenis)
           `)
-          .in("status", ["disetujui", "kepala_bkad_review"])
-          .order("tanggal_disetujui", { ascending: false });
+          .in("status", ["disetujui", "kepala_bkad_review"]) 
+          .order("tanggal_disetujui", { ascending: false })
+          .limit(100);
 
         if (usedSpmIds.length > 0) {
-          query = query.not("id", "in", `(${usedSpmIds.join(",")})`);
+          const inList = `(${usedSpmIds.map((id: string) => `"${id}"`).join(",")})`;
+          query = query.not("id", "in", inList);
         }
 
         if (search) {
