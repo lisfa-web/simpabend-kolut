@@ -227,7 +227,7 @@ const InputSpmDetail = () => {
         title: "Verifikasi Perbendaharaan",
         showNomorAntrian: false,
         showNomorBerkas: false,
-        showPin: true,
+        showPin: false,
       };
     }
     
@@ -271,7 +271,7 @@ const InputSpmDetail = () => {
           title: "Verifikasi Perbendaharaan",
           showNomorAntrian: false,
           showNomorBerkas: false,
-          showPin: true,
+          showPin: false,
         };
       }
       if (status === "kepala_bkad_review") {
