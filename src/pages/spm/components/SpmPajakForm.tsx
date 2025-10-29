@@ -35,7 +35,7 @@ interface PajakFormData {
   jenis_pajak: string;
   rekening_pajak: string;
   uraian: string;
-  tarif: number;
+  tarif?: number; // optional, untuk backward compatibility
   dasar_pengenaan: number;
   jumlah_pajak: number;
 }
@@ -102,16 +102,13 @@ export const SpmPajakForm = ({
     // Auto-suggest pajak jika belum ada dan SPM type memerlukan pajak
     if (requiresPajak && pajaks.length === 0 && nilaiSpm > 0 && suggestedTaxes.length > 0) {
       const initialPajak = suggestedTaxes.map(sug => {
-        const dasarPengenaan = nilaiSpm;
-        const jumlahPajak = Math.round((dasarPengenaan * sug.tarif) / 100);
-        
         return {
           jenis_pajak: sug.jenis,
           rekening_pajak: sug.rekening || "",
           uraian: sug.uraian,
-          tarif: sug.tarif,
-          dasar_pengenaan: dasarPengenaan,
-          jumlah_pajak: jumlahPajak,
+          tarif: 0,
+          dasar_pengenaan: nilaiSpm,
+          jumlah_pajak: 0, // User will input manually
         };
       });
       
@@ -127,17 +124,13 @@ export const SpmPajakForm = ({
       // Add pajak to list
       const optionalTax = optionalTaxes.find(t => t.id === taxId);
       if (optionalTax && optionalTax.master_pajak) {
-        const dasarPengenaan = nilaiSpm;
-        const tarif = optionalTax.tarif_khusus || optionalTax.master_pajak.tarif_default;
-        const jumlahPajak = Math.round((dasarPengenaan * tarif) / 100);
-        
         setPajaks(prev => [...prev, {
           jenis_pajak: optionalTax.master_pajak!.jenis_pajak,
           rekening_pajak: optionalTax.master_pajak!.rekening_pajak,
           uraian: optionalTax.uraian_template || optionalTax.master_pajak!.nama_pajak,
-          tarif: tarif,
-          dasar_pengenaan: dasarPengenaan,
-          jumlah_pajak: jumlahPajak,
+          tarif: 0,
+          dasar_pengenaan: nilaiSpm,
+          jumlah_pajak: 0, // User will input manually
         }]);
       }
     } else {
@@ -176,13 +169,6 @@ export const SpmPajakForm = ({
     const updated = [...pajaks];
     updated[index] = { ...updated[index], [field]: value };
 
-    // Auto-calculate jumlah_pajak when tarif or dasar_pengenaan changes
-    if (field === "tarif" || field === "dasar_pengenaan") {
-      const tarif = field === "tarif" ? value : updated[index].tarif;
-      const dasarPengenaan = field === "dasar_pengenaan" ? value : updated[index].dasar_pengenaan;
-      updated[index].jumlah_pajak = Math.round((dasarPengenaan * tarif) / 100);
-    }
-
     // Auto-fill rekening when jenis_pajak changes
     if (field === "jenis_pajak") {
       const pajakOption = pajakOptions.find(opt => opt.value === value);
@@ -203,7 +189,7 @@ export const SpmPajakForm = ({
     if (requiresPajak) {
       for (let i = 0; i < pajaks.length; i++) {
         const p = pajaks[i];
-        if (!p.jenis_pajak || !p.uraian || p.tarif <= 0 || p.dasar_pengenaan <= 0) {
+        if (!p.jenis_pajak || !p.uraian || p.dasar_pengenaan <= 0 || p.jumlah_pajak <= 0) {
           alert(`Pajak #${i + 1} belum lengkap. Mohon lengkapi semua field.`);
           return;
         }
@@ -423,18 +409,7 @@ export const SpmPajakForm = ({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>Tarif (%) *</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={pajak.tarif}
-                      onChange={(e) => handlePajakChange(index, "tarif", parseFloat(e.target.value) || 0)}
-                      placeholder="0.0"
-                    />
-                  </div>
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Dasar Pengenaan *</Label>
                     <CurrencyInput
@@ -449,12 +424,16 @@ export const SpmPajakForm = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Jumlah Pajak</Label>
-                    <Input
-                      value={formatCurrency(pajak.jumlah_pajak)}
-                      readOnly
-                      className="bg-muted font-semibold"
+                    <Label>Jumlah Pajak *</Label>
+                    <CurrencyInput
+                      value={pajak.jumlah_pajak}
+                      onChange={(val) => handlePajakChange(index, "jumlah_pajak", val)}
                     />
+                    {pajak.jumlah_pajak > 0 && (
+                      <p className="text-xs text-muted-foreground italic">
+                        {terbilangRupiah(pajak.jumlah_pajak)}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
