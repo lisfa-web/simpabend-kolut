@@ -6,6 +6,7 @@ import { SpmDataForm } from "./components/SpmDataForm";
 import { SpmPajakForm } from "./components/SpmPajakForm";
 import { SpmLampiranForm } from "./components/SpmLampiranForm";
 import { SpmReviewForm } from "./components/SpmReviewForm";
+import { SpmNomorForm } from "./components/SpmNomorForm";
 import { SpmDataFormValues } from "@/schemas/spmSchema";
 import { useSpmMutation } from "@/hooks/useSpmMutation";
 import { useSpmDetail } from "@/hooks/useSpmDetail";
@@ -77,7 +78,14 @@ const InputSpmForm = () => {
     setActiveTab("pajak");
   };
 
-  const handleFinalSubmit = async (isDraft: boolean) => {
+  const handleNomorSubmit = (nomor: string, isDraft: boolean) => {
+    if (formData) {
+      setFormData({ ...formData, nomor_spm: nomor });
+      handleFinalSubmit(nomor, isDraft);
+    }
+  };
+
+  const handleFinalSubmit = async (nomorSpm: string, isDraft: boolean) => {
     if (!formData) return;
 
     // Defensive check: prevent saving/submitting if status is "perlu_revisi"
@@ -99,7 +107,7 @@ const InputSpmForm = () => {
         tipe_penerima: formData.tipe_penerima,
         nama_penerima: formData.nama_penerima,
         is_aset: formData.is_aset || false,
-        nomor_spm: formData.nomor_spm,
+        nomor_spm: nomorSpm,
         status: isDraft ? "draft" : "diajukan",
         tanggal_ajuan: isDraft ? null : new Date().toISOString(),
         potongan_pajak: potonganPajak,
@@ -168,7 +176,7 @@ const InputSpmForm = () => {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold">{id ? "Edit" : "Buat"} SPM</h1>
           <p className="text-muted-foreground">
-            Lengkapi 4 tahap berikut untuk membuat SPM baru
+            Lengkapi 5 tahap berikut untuk membuat SPM baru
           </p>
         </div>
 
@@ -200,13 +208,22 @@ const InputSpmForm = () => {
               Lampiran
             </span>
           </div>
-          <div className={`flex-1 h-0.5 mx-4 ${activeTab === "review" ? "bg-primary" : "bg-muted"}`} />
+          <div className={`flex-1 h-0.5 mx-4 ${activeTab === "review" || activeTab === "nomor" ? "bg-primary" : "bg-muted"}`} />
           <div className="flex items-center gap-2">
             <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === "review" ? "bg-primary text-primary-foreground" : formData ? "bg-muted-foreground/20 text-muted-foreground" : "bg-muted text-muted-foreground"}`}>
               4
             </div>
             <span className={`text-sm font-medium ${activeTab === "review" ? "text-foreground" : formData ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
-              Review & Submit
+              Review Data
+            </span>
+          </div>
+          <div className={`flex-1 h-0.5 mx-4 ${activeTab === "nomor" ? "bg-primary" : "bg-muted"}`} />
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full ${activeTab === "nomor" ? "bg-primary text-primary-foreground" : formData ? "bg-muted-foreground/20 text-muted-foreground" : "bg-muted text-muted-foreground"}`}>
+              5
+            </div>
+            <span className={`text-sm font-medium ${activeTab === "nomor" ? "text-foreground" : formData ? "text-muted-foreground" : "text-muted-foreground/50"}`}>
+              Nomor SPM
             </span>
           </div>
         </div>
@@ -216,7 +233,8 @@ const InputSpmForm = () => {
             <TabsTrigger value="data">Data Dasar</TabsTrigger>
             <TabsTrigger value="pajak">Potongan Pajak</TabsTrigger>
             <TabsTrigger value="lampiran">Lampiran</TabsTrigger>
-            <TabsTrigger value="review">Review & Submit</TabsTrigger>
+            <TabsTrigger value="review">Review Data</TabsTrigger>
+            <TabsTrigger value="nomor">Nomor SPM</TabsTrigger>
           </TabsList>
 
           <TabsContent value="data" className="mt-6">
@@ -261,8 +279,18 @@ const InputSpmForm = () => {
                 potonganPajak={potonganPajak}
                 opdName={opdName}
                 jenisSpmLabel={jenisSpmName}
-                onSubmit={handleFinalSubmit}
+                onNext={() => setActiveTab("nomor")}
                 onBack={() => setActiveTab("lampiran")}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="nomor" className="mt-6">
+            {formData && (
+              <SpmNomorForm
+                initialNomor={formData.nomor_spm}
+                onSubmit={handleNomorSubmit}
+                onBack={() => setActiveTab("review")}
                 isSubmitting={createSpm.isPending || updateSpm.isPending}
               />
             )}

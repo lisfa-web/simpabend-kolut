@@ -1,11 +1,9 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency } from "@/lib/currency";
 import { formatFileSize } from "@/lib/fileValidation";
 import { SpmDataFormValues } from "@/schemas/spmSchema";
-import { Loader2, Calculator } from "lucide-react";
+import { Calculator } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { terbilangRupiah } from "@/lib/formatHelpers";
@@ -21,9 +19,8 @@ interface SpmReviewFormProps {
   potonganPajak?: any[];
   opdName?: string;
   jenisSpmLabel?: string;
-  onSubmit: (isDraft: boolean) => void;
+  onNext: () => void;
   onBack: () => void;
-  isSubmitting?: boolean;
 }
 
 export const SpmReviewForm = ({
@@ -32,11 +29,9 @@ export const SpmReviewForm = ({
   potonganPajak = [],
   opdName,
   jenisSpmLabel,
-  onSubmit,
+  onNext,
   onBack,
-  isSubmitting = false,
 }: SpmReviewFormProps) => {
-  const [verified, setVerified] = useState(false);
 
   const totalPotongan = potonganPajak.reduce((sum, p) => sum + (p.jumlah_pajak || 0), 0);
   const nilaiBersih = formData.nilai_spm - totalPotongan;
@@ -161,59 +156,20 @@ export const SpmReviewForm = ({
 
       <Card className="p-6 border-primary">
         <div className="space-y-4">
-          <h3 className="font-semibold">Verifikasi Data</h3>
-          <div className="flex items-start space-x-3">
-            <Checkbox
-              id="verify"
-              checked={verified}
-              onCheckedChange={(checked) => setVerified(checked as boolean)}
-            />
-            <label
-              htmlFor="verify"
-              className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Saya menyatakan bahwa data yang saya input sudah benar dan lampiran yang
-              diupload sudah lengkap. Saya bertanggung jawab atas kebenaran data ini.
-            </label>
-          </div>
+          <h3 className="font-semibold">Review Selesai</h3>
+          <p className="text-sm text-muted-foreground">
+            Pastikan semua data sudah benar sebelum melanjutkan ke tahap input nomor SPM.
+          </p>
         </div>
       </Card>
 
       <div className="flex justify-between gap-4">
-        <Button type="button" variant="outline" onClick={onBack} disabled={isSubmitting}>
+        <Button type="button" variant="outline" onClick={onBack}>
           Kembali
         </Button>
-        <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => onSubmit(true)}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Menyimpan...
-              </>
-            ) : (
-              "Simpan sebagai Draft"
-            )}
-          </Button>
-          <Button
-            type="button"
-            onClick={() => onSubmit(false)}
-            disabled={!verified || isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Mengirim...
-              </>
-            ) : (
-              "Submit untuk Verifikasi"
-            )}
-          </Button>
-        </div>
+        <Button type="button" onClick={onNext}>
+          Lanjut ke Input Nomor SPM
+        </Button>
       </div>
     </div>
   );
