@@ -130,13 +130,22 @@ export const SpmLampiranForm = ({
   const handleNext = () => {
     const hasExisting = (jenis: string) => existing.some((l) => normalizeJenisLampiran(l.jenis_lampiran) === jenis);
 
+    // Validasi lampiran wajib dengan toast yang lebih baik
     if (files.dokumen_spm.length === 0 && !hasExisting("dokumen_spm")) {
-      alert("Dokumen SPM wajib diupload");
+      toast({
+        title: "Lampiran Tidak Lengkap",
+        description: "Dokumen SPM wajib dilampirkan sebelum melanjutkan",
+        variant: "destructive",
+      });
       return;
     }
 
     if (isLsType && files.tbk.length === 0 && !hasExisting("tbk")) {
-      alert("TBK/Kuitansi wajib diupload untuk SPM LS");
+      toast({
+        title: "Lampiran Tidak Lengkap", 
+        description: "TBK/Kwitansi wajib dilampirkan untuk jenis SPM LS",
+        variant: "destructive",
+      });
       return;
     }
 

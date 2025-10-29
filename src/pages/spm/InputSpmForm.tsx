@@ -131,7 +131,7 @@ const InputSpmForm = () => {
         is_aset: formData.is_aset || false,
         nomor_spm: nomorSpm,
         status: "draft",
-        tanggal_ajuan: null,
+        tanggal_ajuan: formData.tanggal_ajuan, // Simpan tanggal dari user input
         potongan_pajak: potonganPajak,
       };
 
@@ -141,7 +141,7 @@ const InputSpmForm = () => {
 
       const spmId = result.id;
 
-      // Upload files
+      // Upload files dengan error handling yang lebih baik
       const allFiles = [
         ...files.dokumen_spm.map((f: any) => ({ file: f, jenis: "spm" })),
         ...files.tbk.map((f: any) => ({ file: f, jenis: "tbk" })),
@@ -149,17 +149,26 @@ const InputSpmForm = () => {
         ...files.lainnya.map((f: any) => ({ file: f, jenis: "lainnya" })),
       ];
 
+      const uploadResults = [];
+      const uploadErrors = [];
+
       for (const { file, jenis } of allFiles) {
         try {
-          await uploadFile(file, spmId, jenis);
+          const uploaded = await uploadFile(file, spmId, jenis);
+          uploadResults.push({ file: file.name, success: true });
         } catch (uploadError: any) {
           console.error(`Gagal upload file ${file.name}:`, uploadError);
-          toast({
-            title: "Peringatan",
-            description: `File ${file.name} gagal diupload: ${uploadError.message}`,
-            variant: "destructive",
-          });
+          uploadErrors.push({ file: file.name, error: uploadError.message });
         }
+      }
+
+      // Notify user about upload results
+      if (uploadErrors.length > 0) {
+        toast({
+          title: "Peringatan Upload",
+          description: `${uploadErrors.length} file gagal diupload. Silakan upload ulang dari halaman edit.`,
+          variant: "destructive",
+        });
       }
 
       toast({
