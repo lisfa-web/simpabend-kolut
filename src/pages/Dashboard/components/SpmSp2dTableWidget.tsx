@@ -173,7 +173,10 @@ export const SpmSp2dTableWidget = () => {
                       <TableCell className="text-center">
                         <VerificationBadge
                           isVerified={
-                            spm.verified_by_pbmd
+                            // If SPM is approved or has SP2D, all verifications are done
+                            spm.status === "disetujui" || sp2d
+                              ? true
+                              : spm.verified_by_pbmd
                               ? spm.status !== "perlu_revisi"
                               : null
                           }
@@ -182,7 +185,10 @@ export const SpmSp2dTableWidget = () => {
                       <TableCell className="text-center">
                         <VerificationBadge
                           isVerified={
-                            spm.verified_by_akuntansi
+                            // If SPM is approved or has SP2D, all verifications are done
+                            spm.status === "disetujui" || sp2d
+                              ? true
+                              : spm.verified_by_akuntansi
                               ? spm.status !== "perlu_revisi"
                               : null
                           }
@@ -191,7 +197,10 @@ export const SpmSp2dTableWidget = () => {
                       <TableCell className="text-center">
                         <VerificationBadge
                           isVerified={
-                            spm.verified_by_perbendaharaan
+                            // If SPM is approved or has SP2D, all verifications are done
+                            spm.status === "disetujui" || sp2d
+                              ? true
+                              : spm.verified_by_perbendaharaan
                               ? spm.status !== "perlu_revisi"
                               : null
                           }
