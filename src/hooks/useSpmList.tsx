@@ -5,7 +5,7 @@ import { useAuth } from "./useAuth";
 interface SpmListFilters {
   search?: string;
   jenis_spm_id?: string;
-  status?: string;
+  status?: string | string[];
   tanggal_dari?: string;
   tanggal_sampai?: string;
 }
@@ -37,7 +37,11 @@ export const useSpmList = (filters?: SpmListFilters) => {
       }
 
       if (filters?.status) {
-        query = query.eq("status", filters.status as any);
+        if (Array.isArray(filters.status)) {
+          query = query.in("status", filters.status as any);
+        } else {
+          query = query.eq("status", filters.status as any);
+        }
       }
 
       if (filters?.tanggal_dari) {

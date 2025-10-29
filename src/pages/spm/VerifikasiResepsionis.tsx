@@ -10,12 +10,12 @@ export default function VerifikasiResepsionis() {
   const [search, setSearch] = useState("");
   
   const { data: spmListBaru, isLoading: loadingBaru } = useSpmList({
-    status: "diajukan",
+    status: ["diajukan", "resepsionis_verifikasi"],
     search,
   });
 
   const { data: spmListProses, isLoading: loadingProses } = useSpmList({
-    status: "resepsionis_verifikasi",
+    status: ["pbmd_verifikasi", "akuntansi_validasi", "perbendaharaan_verifikasi"],
     search,
   });
 
@@ -42,10 +42,10 @@ export default function VerifikasiResepsionis() {
         <Tabs defaultValue="baru" className="space-y-4">
           <TabsList>
             <TabsTrigger value="baru">
-              SPM Baru ({spmListBaru?.length || 0})
+              Perlu Verifikasi ({spmListBaru?.length || 0})
             </TabsTrigger>
             <TabsTrigger value="proses">
-              Dalam Proses ({spmListProses?.length || 0})
+              Sudah Diproses ({spmListProses?.length || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -68,9 +68,9 @@ export default function VerifikasiResepsionis() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-4">
                   <Inbox className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Belum Ada SPM Baru</h3>
+                <h3 className="text-lg font-semibold mb-2">Belum Ada SPM Yang Perlu Diverifikasi</h3>
                 <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                  SPM yang diajukan oleh bendahara akan muncul di sini untuk diverifikasi
+                  SPM yang diajukan akan muncul di sini untuk diberikan nomor antrian
                 </p>
               </div>
             )}
@@ -95,9 +95,9 @@ export default function VerifikasiResepsionis() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-4">
                   <FileText className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Tidak Ada SPM Dalam Proses</h3>
+                <h3 className="text-lg font-semibold mb-2">Tidak Ada SPM Yang Sudah Diproses</h3>
                 <p className="text-sm text-muted-foreground max-w-sm mx-auto">
-                  SPM yang sedang Anda verifikasi akan muncul di sini
+                  SPM yang telah Anda verifikasi dan masih dalam tahap verifikasi lanjutan akan muncul di sini
                 </p>
               </div>
             )}
