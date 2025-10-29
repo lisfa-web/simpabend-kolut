@@ -107,9 +107,18 @@ export const SpmLampiranForm = ({
 
     setBusyId(l.id);
     try {
-      const newLamp: any = await uploadFile(file, spmId, l.jenis_lampiran);
+      // Delete old file from storage AND database FIRST
       await deleteFile(l.id, l.file_url);
-      setExisting((prev) => prev.map((x) => (x.id === l.id ? newLamp : x)));
+      
+      // Then upload new file (creates new database record)
+      const newLamp: any = await uploadFile(file, spmId, l.jenis_lampiran);
+      
+      // Update state: remove old and add new
+      setExisting((prev) => {
+        const filtered = prev.filter((x) => x.id !== l.id);
+        return [...filtered, newLamp];
+      });
+      
       toast({ title: "Lampiran diganti" });
     } catch (e: any) {
       toast({ title: "Gagal mengganti lampiran", description: e.message, variant: "destructive" });
