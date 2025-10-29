@@ -72,14 +72,19 @@ const Sp2dForm = () => {
       const { data, error } = await supabase
         .from("spm")
         .select(`
-          *,
+          id,
+          nomor_spm,
+          nilai_spm,
+          nilai_bersih,
+          nama_bank,
+          nomor_rekening,
+          nama_rekening,
           opd:opd_id(nama_opd),
           jenis_spm:jenis_spm_id(nama_jenis),
-          vendor:vendor_id(nama_vendor, nama_bank, nomor_rekening, nama_rekening),
           potongan_pajak_spm(*)
         `)
         .eq("id", routeSpmId)
-        .eq("status", "disetujui")
+        .in("status", ["disetujui", "kepala_bkad_review"]) 
         .single();
 
       if (error) throw error;
