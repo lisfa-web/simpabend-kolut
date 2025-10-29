@@ -99,8 +99,48 @@ export const useSpmVerification = (role: string) => {
           updateData.catatan_resepsionis = data.catatan;
           updateData.tanggal_resepsionis = new Date().toISOString();
           updateData.verified_by_resepsionis = user.id;
-          if (data.nomorAntrian) updateData.nomor_antrian = data.nomorAntrian;
-          if (data.nomorBerkas) updateData.nomor_berkas = data.nomorBerkas;
+          
+          // Auto-generate nomor antrian dan nomor berkas jika approve
+          if (data.action === "approve") {
+            // Get current year and month for nomor antrian
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, "0");
+            
+            // Generate nomor antrian
+            const antrianPrefix = `ANTRIAN/${year}/${month}/`;
+            const { data: existingAntrian } = await supabase
+              .from("spm")
+              .select("nomor_antrian")
+              .like("nomor_antrian", `${antrianPrefix}%`)
+              .order("nomor_antrian", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            let nextAntrianNumber = 1;
+            if (existingAntrian?.nomor_antrian) {
+              const lastNumber = parseInt(existingAntrian.nomor_antrian.split("/").pop() || "0");
+              nextAntrianNumber = lastNumber + 1;
+            }
+            updateData.nomor_antrian = `${antrianPrefix}${String(nextAntrianNumber).padStart(3, "0")}`;
+            
+            // Generate nomor berkas
+            const berkasPrefix = `BERKAS/${year}/`;
+            const { data: existingBerkas } = await supabase
+              .from("spm")
+              .select("nomor_berkas")
+              .like("nomor_berkas", `${berkasPrefix}%`)
+              .order("nomor_berkas", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+
+            let nextBerkasNumber = 1;
+            if (existingBerkas?.nomor_berkas) {
+              const lastBerkasNumber = parseInt(existingBerkas.nomor_berkas.split("/").pop() || "0");
+              nextBerkasNumber = lastBerkasNumber + 1;
+            }
+            updateData.nomor_berkas = `${berkasPrefix}${String(nextBerkasNumber).padStart(4, "0")}`;
+          }
           break;
         case "pbmd":
           updateData.catatan_pbmd = data.catatan;

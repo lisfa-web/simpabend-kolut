@@ -9,13 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function VerifikasiResepsionis() {
   const [search, setSearch] = useState("");
   
+  // Tab "Perlu Verifikasi" hanya untuk status "diajukan" (belum ada nomor antrian)
   const { data: spmListBaru, isLoading: loadingBaru } = useSpmList({
-    status: ["diajukan", "resepsionis_verifikasi"],
+    status: ["diajukan"],
     search,
   });
 
+  // Tab "Sudah Diproses" untuk SPM yang sudah diverifikasi resepsionis
   const { data: spmListProses, isLoading: loadingProses } = useSpmList({
-    status: ["pbmd_verifikasi", "akuntansi_validasi", "perbendaharaan_verifikasi"],
+    status: ["resepsionis_verifikasi"],
     search,
   });
 

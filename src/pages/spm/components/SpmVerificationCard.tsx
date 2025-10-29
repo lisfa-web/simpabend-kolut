@@ -87,19 +87,43 @@ export const SpmVerificationCard = ({ spm }: SpmVerificationCardProps) => {
           </div>
         )}
 
-        {/* Section 4: Uraian */}
+        {/* Section 4: Nomor Antrian & Berkas (jika ada) */}
+        {(spm.nomor_antrian || spm.nomor_berkas) && (
+          <div className="p-3 bg-gradient-to-r from-green-500/5 to-green-500/10 border border-green-500/20 rounded-lg shadow-sm">
+            <div className="space-y-1.5">
+              {spm.nomor_antrian && (
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">No. Antrian:</span>
+                  <Badge variant="outline" className="font-mono text-xs bg-green-500/10 border-green-500/30">
+                    {spm.nomor_antrian}
+                  </Badge>
+                </div>
+              )}
+              {spm.nomor_berkas && (
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-muted-foreground">No. Berkas:</span>
+                  <Badge variant="outline" className="font-mono text-xs bg-blue-500/10 border-blue-500/30">
+                    {spm.nomor_berkas}
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Section 5: Uraian */}
         <div>
           <p className="text-xs text-muted-foreground mb-1.5">Uraian</p>
           <p className="text-sm leading-relaxed line-clamp-2">{spm.uraian}</p>
         </div>
 
-        {/* Section 5: Metadata */}
+        {/* Section 6: Metadata */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1 border-t border-border/50">
           <Calendar className="h-3.5 w-3.5" />
           <span>Diajukan: {format(new Date(spm.tanggal_ajuan), "dd MMM yyyy HH:mm", { locale: localeId })}</span>
         </div>
 
-        {/* Section 6: Action Button */}
+        {/* Section 7: Action Button */}
         <div className="pt-2">
           <Button
             size="sm"
@@ -107,7 +131,7 @@ export const SpmVerificationCard = ({ spm }: SpmVerificationCardProps) => {
             onClick={() => navigate(`/input-spm/detail/${spm.id}?action=verify`)}
           >
             <CheckCircle className="h-4 w-4 mr-2" />
-            Buka & Verifikasi
+            {spm.nomor_antrian ? "Lihat Detail" : "Buka & Verifikasi"}
           </Button>
         </div>
       </CardContent>
