@@ -170,51 +170,58 @@ const InputSpmList = () => {
                     </TableCell>
                     <TableCell>{spm.jenis_spm?.nama_jenis || "-"}</TableCell>
                     <TableCell>{formatCurrency(spm.nilai_spm)}</TableCell>
-                    <TableCell>
-                      <SpmStatusBadge status={spm.status} />
-                    </TableCell>
-                    <TableCell>
-                      {spm.tanggal_ajuan
-                        ? format(new Date(spm.tanggal_ajuan), "dd MMM yyyy", { locale: id })
-                        : "-"}
-                    </TableCell>
-                    <TableCell className="text-right space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(`/input-spm/detail/${spm.id}`)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {canEdit(spm.status) && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => navigate(`/input-spm/edit/${spm.id}`)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {canSubmit(spm.status) && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleSubmit(spm.id)}
-                          title={spm.status === "draft" ? "Ajukan SPM" : "Ajukan Ulang"}
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {canDelete(spm.status) && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleteId(spm.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </TableCell>
+                    {(() => {
+                      const effectiveStatus = spm.status === "diajukan" && !spm.tanggal_resepsionis ? "draft" : spm.status;
+                      return (
+                        <>
+                          <TableCell>
+                            <SpmStatusBadge status={effectiveStatus} />
+                          </TableCell>
+                          <TableCell>
+                            {spm.tanggal_ajuan
+                              ? format(new Date(spm.tanggal_ajuan), "dd MMM yyyy", { locale: id })
+                              : "-"}
+                          </TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => navigate(`/input-spm/detail/${spm.id}`)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            {canEdit(effectiveStatus) && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => navigate(`/input-spm/edit/${spm.id}`)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {canSubmit(effectiveStatus) && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleSubmit(spm.id)}
+                                title={effectiveStatus === "draft" ? "Ajukan SPM" : "Ajukan Ulang"}
+                              >
+                                <Send className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {canDelete(effectiveStatus) && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setDeleteId(spm.id)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </TableCell>
+                        </>
+                      );
+                    })()}
                   </TableRow>
                 ))
               )}
