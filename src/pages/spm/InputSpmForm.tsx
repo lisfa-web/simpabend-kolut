@@ -35,12 +35,12 @@ const InputSpmForm = () => {
   const { data: jenisSpmList } = useJenisSpmList({ is_active: true });
   const { data: vendorList } = useVendorList({ is_active: true });
 
-  // Block access if SPM status is "ditolak"
+  // Block access if SPM status is "perlu_revisi" (cannot edit)
   useEffect(() => {
-    if (id && spmDetail && spmDetail.status === "ditolak") {
+    if (id && spmDetail && spmDetail.status === "perlu_revisi") {
       toast({
         title: "Tidak Dapat Diedit",
-        description: "SPM yang ditolak tidak dapat diedit. Silakan buat pengajuan SPM baru.",
+        description: "SPM yang perlu revisi harus dibuat ulang. Silakan buat pengajuan SPM baru.",
         variant: "destructive",
       });
       navigate(`/input-spm/detail/${id}`);
@@ -55,7 +55,7 @@ const InputSpmForm = () => {
         jenis_spm_id: spmDetail.jenis_spm_id,
         nilai_spm: spmDetail.nilai_spm,
         uraian: spmDetail.uraian || '',
-        tipe_penerima: spmDetail.tipe_penerima || undefined,
+        tipe_penerima: (spmDetail.tipe_penerima as any) || undefined,
         nama_penerima: spmDetail.nama_penerima || undefined,
         tanggal_ajuan: new Date(spmDetail.tanggal_ajuan || new Date()),
         is_aset: spmDetail.is_aset || false,
@@ -80,11 +80,11 @@ const InputSpmForm = () => {
   const handleFinalSubmit = async (isDraft: boolean) => {
     if (!formData) return;
 
-    // Defensive check: prevent saving/submitting if status is "ditolak"
-    if (id && spmDetail && spmDetail.status === "ditolak") {
+    // Defensive check: prevent saving/submitting if status is "perlu_revisi"
+    if (id && spmDetail && spmDetail.status === "perlu_revisi") {
       toast({
         title: "Tidak Dapat Disimpan",
-        description: "SPM yang ditolak tidak dapat diedit atau diajukan ulang.",
+        description: "SPM yang perlu revisi tidak dapat diedit atau diajukan ulang.",
         variant: "destructive",
       });
       return;
