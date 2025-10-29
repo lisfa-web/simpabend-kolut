@@ -450,6 +450,14 @@ const InputSpmDetail = () => {
               <h3 className="font-semibold mb-4">Data SPM</h3>
               <dl className="grid grid-cols-2 gap-4">
                 <div>
+                  <dt className="text-sm text-muted-foreground">Nomor SPM</dt>
+                  <dd className="font-medium text-lg">{spm.nomor_spm || "DRAFT"}</dd>
+                </div>
+                <div>
+                  <dt className="text-sm text-muted-foreground">Tanggal Ajuan</dt>
+                  <dd className="font-medium">{new Date(spm.tanggal_ajuan).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</dd>
+                </div>
+                <div>
                   <dt className="text-sm text-muted-foreground">OPD</dt>
                   <dd className="font-medium">{spm.opd?.nama_opd}</dd>
                 </div>
