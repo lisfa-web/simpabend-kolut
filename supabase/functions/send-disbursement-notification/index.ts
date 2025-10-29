@@ -29,15 +29,15 @@ serve(async (req) => {
 
     console.log('Processing disbursement notification for SP2D:', sp2dId);
 
-    // Fetch SP2D with related data
+    // Fetch SP2D with related SPM data
     const { data: sp2d, error: sp2dError } = await supabase
       .from('sp2d')
       .select(`
         *,
         spm:spm_id (
           *,
-          vendor:vendor_id (
-            nama_vendor,
+          opd:opd_id (
+            nama_opd,
             telepon
           )
         )
@@ -49,23 +49,26 @@ serve(async (req) => {
       throw new Error(`Failed to fetch SP2D: ${sp2dError?.message}`);
     }
 
-    const vendor = sp2d.spm?.vendor;
+    const spm = sp2d.spm;
     
-    if (!vendor) {
-      console.warn('No vendor found for SP2D:', sp2dId);
+    if (!spm) {
+      console.warn('No SPM found for SP2D:', sp2dId);
       return new Response(
-        JSON.stringify({ success: false, error: 'Vendor not found' }),
+        JSON.stringify({ success: false, error: 'SPM not found' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
     }
 
-    if (!vendor.telepon) {
-      console.warn('Vendor does not have phone number:', vendor.nama_vendor);
+    // Get recipient phone from OPD if available
+    const recipientPhone = spm.opd?.telepon;
+    
+    if (!recipientPhone) {
+      console.warn('No phone number available for recipient:', spm.nama_penerima);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Vendor phone number not set',
-          vendor: vendor.nama_vendor 
+          error: 'Recipient phone number not available',
+          recipient: spm.nama_penerima 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
@@ -107,15 +110,16 @@ serve(async (req) => {
     // Prepare WhatsApp message
     const message = `🎉 *NOTIFIKASI PENCAIRAN DANA*
 
-Kepada Yth. ${vendor.nama_vendor}
+Kepada Yth. ${spm.nama_penerima}
+OPD: ${spm.opd?.nama_opd || '-'}
 
 Dana untuk SP2D telah dicairkan:
 
 📄 Nomor SP2D: ${sp2d.nomor_sp2d}
 💰 Nilai: ${nilaiFormatted}
-🏦 Bank: ${sp2d.nama_bank}
-💳 Rekening: ${sp2d.nomor_rekening}
-👤 Nama Rekening: ${sp2d.nama_rekening}
+🏦 Bank: ${spm.nama_bank || sp2d.nama_bank || '-'}
+💳 Rekening: ${spm.nomor_rekening || sp2d.nomor_rekening || '-'}
+👤 Nama Rekening: ${spm.nama_rekening || sp2d.nama_rekening || '-'}
 📅 Tanggal Cair: ${tanggalCair}
 
 Silakan cek rekening Anda.
@@ -123,7 +127,7 @@ Silakan cek rekening Anda.
 Terima kasih.
 _Sistem Informasi BKAD_`;
 
-    console.log('Sending WhatsApp notification to:', vendor.telepon);
+    console.log('Sending WhatsApp notification to:', recipientPhone);
 
     // Send WhatsApp via Fonnte
     const fonnteResponse = await fetch('https://api.fonnte.com/send', {
@@ -133,7 +137,7 @@ _Sistem Informasi BKAD_`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        target: vendor.telepon,
+        target: recipientPhone,
         message: message,
         countryCode: '62',
       }),
@@ -151,7 +155,7 @@ _Sistem Informasi BKAD_`;
       user_id: sp2d.created_by, // Use SP2D creator as reference
       jenis: 'pencairan_dana',
       judul: 'Dana SP2D Telah Dicairkan',
-      pesan: `Dana untuk SP2D ${sp2d.nomor_sp2d} telah dicairkan ke vendor ${vendor.nama_vendor}`,
+      pesan: `Dana untuk SP2D ${sp2d.nomor_sp2d} telah dicairkan ke ${spm.nama_penerima}`,
       sent_via_wa: true,
       wa_sent_at: new Date().toISOString(),
     });
@@ -161,9 +165,9 @@ _Sistem Informasi BKAD_`;
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Notification sent to vendor',
-        vendor: vendor.nama_vendor,
-        phone: vendor.telepon
+        message: 'Notification sent to recipient',
+        recipient: spm.nama_penerima,
+        phone: recipientPhone
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
