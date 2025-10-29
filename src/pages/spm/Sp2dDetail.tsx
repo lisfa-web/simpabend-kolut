@@ -244,27 +244,6 @@ const Sp2dDetail = () => {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Informasi Rekening Penerima</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Nama Bank</p>
-                    <p className="font-medium">{sp2d.nama_bank || sp2d.spm?.nama_bank || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Nomor Rekening</p>
-                    <p className="font-medium font-mono">{sp2d.nomor_rekening || sp2d.spm?.nomor_rekening || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Nama Rekening</p>
-                    <p className="font-medium">{sp2d.nama_rekening || sp2d.spm?.nama_rekening || "-"}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             <Card>
               <CardHeader>
