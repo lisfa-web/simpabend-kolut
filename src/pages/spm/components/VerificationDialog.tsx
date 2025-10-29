@@ -11,14 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, XCircle, AlertCircle, KeyRound } from "lucide-react";
+import { CheckCircle2, AlertCircle, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 interface VerificationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: {
-    action: "approve" | "reject" | "revise";
+    action: "approve" | "revise";
     catatan?: string;
     nomorAntrian?: string;
     nomorBerkas?: string;
@@ -45,7 +45,7 @@ export const VerificationDialog = ({
   onRequestPin,
   isRequestingPin = false,
 }: VerificationDialogProps) => {
-  const [action, setAction] = useState<"approve" | "reject" | "revise" | null>(null);
+  const [action, setAction] = useState<"approve" | "revise" | null>(null);
   const [catatan, setCatatan] = useState("");
   const [nomorAntrian, setNomorAntrian] = useState("");
   const [nomorBerkas, setNomorBerkas] = useState("");
@@ -65,9 +65,9 @@ export const VerificationDialog = ({
       }
     }
 
-    // Validasi catatan wajib untuk reject dan revise
-    if ((action === "reject" || action === "revise") && !catatan.trim()) {
-      toast.error("Catatan wajib diisi untuk penolakan/revisi");
+    // Validasi catatan wajib untuk revise
+    if (action === "revise" && !catatan.trim()) {
+      toast.error("Catatan wajib diisi untuk revisi");
       return;
     }
 
@@ -96,7 +96,7 @@ export const VerificationDialog = ({
       if (showPin && !pin.trim()) return true;
     }
 
-    if ((action === "reject" || action === "revise") && !catatan.trim()) {
+    if (action === "revise" && !catatan.trim()) {
       return true;
     }
 
@@ -115,30 +115,22 @@ export const VerificationDialog = ({
 
         <div className="space-y-4 py-4">
           {!action && (
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
-                className="flex-col h-auto py-4"
+                className="flex-col h-auto py-6"
                 onClick={() => setAction("approve")}
               >
-                <CheckCircle2 className="h-6 w-6 text-green-600 mb-2" />
-                <span className="text-sm">Setujui</span>
+                <CheckCircle2 className="h-8 w-8 text-green-600 mb-2" />
+                <span className="text-base font-medium">Setujui</span>
               </Button>
               <Button
                 variant="outline"
-                className="flex-col h-auto py-4"
+                className="flex-col h-auto py-6"
                 onClick={() => setAction("revise")}
               >
-                <AlertCircle className="h-6 w-6 text-orange-600 mb-2" />
-                <span className="text-sm">Revisi</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="flex-col h-auto py-4"
-                onClick={() => setAction("reject")}
-              >
-                <XCircle className="h-6 w-6 text-red-600 mb-2" />
-                <span className="text-sm">Tolak</span>
+                <AlertCircle className="h-8 w-8 text-orange-600 mb-2" />
+                <span className="text-base font-medium">Revisi</span>
               </Button>
             </div>
           )}
@@ -196,7 +188,7 @@ export const VerificationDialog = ({
               <div className="space-y-2">
                 <Label htmlFor="catatan">
                   Catatan {action === "approve" ? "(Opsional)" : ""}
-                  {(action === "reject" || action === "revise") && (
+                  {action === "revise" && (
                     <span className="text-destructive"> *</span>
                   )}
                 </Label>
@@ -205,12 +197,12 @@ export const VerificationDialog = ({
                   placeholder={
                     action === "approve"
                       ? "Tambahkan catatan jika diperlukan..."
-                      : "Jelaskan alasan revisi/penolakan..."
+                      : "Jelaskan alasan revisi yang diperlukan..."
                   }
                   value={catatan}
                   onChange={(e) => setCatatan(e.target.value)}
                   rows={4}
-                  required={action === "reject" || action === "revise"}
+                  required={action === "revise"}
                 />
               </div>
             </>

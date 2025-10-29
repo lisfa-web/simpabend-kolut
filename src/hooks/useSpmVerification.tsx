@@ -8,7 +8,7 @@ type StatusSpm = Database["public"]["Enums"]["status_spm"];
 
 interface VerificationData {
   spmId: string;
-  action: "approve" | "reject" | "revise";
+  action: "approve" | "revise";
   catatan?: string;
   nomorAntrian?: string;
   nomorBerkas?: string;
@@ -20,7 +20,6 @@ export const useSpmVerification = (role: string) => {
   const queryClient = useQueryClient();
 
   const getNextStatus = (currentStatus: StatusSpm, action: string): StatusSpm => {
-    if (action === "reject") return "perlu_revisi"; // reject now means revise
     if (action === "revise") return "perlu_revisi";
 
     const statusFlow: Record<string, StatusSpm> = {
@@ -160,8 +159,6 @@ export const useSpmVerification = (role: string) => {
         let notifMessage = "";
         if (data.action === "approve") {
           notifMessage = `SPM ${spmData.nomor_spm || "Anda"} telah diverifikasi oleh ${role}`;
-        } else if (data.action === "reject") {
-          notifMessage = `SPM ${spmData.nomor_spm || "Anda"} ditolak oleh ${role}`;
         } else if (data.action === "revise") {
           notifMessage = `SPM ${spmData.nomor_spm || "Anda"} perlu revisi dari ${role}`;
         }
@@ -181,8 +178,6 @@ export const useSpmVerification = (role: string) => {
             documentId: data.spmId,
             action: data.action === "approve" && role === "kepala_bkad" && nextStatus === "disetujui" 
               ? "approved" 
-              : data.action === "reject" 
-              ? "rejected" 
               : data.action === "revise"
               ? "revised"
               : "verified",
@@ -198,8 +193,8 @@ export const useSpmVerification = (role: string) => {
           }
         });
 
-        // For kepala_bkad approval, also send email notification
-        if (role === "kepala_bkad" && (data.action === "approve" || data.action === "reject" || data.action === "revise")) {
+        // For kepala_bkad approval or revise, send email notification
+        if (role === "kepala_bkad" && (data.action === "approve" || data.action === "revise")) {
           supabase.functions.invoke("send-approval-notification", {
             body: {
               spmId: data.spmId,

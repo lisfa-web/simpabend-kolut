@@ -299,7 +299,7 @@ const InputSpmDetail = () => {
   };
 
   const handleVerification = async (data: {
-    action: "approve" | "reject" | "revise";
+    action: "approve" | "revise";
     catatan?: string;
     nomorAntrian?: string;
     nomorBerkas?: string;
