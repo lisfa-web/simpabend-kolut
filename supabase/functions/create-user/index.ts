@@ -126,18 +126,8 @@ serve(async (req: Request) => {
       throw profileError;
     }
 
-    // Insert roles - Filter out super_admin and demo_admin as they're not in DB enum
-    // These are TypeScript-only roles for client-side logic
-    const validRoles = roles.filter((r: any) => 
-      r.role !== 'super_admin' && r.role !== 'demo_admin'
-    );
-
-    if (validRoles.length === 0) {
-      // If user only had super_admin/demo_admin roles, default to administrator
-      validRoles.push({ role: 'administrator' });
-    }
-
-    const rolesData = validRoles.map((r: any) => ({
+    // Insert roles - Now that demo_admin and super_admin are in DB enum, no filtering needed
+    const rolesData = roles.map((r: any) => ({
       user_id: userId,
       role: r.role,
       opd_id: r.opd_id || null,

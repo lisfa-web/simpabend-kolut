@@ -24,6 +24,7 @@ const PermissionsList = () => {
   const roles: AppRole[] = [
     "super_admin",
     "administrator",
+    "demo_admin",
     "kepala_bkad",
     "kuasa_bud",
     "perbendaharaan",
@@ -38,6 +39,7 @@ const PermissionsList = () => {
     const labels: Record<AppRole, string> = {
       super_admin: "Super Administrator",
       administrator: "Administrator",
+      demo_admin: "Demo Admin (Read-Only)",
       kepala_bkad: "Kepala BKAD",
       kuasa_bud: "Kuasa BUD",
       perbendaharaan: "Perbendaharaan",
