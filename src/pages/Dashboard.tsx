@@ -172,7 +172,7 @@ const Dashboard = () => {
         <div className="space-y-4 pb-6 border-b">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">Dashboard Monitoring SPM &amp; SP2D</h1>
+              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">Monitoring SPM &amp; SP2D</h1>
               <p className="text-base text-muted-foreground flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-amber-500" />
                 Selamat datang, <span className="font-semibold text-foreground">{profile?.full_name || "User"}</span>
