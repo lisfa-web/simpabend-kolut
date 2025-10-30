@@ -38,7 +38,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Eye, Edit, Key, Power } from "lucide-react";
+import { Plus, Search, Eye, Edit, Key, Power, Trash2 } from "lucide-react";
 import { useUserList } from "@/hooks/useUserList";
 import { useUserMutation } from "@/hooks/useUserMutation";
 import { useAuth } from "@/hooks/useAuth";
@@ -71,6 +71,11 @@ const UserList = () => {
     userName: string;
     currentStatus: boolean;
   }>({ open: false, userId: "", userName: "", currentStatus: true });
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    userId: string;
+    userName: string;
+  }>({ open: false, userId: "", userName: "" });
   const [newPassword, setNewPassword] = useState("");
 
   // Calculate password strength
@@ -121,7 +126,7 @@ const UserList = () => {
     is_active: statusFilter === "all" ? undefined : statusFilter === "active",
   });
 
-  const { resetPassword, toggleUserStatus } = useUserMutation();
+  const { resetPassword, toggleUserStatus, deleteUser } = useUserMutation();
 
   // SECURITY: Filter out super admin and demo admin users for regular admins
   // This prevents regular administrators from viewing, editing, or managing super admin/demo admin accounts
@@ -163,6 +168,16 @@ const UserList = () => {
       isActive: !currentStatus,
     });
     setToggleStatusDialog({ open: false, userId: "", userName: "", currentStatus: true });
+  };
+
+  const handleDeleteUser = () => {
+    // SECURITY: Deletion handled by edge function with proper authorization checks
+    // AUDIT: All deletions are logged in audit_log table via mutation hook
+    deleteUser.mutate(deleteDialog.userId, {
+      onSuccess: () => {
+        setDeleteDialog({ open: false, userId: "", userName: "" });
+      },
+    });
   };
 
   return (
@@ -340,6 +355,31 @@ const UserList = () => {
                               </Tooltip>
                             </>
                           )}
+                          {/* SECURITY: Both admin and super_admin can delete users (except themselves and super_admins for regular admins) */}
+                          {(isSuperAdminUser || (!isDemoUser && canWriteData)) && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() =>
+                                    setDeleteDialog({
+                                      open: true,
+                                      userId: user.id,
+                                      userName: user.full_name,
+                                    })
+                                  }
+                                  disabled={isDemoUser || deleteUser.isPending}
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Hapus User</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
                         </TooltipProvider>
                       </div>
                     </TableCell>
@@ -477,6 +517,39 @@ const UserList = () => {
                   ? "Nonaktifkan" 
                   : "Aktifkan"
               }
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <AlertDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) =>
+          !open && setDeleteDialog({ open: false, userId: "", userName: "" })
+        }
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus User?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Anda akan <strong className="text-destructive">menghapus secara permanen</strong> user:{" "}
+              <strong>{deleteDialog.userName}</strong>
+              <br />
+              <br />
+              <span className="text-sm text-destructive">
+                ⚠️ Tindakan ini tidak dapat dibatalkan. Semua data user termasuk role dan riwayat aktivitas akan dihapus.
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={deleteUser.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUser.isPending ? "Menghapus..." : "Hapus User"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

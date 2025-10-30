@@ -55,6 +55,9 @@ export const useUserMutation = () => {
       'Failed to create user': 'Gagal membuat user. Pastikan semua data sudah benar.',
       'Failed to update user': 'Gagal mengubah data user. Silakan coba lagi.',
       'Failed to reset password': 'Gagal mereset password. Silakan coba lagi.',
+      'Failed to delete user': 'Gagal menghapus user. Silakan coba lagi.',
+      'Tidak dapat menghapus akun sendiri': 'Anda tidak dapat menghapus akun sendiri',
+      'Hanya super admin yang dapat menghapus user super admin': 'Hanya super admin yang dapat menghapus user super admin',
       'Missing authorization header': 'Sesi Anda telah berakhir. Silakan login kembali.',
     };
 
@@ -275,11 +278,52 @@ export const useUserMutation = () => {
     },
   });
 
+  const deleteUser = useMutation({
+    mutationFn: async (userId: string) => {
+      // Get user data for audit trail before deletion
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("email, full_name")
+        .eq("id", userId)
+        .single();
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role, opd_id")
+        .eq("user_id", userId);
+
+      // Call edge function to delete user with service role
+      const { data: result, error } = await supabase.functions.invoke("delete-user", {
+        body: { userId },
+      });
+
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
+      if (!result?.success) throw new Error("User deletion failed");
+
+      // Log audit trail: User deletion (critical security event)
+      await logAudit('delete', userId, {
+        profile,
+        roles,
+      }, null);
+
+      return userId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      toast.success("User berhasil dihapus");
+    },
+    onError: (error: any) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+
   return {
     createUser,
     updateUser,
     resetPassword,
     toggleUserStatus,
     updateEmail,
+    deleteUser,
   };
 };
