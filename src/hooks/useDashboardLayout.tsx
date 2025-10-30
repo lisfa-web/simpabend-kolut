@@ -25,6 +25,7 @@ const DEFAULT_LAYOUT: Layout[] = [
   { i: "alerts", x: 0, y: 18, w: 6, h: 2, minW: 4, minH: 2 },
   { i: "action-items", x: 6, y: 18, w: 6, h: 2, minW: 4, minH: 2 },
   { i: "spm-sp2d-table", x: 0, y: 20, w: 12, h: 8, minW: 8, minH: 6 },
+  { i: "spm-status-distribution", x: 0, y: 28, w: 6, h: 4, minW: 4, minH: 3 },
 ];
 
 export const useDashboardLayout = () => {

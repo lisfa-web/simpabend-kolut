@@ -26,6 +26,7 @@ import { RejectionAnalysisWidget } from "./Dashboard/components/RejectionAnalysi
 import { QuickActions } from "./Dashboard/components/QuickActions";
 import { PeriodFilter } from "./Dashboard/components/PeriodFilter";
 import { SpmSp2dTableWidget } from "./Dashboard/components/SpmSp2dTableWidget";
+import { SpmStatusDistributionWidget } from "./Dashboard/components/SpmStatusDistributionWidget";
 import { cn } from "@/lib/utils";
 import { Sparkline } from "@/components/Sparkline";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -80,6 +81,9 @@ const WIDGET_LABELS = [{
 }, {
   id: "spm-sp2d-table",
   label: "Tabel SPM & SP2D"
+}, {
+  id: "spm-status-distribution",
+  label: "Distribusi Status SPM"
 }];
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -573,6 +577,15 @@ const Dashboard = () => {
           {!isWidgetHidden("spm-sp2d-table") && <div key="spm-sp2d-table">
               <WidgetContainer isEditMode={isEditMode} title="Tabel SPM & SP2D">
                 <SpmSp2dTableWidget />
+              </WidgetContainer>
+            </div>}
+
+          {/* SPM Status Distribution Widget */}
+          {!isWidgetHidden("spm-status-distribution") && <div key="spm-status-distribution">
+              <WidgetContainer isEditMode={isEditMode} title="Distribusi Status SPM">
+                <div className="p-4">
+                  <SpmStatusDistributionWidget isLoading={isLoading} />
+                </div>
               </WidgetContainer>
             </div>}
         </GridLayout>
