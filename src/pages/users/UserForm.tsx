@@ -211,16 +211,15 @@ const UserForm = () => {
     }
   }, [userData, reset, clearErrors, isSuperAdmin]);
 
-  // Sync roles with RHF when changed via UserRoleSelect (skip if userData is still loading)
+  // Sync roles with RHF when changed via UserRoleSelect
   // This ensures form validation stays in sync with the role selection component
-  // EDGE CASE: Only sync if userData has been loaded to avoid premature validation errors
+  // IMPORTANT: Only sync when roles state changes (not when userData changes)
+  // to prevent overriding user's manual role changes
   useEffect(() => {
-    if (!userData || userData.user_roles) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setValue("roles" as any, roles as any, { shouldValidate: true });
-      if (roles.length > 0) clearErrors(["roles"]);
-    }
-  }, [roles, setValue, clearErrors, userData]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setValue("roles" as any, roles as any, { shouldValidate: true });
+    if (roles.length > 0) clearErrors(["roles"]);
+  }, [roles, setValue, clearErrors]);
 
   const onSubmit = (data: UserFormData) => {
     console.log("Form submitted with data:", data);
