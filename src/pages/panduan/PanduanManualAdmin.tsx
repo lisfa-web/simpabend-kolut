@@ -9,10 +9,11 @@ import { useState } from "react";
 import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { getRoleDisplayName } from "@/lib/auth";
-import { RichTextEditor } from "@/components/surat/RichTextEditor";
+import { RichTextEditorSimple } from "@/components/surat/RichTextEditorSimple";
 
 const AVAILABLE_ROLES = [
   "administrator",
+  "super_admin",
   "bendahara_opd",
   "resepsionis",
   "pbmd",
@@ -38,11 +39,11 @@ const PanduanManualAdmin = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold">⚙️ Kelola Panduan Manual</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-2xl font-bold">⚙️ Kelola Panduan Manual</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Tambah dan edit panduan manual untuk setiap role
             </p>
           </div>
@@ -58,38 +59,56 @@ const PanduanManualAdmin = () => {
                 Tambah Panduan
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>
+                <DialogTitle className="text-lg">
                   {editingPanduan?.id ? "Edit Panduan" : "Tambah Panduan Baru"}
                 </DialogTitle>
               </DialogHeader>
 
-              <div className="space-y-4">
-                <div>
-                  <Label>Role Target</Label>
-                  <Select
-                    value={editingPanduan?.role}
-                    onValueChange={(v) =>
-                      setEditingPanduan({ ...editingPanduan, role: v })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {AVAILABLE_ROLES.map((role) => (
-                        <SelectItem key={role} value={role}>
-                          {getRoleDisplayName(role as any)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm">Role Target</Label>
+                    <Select
+                      value={editingPanduan?.role}
+                      onValueChange={(v) =>
+                        setEditingPanduan({ ...editingPanduan, role: v })
+                      }
+                    >
+                      <SelectTrigger className="h-9">
+                        <SelectValue placeholder="Pilih role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AVAILABLE_ROLES.map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {getRoleDisplayName(role as any)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm">Urutan</Label>
+                    <Input
+                      type="number"
+                      className="h-9"
+                      value={editingPanduan?.urutan || 0}
+                      onChange={(e) =>
+                        setEditingPanduan({
+                          ...editingPanduan,
+                          urutan: parseInt(e.target.value),
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <Label>Judul</Label>
+                  <Label className="text-sm">Judul Panduan</Label>
                   <Input
+                    className="h-9"
                     value={editingPanduan?.judul || ""}
                     onChange={(e) =>
                       setEditingPanduan({
@@ -97,44 +116,33 @@ const PanduanManualAdmin = () => {
                         judul: e.target.value,
                       })
                     }
+                    placeholder="Contoh: Cara Input SPM"
                   />
                 </div>
 
                 <div>
-                  <Label>Urutan</Label>
-                  <Input
-                    type="number"
-                    value={editingPanduan?.urutan || 0}
-                    onChange={(e) =>
-                      setEditingPanduan({
-                        ...editingPanduan,
-                        urutan: parseInt(e.target.value),
-                      })
-                    }
-                  />
+                  <Label className="text-sm">Konten Panduan</Label>
+                  <div className="mt-1">
+                    <RichTextEditorSimple
+                      value={editingPanduan?.konten || ""}
+                      onChange={(html) =>
+                        setEditingPanduan({
+                          ...editingPanduan,
+                          konten: html,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <Label>Konten</Label>
-                  <RichTextEditor
-                    value={editingPanduan?.konten || ""}
-                    onChange={(html) =>
-                      setEditingPanduan({
-                        ...editingPanduan,
-                        konten: html,
-                      })
-                    }
-                  />
-                </div>
-
-                <Button onClick={handleSave} className="w-full" disabled={isSaving}>
+                <Button onClick={handleSave} className="w-full h-9" disabled={isSaving}>
                   {isSaving ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Menyimpan...
                     </>
                   ) : (
-                    "Simpan"
+                    "Simpan Panduan"
                   )}
                 </Button>
               </div>
@@ -143,31 +151,32 @@ const PanduanManualAdmin = () => {
         </div>
 
         {/* List panduan */}
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {allPanduan.map((panduan: any) => (
             <Card key={panduan.id}>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>{panduan.judul}</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Role: {getRoleDisplayName(panduan.role)} | Urutan:{" "}
-                    {panduan.urutan}
+              <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
+                <div className="flex-1">
+                  <CardTitle className="text-base">{panduan.judul}</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Role: {getRoleDisplayName(panduan.role)} • Urutan: {panduan.urutan}
                   </p>
                 </div>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
+                    className="h-8"
                     onClick={() => {
                       setEditingPanduan(panduan);
                       setIsDialogOpen(true);
                     }}
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-3.5 w-3.5" />
                   </Button>
                   <Button
                     variant="destructive"
                     size="sm"
+                    className="h-8"
                     onClick={() => {
                       if (
                         confirm(
@@ -178,7 +187,7 @@ const PanduanManualAdmin = () => {
                       }
                     }}
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </CardHeader>

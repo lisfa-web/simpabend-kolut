@@ -30,17 +30,17 @@ const PanduanManual = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
-          <h1 className="text-3xl font-bold">📚 Panduan Manual</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl font-bold">📚 Panduan Manual</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Panduan penggunaan aplikasi SIMPA BEND sesuai dengan peran Anda
           </p>
         </div>
 
         {/* Display user roles */}
-        <div className="flex gap-2 flex-wrap">
-          <span className="text-sm text-muted-foreground">Role Anda:</span>
+        <div className="flex gap-2 flex-wrap items-center">
+          <span className="text-xs text-muted-foreground">Role Anda:</span>
           {roles.map((role) => (
             <Badge key={role} className={getRoleBadgeColor(role)}>
               {getRoleDisplayName(role)}
@@ -52,22 +52,22 @@ const PanduanManual = () => {
 
         {/* Panduan by role */}
         {Object.keys(groupedPanduan).map((role) => (
-          <div key={role} className="space-y-4">
+          <div key={role} className="space-y-3">
             <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
-              <h2 className="text-2xl font-semibold">
+              <BookOpen className="h-4 w-4 text-primary" />
+              <h2 className="text-lg font-semibold">
                 Panduan untuk {getRoleDisplayName(role as any)}
               </h2>
             </div>
 
             {groupedPanduan[role].map((panduan: any) => (
               <Card key={panduan.id}>
-                <CardHeader>
-                  <CardTitle>{panduan.judul}</CardTitle>
+                <CardHeader className="py-3">
+                  <CardTitle className="text-base">{panduan.judul}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   <div 
-                    className="prose prose-sm max-w-none dark:prose-invert"
+                    className="prose prose-sm max-w-none dark:prose-invert text-sm"
                     dangerouslySetInnerHTML={{ __html: panduan.konten }}
                   />
                 </CardContent>
@@ -78,9 +78,9 @@ const PanduanManual = () => {
 
         {panduanList.length === 0 && (
           <Card>
-            <CardContent className="text-center py-12">
-              <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
+            <CardContent className="text-center py-8">
+              <BookOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">
                 Belum ada panduan yang tersedia untuk role Anda
               </p>
             </CardContent>
