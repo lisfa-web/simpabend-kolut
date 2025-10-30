@@ -24,19 +24,31 @@ const LaporanSp2d = () => {
   const [tanggalSampai, setTanggalSampai] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [opdFilter, setOpdFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const { data: opdList } = useOpdList();
-  const { data: sp2dList, isLoading, error } = useLaporanSp2d({
+  const { data: sp2dResult, isLoading, error } = useLaporanSp2d({
     tanggal_dari: tanggalDari,
     tanggal_sampai: tanggalSampai,
     status: statusFilter,
     opd_id: opdFilter,
+    page: currentPage,
+    pageSize: pageSize,
   });
 
-  const totalSp2d = sp2dList?.length || 0;
-  const totalNilai = sp2dList?.reduce((sum, item) => sum + Number(item.nilai_sp2d || 0), 0) || 0;
-  const totalPotongan = sp2dList?.reduce((sum, item) => sum + Number(item.total_potongan || 0), 0) || 0;
-  const totalDiterima = sp2dList?.reduce((sum, item) => sum + Number(item.nilai_diterima || item.nilai_sp2d || 0), 0) || 0;
+  const sp2dList = sp2dResult?.data || [];
+  const totalCount = sp2dResult?.count || 0;
+  const totalSp2d = sp2dList.length;
+  const totalNilai = sp2dList.reduce((sum, item) => sum + Number(item.nilai_sp2d || 0), 0);
+  const totalPotongan = sp2dList.reduce((sum, item) => sum + Number(item.total_potongan || 0), 0);
+  const totalDiterima = sp2dList.reduce((sum, item) => sum + Number(item.nilai_diterima || item.nilai_sp2d || 0), 0);
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" }> = {
@@ -77,13 +89,13 @@ const LaporanSp2d = () => {
             <FilterPeriode
               tanggalDari={tanggalDari}
               tanggalSampai={tanggalSampai}
-              onTanggalDariChange={setTanggalDari}
-              onTanggalSampaiChange={setTanggalSampai}
+              onTanggalDariChange={handleFilterChange(setTanggalDari)}
+              onTanggalSampaiChange={handleFilterChange(setTanggalSampai)}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Status</Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={handleFilterChange(setStatusFilter)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Semua Status" />
                   </SelectTrigger>
@@ -98,7 +110,7 @@ const LaporanSp2d = () => {
               </div>
               <div className="space-y-2">
                 <Label>OPD</Label>
-                <Select value={opdFilter} onValueChange={setOpdFilter}>
+                <Select value={opdFilter} onValueChange={handleFilterChange(setOpdFilter)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Semua OPD" />
                   </SelectTrigger>
@@ -209,6 +221,33 @@ const LaporanSp2d = () => {
             ) : (
               <div className="text-center p-8 text-muted-foreground">
                 Tidak ada data yang sesuai dengan filter
+              </div>
+            )}
+            
+            {/* Pagination */}
+            {totalCount > pageSize && (
+              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                  Menampilkan {sp2dList.length} dari {totalCount} data
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Sebelumnya
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    disabled={sp2dList.length < pageSize}
+                  >
+                    Selanjutnya
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>

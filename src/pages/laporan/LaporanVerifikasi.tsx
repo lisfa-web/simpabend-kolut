@@ -18,17 +18,30 @@ const LaporanVerifikasi = () => {
   const navigate = useNavigate();
   const [tanggalDari, setTanggalDari] = useState("");
   const [tanggalSampai, setTanggalSampai] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  const { data: spmList, isLoading, error } = useLaporanVerifikasi({
+  const { data: spmResult, isLoading, error } = useLaporanVerifikasi({
     tanggal_dari: tanggalDari,
     tanggal_sampai: tanggalSampai,
+    page: currentPage,
+    pageSize: pageSize,
   });
 
+  const spmList = spmResult?.data || [];
+  const totalCount = spmResult?.count || 0;
+
   // Count per tahap berdasarkan timestamp verifikasi
-  const resepsionisCount = spmList?.filter((i: any) => i.tanggal_resepsionis)?.length || 0;
-  const pbmdCount = spmList?.filter((i: any) => i.tanggal_pbmd)?.length || 0;
-  const akuntansiCount = spmList?.filter((i: any) => i.tanggal_akuntansi)?.length || 0;
-  const perbendaharaanCount = spmList?.filter((i: any) => i.tanggal_perbendaharaan)?.length || 0;
+  const resepsionisCount = spmList.filter((i: any) => i.tanggal_resepsionis).length;
+  const pbmdCount = spmList.filter((i: any) => i.tanggal_pbmd).length;
+  const akuntansiCount = spmList.filter((i: any) => i.tanggal_akuntansi).length;
+  const perbendaharaanCount = spmList.filter((i: any) => i.tanggal_perbendaharaan).length;
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
       draft: { label: "Draft", variant: "secondary" },
@@ -65,7 +78,7 @@ const LaporanVerifikasi = () => {
               </p>
             </div>
           </div>
-          <ExportButton data={spmList || []} filename="laporan-verifikasi" />
+          <ExportButton data={spmList} filename="laporan-verifikasi" />
         </div>
 
         {/* Filters */}
@@ -77,8 +90,8 @@ const LaporanVerifikasi = () => {
             <FilterPeriode
               tanggalDari={tanggalDari}
               tanggalSampai={tanggalSampai}
-              onTanggalDariChange={setTanggalDari}
-              onTanggalSampaiChange={setTanggalSampai}
+              onTanggalDariChange={handleFilterChange(setTanggalDari)}
+              onTanggalSampaiChange={handleFilterChange(setTanggalSampai)}
             />
           </CardContent>
         </Card>
@@ -161,6 +174,33 @@ const LaporanVerifikasi = () => {
             ) : (
               <div className="text-center p-8 text-muted-foreground">
                 Tidak ada data yang sesuai dengan filter
+              </div>
+            )}
+            
+            {/* Pagination */}
+            {totalCount > pageSize && (
+              <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                <div className="text-sm text-muted-foreground">
+                  Menampilkan {spmList.length} dari {totalCount} data
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    Sebelumnya
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    disabled={spmList.length < pageSize}
+                  >
+                    Selanjutnya
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>

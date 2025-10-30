@@ -19,16 +19,28 @@ const LaporanKeuangan = () => {
   const [tanggalDari, setTanggalDari] = useState("");
   const [tanggalSampai, setTanggalSampai] = useState("");
   const [opdFilter, setOpdFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const { data: opdList } = useOpdList();
   const { data, isLoading, error } = useLaporanKeuangan({
     tanggal_dari: tanggalDari,
     tanggal_sampai: tanggalSampai,
     opd_id: opdFilter,
+    page: currentPage,
+    pageSize: pageSize,
   });
 
-  const spmData = data?.spm || [];
-  const sp2dData = data?.sp2d || [];
+  const spmData = data?.spm?.data || [];
+  const sp2dData = data?.sp2d?.data || [];
+  const spmTotalCount = data?.spm?.count || 0;
+  const sp2dTotalCount = data?.sp2d?.count || 0;
+
+  // Reset to page 1 when filters change
+  const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
 
   // Group by OPD
   const opdSummary = useMemo(() => {
@@ -93,13 +105,13 @@ const LaporanKeuangan = () => {
             <FilterPeriode
               tanggalDari={tanggalDari}
               tanggalSampai={tanggalSampai}
-              onTanggalDariChange={setTanggalDari}
-              onTanggalSampaiChange={setTanggalSampai}
+              onTanggalDariChange={handleFilterChange(setTanggalDari)}
+              onTanggalSampaiChange={handleFilterChange(setTanggalSampai)}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>OPD</Label>
-                <Select value={opdFilter} onValueChange={setOpdFilter}>
+                <Select value={opdFilter} onValueChange={handleFilterChange(setOpdFilter)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Semua OPD" />
                   </SelectTrigger>

@@ -7,6 +7,8 @@ interface LaporanSp2dFilters {
   tanggal_sampai?: string;
   status?: string;
   opd_id?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export const useLaporanSp2d = (filters?: LaporanSp2dFilters) => {
@@ -15,9 +17,14 @@ export const useLaporanSp2d = (filters?: LaporanSp2dFilters) => {
   return useQuery({
     queryKey: ["laporan-sp2d", user?.id, filters],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id) return { data: [], count: 0 };
 
       try {
+        const page = filters?.page || 1;
+        const pageSize = filters?.pageSize || 10;
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
         let query = supabase
           .from("sp2d")
           .select(`
@@ -29,7 +36,7 @@ export const useLaporanSp2d = (filters?: LaporanSp2dFilters) => {
               opd:opd_id(nama_opd, kode_opd, id),
               bendahara:profiles!spm_bendahara_id_fkey(full_name)
             )
-          `)
+          `, { count: 'exact' })
           .order("tanggal_sp2d", { ascending: false });
 
         // Apply filters
@@ -45,25 +52,32 @@ export const useLaporanSp2d = (filters?: LaporanSp2dFilters) => {
           query = query.eq("status", filters.status as any);
         }
 
-        const { data, error } = await query;
+        if (filters?.opd_id && filters.opd_id !== "all") {
+          // Filter by OPD through SPM relation - need to fetch SPM IDs first
+          const { data: spmIds } = await supabase
+            .from("spm")
+            .select("id")
+            .eq("opd_id", filters.opd_id);
+          
+          if (spmIds && spmIds.length > 0) {
+            query = query.in("spm_id", spmIds.map(s => s.id));
+          }
+        }
+
+        // Apply pagination
+        query = query.range(from, to);
+
+        const { data, error, count } = await query;
 
         if (error) {
           console.error("Error fetching laporan SP2D:", error);
           throw error;
         }
 
-        // Filter by OPD if needed
-        let filteredData = data || [];
-        if (filters?.opd_id && filters.opd_id !== "all") {
-          filteredData = filteredData.filter(
-            (item: any) => item.spm?.opd?.id === filters.opd_id
-          );
-        }
-
-        return filteredData;
+        return { data: data || [], count: count || 0 };
       } catch (error) {
         console.error("Error in useLaporanSp2d:", error);
-        return [];
+        return { data: [], count: 0 };
       }
     },
     enabled: !!user?.id,
