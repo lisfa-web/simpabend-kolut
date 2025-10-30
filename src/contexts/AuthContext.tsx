@@ -139,7 +139,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const isAdmin = (): boolean => {
-    return roles.includes("administrator") || roles.includes("kepala_bkad");
+    // Include demo_admin for consistency with database is_admin() function
+    return roles.includes("administrator") || roles.includes("kepala_bkad") || roles.includes("demo_admin" as AppRole);
   };
 
   return (

@@ -31,11 +31,26 @@ import {
 type AppRole = Database["public"]["Enums"]["app_role"];
 
 const userSchema = z.object({
-  email: z.string().email("Email tidak valid").optional(),
-  password: z.string().min(8, "Password minimal 8 karakter").optional(),
+  email: z.string()
+    .trim()
+    .email("Email tidak valid")
+    .max(255, "Email maksimal 255 karakter")
+    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Format email tidak valid")
+    .optional(),
+  password: z.string()
+    .min(8, "Password minimal 8 karakter")
+    .max(128, "Password maksimal 128 karakter")
+    .optional(),
   confirmPassword: z.string().optional(),
-  full_name: z.string().min(1, "Nama lengkap wajib diisi"),
-  phone: z.string().optional(),
+  full_name: z.string()
+    .trim()
+    .min(1, "Nama lengkap wajib diisi")
+    .max(100, "Nama maksimal 100 karakter"),
+  phone: z.string()
+    .trim()
+    .regex(/^(\+62|62|0)[0-9]{9,12}$/, "Format nomor telepon tidak valid (contoh: 081234567890)")
+    .optional()
+    .or(z.literal("")),
   is_active: z.boolean().optional(),
   roles: z.array(z.object({
     role: z.string(),

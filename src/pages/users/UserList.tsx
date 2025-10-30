@@ -117,16 +117,18 @@ const UserList = () => {
 
   const { resetPassword, toggleUserStatus } = useUserMutation();
 
-  // Filter out super admin users for regular admins
+  // Filter out super admin and demo admin users for regular admins
   const filteredUsers = users?.filter((user: any) => {
     if (isSuperAdminUser) return true; // Super admin sees all users
     
-    // Regular admins don't see super admins
-    return !user.user_roles?.some((ur: any) => ur.role === "super_admin");
+    // Regular admins don't see super_admin or demo_admin users
+    return !user.user_roles?.some((ur: any) => 
+      ur.role === "super_admin" || ur.role === "demo_admin"
+    );
   });
 
   const handleResetPassword = () => {
-    if (!newPassword || newPassword.length < 6) {
+    if (!newPassword || newPassword.length < 8) {
       return;
     }
     resetPassword.mutate(
@@ -361,7 +363,7 @@ const UserList = () => {
             <div>
               <Input
                 type="password"
-                placeholder="Password baru (min. 6 karakter)"
+                placeholder="Password baru (min. 8 karakter)"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
               />
@@ -399,7 +401,7 @@ const UserList = () => {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleResetPassword}
-              disabled={!newPassword || newPassword.length < 6}
+              disabled={!newPassword || newPassword.length < 8}
             >
               Reset Password
             </AlertDialogAction>
