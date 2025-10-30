@@ -137,10 +137,10 @@ const SpmSp2dTableWidget = memo(() => {
           <Table>
             <TableHeader className="sticky top-0 z-10">
               <TableRow>
-                <TableHead className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Informasi SPM</TableHead>
-                <TableHead className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Penerima</TableHead>
-                <TableHead className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Verifikasi</TableHead>
-                <TableHead className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Informasi SP2D</TableHead>
+                <TableHead className="bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Informasi SPM</TableHead>
+                <TableHead className="bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Penerima</TableHead>
+                <TableHead className="bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Verifikasi</TableHead>
+                <TableHead className="bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Informasi SP2D</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
