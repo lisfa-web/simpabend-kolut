@@ -247,12 +247,12 @@ const InputSpmList = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nomor SPM</TableHead>
-                <TableHead>Jenis</TableHead>
-                <TableHead>Nilai</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Tanggal Ajuan</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
+                <TableHead className="sticky top-0 z-10 bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Nomor SPM</TableHead>
+                <TableHead className="sticky top-0 z-10 bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Jenis</TableHead>
+                <TableHead className="sticky top-0 z-10 bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Nilai</TableHead>
+                <TableHead className="sticky top-0 z-10 bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Status</TableHead>
+                <TableHead className="sticky top-0 z-10 bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Tanggal Ajuan</TableHead>
+                <TableHead className="sticky top-0 z-10 bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
