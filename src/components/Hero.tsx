@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-
 const Hero = () => {
-  return (
-    <section className="relative container py-24 md:py-32">
+  return <section className="relative container py-24 md:py-32">
       {/* Simple gradient background */}
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/5 to-transparent" />
 
@@ -12,7 +10,7 @@ const Hero = () => {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-primary/10 border border-primary/20">
           <span className="inline-flex rounded-full h-2 w-2 bg-primary" />
-          <span className="text-sm font-medium">Dipercaya oleh 50+ OPD</span>
+          <span className="text-sm font-medium">SIMPA BEND KAB. KOLAKA UTARA</span>
         </div>
 
         {/* Hero Heading with Gradient */}
@@ -23,10 +21,7 @@ const Hero = () => {
           </span>
         </h1>
         
-        <p className="mx-auto max-w-2xl text-lg text-muted-foreground mb-10">
-          Platform digital untuk memonitor, mendokumentasi, dan memvalidasi proses
-          pertanggungjawaban Bendahara di BKAD Kolaka Utara
-        </p>
+        <p className="mx-auto max-w-2xl text-lg text-muted-foreground mb-10">Platform digital untuk memonitor, mendokumentasi, dan memvalidasi proses SPM SP2D pertanggungjawaban Bendahara di BKAD Kab Kolaka Utara</p>
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -41,8 +36,6 @@ const Hero = () => {
           </Button>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
