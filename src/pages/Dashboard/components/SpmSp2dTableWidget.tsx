@@ -135,12 +135,12 @@ const SpmSp2dTableWidget = memo(() => {
       <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
         <div className="flex-1 overflow-auto max-h-[600px]">
           <Table>
-            <TableHeader className="sticky top-0 z-10 bg-background">
+            <TableHeader>
               <TableRow>
-                <TableHead className="sticky top-0 bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Informasi SPM</TableHead>
-                <TableHead className="sticky top-0 bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Penerima</TableHead>
-                <TableHead className="sticky top-0 bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Verifikasi</TableHead>
-                <TableHead className="sticky top-0 bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Informasi SP2D</TableHead>
+                <TableHead className="sticky top-0 z-20 bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Informasi SPM</TableHead>
+                <TableHead className="sticky top-0 z-20 bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Penerima</TableHead>
+                <TableHead className="sticky top-0 z-20 bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Verifikasi</TableHead>
+                <TableHead className="sticky top-0 z-20 bg-gradient-to-r from-primary/75 via-primary/70 to-primary/75 text-primary-foreground font-bold border-b-2 border-primary/50">Informasi SP2D</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
