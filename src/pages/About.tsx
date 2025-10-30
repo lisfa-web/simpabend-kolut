@@ -5,17 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Shield, Zap, Users, BarChart3, FileCheck, Lock, 
-  Target, Eye, Lightbulb, UserCheck, ClipboardCheck, 
-  FileText, CheckCircle, TrendingUp, Clock, ArrowRight,
-  Code, Database, Server, Smartphone
-} from "lucide-react";
+import { Shield, Zap, Users, BarChart3, FileCheck, Lock, Target, Eye, Lightbulb, UserCheck, ClipboardCheck, FileText, CheckCircle, TrendingUp, Clock, ArrowRight, Code, Database, Server, Smartphone } from "lucide-react";
 import { Link } from "react-router-dom";
-
 const About = () => {
-  return (
-    <div className="min-h-screen">
+  return <div className="min-h-screen">
       <Header />
       <main>
         {/* Hero Section */}
@@ -105,54 +98,43 @@ const About = () => {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
-            {[
-              {
-                icon: Shield,
-                title: "Keamanan Terjamin",
-                description: "Sistem keamanan berlapis dengan enkripsi data dan kontrol akses berbasis role",
-                gradient: "from-blue-500/10 to-cyan-500/10",
-                iconColor: "text-blue-600",
-              },
-              {
-                icon: Zap,
-                title: "Proses Cepat",
-                description: "Digitalisasi mengurangi waktu pemrosesan dari berminggu-minggu menjadi hitungan hari",
-                gradient: "from-purple-500/10 to-pink-500/10",
-                iconColor: "text-purple-600",
-              },
-              {
-                icon: Users,
-                title: "Kolaborasi Mudah",
-                description: "Platform terpusat memudahkan koordinasi dalam satu sistem terintegrasi",
-                gradient: "from-green-500/10 to-emerald-500/10",
-                iconColor: "text-green-600",
-              },
-              {
-                icon: BarChart3,
-                title: "Analisis Real-time",
-                description: "Dashboard analytics untuk insight dan pengambilan keputusan yang lebih baik",
-                gradient: "from-orange-500/10 to-amber-500/10",
-                iconColor: "text-orange-600",
-              },
-              {
-                icon: FileCheck,
-                title: "Dokumentasi Lengkap",
-                description: "Semua dokumen tersimpan rapi, terorganisir, dan mudah diakses kapan saja",
-                gradient: "from-rose-500/10 to-red-500/10",
-                iconColor: "text-rose-600",
-              },
-              {
-                icon: Lock,
-                title: "Audit Trail",
-                description: "Setiap aktivitas tercatat otomatis untuk transparansi dan kemudahan audit",
-                gradient: "from-indigo-500/10 to-violet-500/10",
-                iconColor: "text-indigo-600",
-              },
-            ].map((benefit, index) => (
-              <Card
-                key={index}
-                className={`bg-gradient-to-br ${benefit.gradient} border`}
-              >
+            {[{
+            icon: Shield,
+            title: "Keamanan Terjamin",
+            description: "Sistem keamanan berlapis dengan enkripsi data dan kontrol akses berbasis role",
+            gradient: "from-blue-500/10 to-cyan-500/10",
+            iconColor: "text-blue-600"
+          }, {
+            icon: Zap,
+            title: "Proses Cepat",
+            description: "Digitalisasi mengurangi waktu pemrosesan dari berminggu-minggu menjadi hitungan hari",
+            gradient: "from-purple-500/10 to-pink-500/10",
+            iconColor: "text-purple-600"
+          }, {
+            icon: Users,
+            title: "Kolaborasi Mudah",
+            description: "Platform terpusat memudahkan koordinasi dalam satu sistem terintegrasi",
+            gradient: "from-green-500/10 to-emerald-500/10",
+            iconColor: "text-green-600"
+          }, {
+            icon: BarChart3,
+            title: "Analisis Real-time",
+            description: "Dashboard analytics untuk insight dan pengambilan keputusan yang lebih baik",
+            gradient: "from-orange-500/10 to-amber-500/10",
+            iconColor: "text-orange-600"
+          }, {
+            icon: FileCheck,
+            title: "Dokumentasi Lengkap",
+            description: "Semua dokumen tersimpan rapi, terorganisir, dan mudah diakses kapan saja",
+            gradient: "from-rose-500/10 to-red-500/10",
+            iconColor: "text-rose-600"
+          }, {
+            icon: Lock,
+            title: "Audit Trail",
+            description: "Setiap aktivitas tercatat otomatis untuk transparansi dan kemudahan audit",
+            gradient: "from-indigo-500/10 to-violet-500/10",
+            iconColor: "text-indigo-600"
+          }].map((benefit, index) => <Card key={index} className={`bg-gradient-to-br ${benefit.gradient} border`}>
                 <CardHeader>
                   <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-3 w-fit">
                     <benefit.icon className={`h-6 w-6 ${benefit.iconColor}`} />
@@ -162,8 +144,7 @@ const About = () => {
                 <CardContent>
                   <p className="text-sm text-muted-foreground">{benefit.description}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </section>
 
@@ -179,40 +160,31 @@ const About = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {[
-              {
-                icon: FileText,
-                role: "Bendahara OPD",
-                description: "Mengajukan SPM dan melengkapi dokumen pertanggungjawaban",
-                gradient: "from-blue-500/10 to-cyan-500/10",
-                iconColor: "text-blue-600",
-              },
-              {
-                icon: ClipboardCheck,
-                role: "Verifikator",
-                description: "Resepsionis, PBMD, Akuntansi, Perbendaharaan melakukan verifikasi",
-                gradient: "from-green-500/10 to-emerald-500/10",
-                iconColor: "text-green-600",
-              },
-              {
-                icon: UserCheck,
-                role: "Kepala BKAD",
-                description: "Memberikan persetujuan akhir sebelum penerbitan SP2D",
-                gradient: "from-purple-500/10 to-pink-500/10",
-                iconColor: "text-purple-600",
-              },
-              {
-                icon: BarChart3,
-                role: "Administrator",
-                description: "Mengelola sistem, user, dan monitoring keseluruhan proses",
-                gradient: "from-orange-500/10 to-amber-500/10",
-                iconColor: "text-orange-600",
-              },
-            ].map((user, index) => (
-              <Card
-                key={index}
-                className={`bg-gradient-to-br ${user.gradient} border`}
-              >
+            {[{
+            icon: FileText,
+            role: "Bendahara OPD",
+            description: "Mengajukan SPM dan melengkapi dokumen pertanggungjawaban",
+            gradient: "from-blue-500/10 to-cyan-500/10",
+            iconColor: "text-blue-600"
+          }, {
+            icon: ClipboardCheck,
+            role: "Verifikator",
+            description: "Resepsionis, PBMD, Akuntansi, Perbendaharaan melakukan verifikasi",
+            gradient: "from-green-500/10 to-emerald-500/10",
+            iconColor: "text-green-600"
+          }, {
+            icon: UserCheck,
+            role: "Kepala BKAD",
+            description: "Memberikan persetujuan akhir sebelum penerbitan SP2D",
+            gradient: "from-purple-500/10 to-pink-500/10",
+            iconColor: "text-purple-600"
+          }, {
+            icon: BarChart3,
+            role: "Administrator",
+            description: "Mengelola sistem, user, dan monitoring keseluruhan proses",
+            gradient: "from-orange-500/10 to-amber-500/10",
+            iconColor: "text-orange-600"
+          }].map((user, index) => <Card key={index} className={`bg-gradient-to-br ${user.gradient} border`}>
                 <CardContent className="pt-6 text-center">
                   <div className="inline-flex p-4 rounded-full bg-primary/10 mb-4">
                     <user.icon className={`h-8 w-8 ${user.iconColor}`} />
@@ -220,8 +192,7 @@ const About = () => {
                   <h3 className="font-semibold text-lg mb-2">{user.role}</h3>
                   <p className="text-sm text-muted-foreground">{user.description}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </section>
 
@@ -259,7 +230,7 @@ const About = () => {
                       <h3 className="font-semibold">Backend</h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary" className="bg-accent/10">Lovable Cloud</Badge>
+                      <Badge variant="secondary" className="bg-accent/10"> Node JS</Badge>
                       <Badge variant="secondary" className="bg-accent/10">PostgreSQL</Badge>
                       <Badge variant="secondary" className="bg-accent/10">Edge Functions</Badge>
                     </div>
@@ -385,16 +356,31 @@ const About = () => {
           </div>
 
           <div className="grid md:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            {[
-              { icon: TrendingUp, value: "1250+", label: "SPM Diproses", gradient: "from-blue-500/10 to-cyan-500/10", iconColor: "text-blue-600" },
-              { icon: Users, value: "50+", label: "OPD Terhubung", gradient: "from-green-500/10 to-emerald-500/10", iconColor: "text-green-600" },
-              { icon: Clock, value: "70%", label: "Lebih Cepat", gradient: "from-purple-500/10 to-pink-500/10", iconColor: "text-purple-600" },
-              { icon: CheckCircle, value: "98%", label: "Tingkat Approval", gradient: "from-orange-500/10 to-amber-500/10", iconColor: "text-orange-600" },
-            ].map((stat, index) => (
-              <Card
-                key={index}
-                className={`bg-gradient-to-br ${stat.gradient} border`}
-              >
+            {[{
+            icon: TrendingUp,
+            value: "1250+",
+            label: "SPM Diproses",
+            gradient: "from-blue-500/10 to-cyan-500/10",
+            iconColor: "text-blue-600"
+          }, {
+            icon: Users,
+            value: "50+",
+            label: "OPD Terhubung",
+            gradient: "from-green-500/10 to-emerald-500/10",
+            iconColor: "text-green-600"
+          }, {
+            icon: Clock,
+            value: "70%",
+            label: "Lebih Cepat",
+            gradient: "from-purple-500/10 to-pink-500/10",
+            iconColor: "text-purple-600"
+          }, {
+            icon: CheckCircle,
+            value: "98%",
+            label: "Tingkat Approval",
+            gradient: "from-orange-500/10 to-amber-500/10",
+            iconColor: "text-orange-600"
+          }].map((stat, index) => <Card key={index} className={`bg-gradient-to-br ${stat.gradient} border`}>
                 <CardContent className="pt-6 text-center">
                   <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-3">
                     <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
@@ -402,17 +388,14 @@ const About = () => {
                   <div className="text-3xl font-bold mb-1">{stat.value}</div>
                   <div className="text-sm text-muted-foreground">{stat.label}</div>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </section>
 
         {/* CTA Section */}
         <section className="container py-20">
           <div className="mx-auto max-w-3xl rounded-3xl border px-8 py-16 text-center bg-gradient-to-br from-primary/10 to-accent/5">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-              Siap Bergabung?
-            </h2>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">Efisiensi & Transparansi</h2>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Tingkatkan efisiensi dan transparansi pengelolaan keuangan daerah Anda
             </p>
@@ -432,8 +415,6 @@ const About = () => {
       </main>
       <Footer />
       <ScrollToTop />
-    </div>
-  );
+    </div>;
 };
-
 export default About;
