@@ -185,10 +185,11 @@ const UserForm = () => {
   // Populate form with fetched user data (only runs when userData changes)
   useEffect(() => {
     if (userData) {
+      // FIX: Convert opd_id properly - use null instead of undefined to prevent object conversion
       let userRoles = userData.user_roles?.map((ur: any) => ({
         role: ur.role,
-        opd_id: ur.opd_id ?? undefined,
-      })) || [];
+        opd_id: ur.opd_id || null,
+      })).filter((r: any) => r !== null) || [];
       
       // SECURITY: Filter out super_admin and demo_admin roles if current user is not super admin
       // This prevents privilege escalation attacks where regular admins might see or modify super admin roles

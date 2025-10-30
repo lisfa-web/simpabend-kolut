@@ -55,8 +55,10 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
       return;
     }
 
+    // FIX: Always set opd_id to null explicitly (not undefined) to prevent object conversion
     const newRole: UserRole = {
       role: selectedRole,
+      opd_id: null as any,
     };
 
     onChange([...value, newRole]);
@@ -79,7 +81,8 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
           // UX: Auto-add role on select to avoid extra click on + button
           const roleExists = value.some((r) => r.role === role);
           if (!roleExists) {
-            onChange([...value, { role }]);
+            // FIX: Set opd_id explicitly to null to prevent undefined conversion issues
+            onChange([...value, { role, opd_id: null as any }]);
             // Reset select to placeholder to make it obvious a role was added
             setSelectedRole("");
           }
