@@ -268,14 +268,14 @@ const Sp2dList = () => {
                   </div>
                 ) : (
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nomor SPM</TableHead>
-                        <TableHead>OPD</TableHead>
-                        <TableHead>Jenis SPM</TableHead>
-                        <TableHead>Nilai SPM</TableHead>
-                        <TableHead>Tanggal Disetujui</TableHead>
-                        <TableHead>Aksi</TableHead>
+                    <TableHeader className="sticky top-0 z-10">
+                      <TableRow className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 hover:from-primary hover:via-primary/90 hover:to-primary border-b-2 border-primary">
+                        <TableHead className="text-primary-foreground font-bold">Nomor SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">OPD</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Jenis SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nilai SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Tanggal Disetujui</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Aksi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -379,15 +379,15 @@ const Sp2dList = () => {
                   </div>
                 ) : (
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nomor SP2D</TableHead>
-                        <TableHead>Nomor SPM</TableHead>
-                        <TableHead>OPD</TableHead>
-                        <TableHead>Nilai SP2D</TableHead>
-                        <TableHead>Tanggal Terbit</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Aksi</TableHead>
+                    <TableHeader className="sticky top-0 z-10">
+                      <TableRow className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 hover:from-primary hover:via-primary/90 hover:to-primary border-b-2 border-primary">
+                        <TableHead className="text-primary-foreground font-bold">Nomor SP2D</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nomor SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">OPD</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nilai SP2D</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Tanggal Terbit</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Status</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Aksi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -482,15 +482,15 @@ const Sp2dList = () => {
                   </div>
                 ) : (
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nomor SP2D</TableHead>
-                        <TableHead>Nomor SPM</TableHead>
-                        <TableHead>OPD</TableHead>
-                        <TableHead>Nilai SP2D</TableHead>
-                        <TableHead>Dikirim ke Bank</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Aksi</TableHead>
+                    <TableHeader className="sticky top-0 z-10">
+                      <TableRow className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 hover:from-primary hover:via-primary/90 hover:to-primary border-b-2 border-primary">
+                        <TableHead className="text-primary-foreground font-bold">Nomor SP2D</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nomor SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">OPD</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nilai SP2D</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Dikirim ke Bank</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Status</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Aksi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -585,16 +585,16 @@ const Sp2dList = () => {
                   </div>
                 ) : (
                   <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Nomor SP2D</TableHead>
-                        <TableHead>Nomor SPM</TableHead>
-                        <TableHead>OPD</TableHead>
-                        <TableHead>Nilai SP2D</TableHead>
-                        <TableHead>Total Potongan</TableHead>
-                        <TableHead>Nilai Diterima</TableHead>
-                        <TableHead>Tanggal Cair</TableHead>
-                        <TableHead>Aksi</TableHead>
+                    <TableHeader className="sticky top-0 z-10">
+                      <TableRow className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 hover:from-primary hover:via-primary/90 hover:to-primary border-b-2 border-primary">
+                        <TableHead className="text-primary-foreground font-bold">Nomor SP2D</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nomor SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">OPD</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nilai SP2D</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Total Potongan</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nilai Diterima</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Tanggal Cair</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Aksi</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
