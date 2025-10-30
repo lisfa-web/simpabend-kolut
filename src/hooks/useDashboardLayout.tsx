@@ -42,78 +42,40 @@ export const useDashboardLayout = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
-      // Try to get user's own layout
+      // Try to get user's own layout first
       const { data: userLayout, error: userError } = await supabase
         .from("dashboard_layout")
         .select("*")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       // If user has their own layout, return it
       if (userLayout && !userError) {
+        console.log("Using user's own layout");
         return userLayout;
       }
 
-      // Check if user is demo_admin
-      const { data: userRole } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "demo_admin")
+      // If user doesn't have own layout, try to use the default layout (applies to ALL users)
+      console.log("User has no custom layout, checking for default layout...");
+
+      // Try the globally flagged default layout
+      const { data: defaultLayout, error: defaultError } = await supabase
+        .from("dashboard_layout")
+        .select("*")
+        .eq("is_default", true)
+        .order("updated_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
 
-      console.log("User role check:", { userId: user.id, userRole });
+      console.log("Default layout result:", { hasDefault: !!defaultLayout, defaultError });
 
-      // If user is demo_admin and doesn't have layout, use superadmin's layout as default
-      if (userRole?.role === "demo_admin") {
-        console.log("User is demo_admin, checking for default layout...");
-
-        // 1) Try the globally flagged default layout first
-        const { data: defaultLayout, error: defaultError } = await supabase
-          .from("dashboard_layout")
-          .select("*")
-          .eq("is_default", true)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        console.log("Default layout result:", { hasDefault: !!defaultLayout, defaultError });
-
-        if (defaultLayout) {
-          console.log("Using default layout flagged by super_admin");
-          return defaultLayout;
-        }
-
-        // 2) Fallback: fetch latest layout saved by any super_admin
-        console.log("No is_default layout found, fetching super_admin layout...");
-        const { data: superAdminRoles, error: superAdminError } = await supabase
-          .from("user_roles")
-          .select("user_id")
-          .eq("role", "super_admin")
-          .limit(1)
-          .maybeSingle();
-
-        console.log("Super admin query result:", { superAdminRoles, superAdminError });
-
-        if (superAdminRoles?.user_id) {
-          const { data: superAdminLayout, error: layoutError } = await supabase
-            .from("dashboard_layout")
-            .select("*")
-            .eq("user_id", superAdminRoles.user_id)
-            .order("updated_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          console.log("Super admin layout result:", { hasLayout: !!superAdminLayout, layoutError });
-
-          if (superAdminLayout) {
-            console.log("Using super_admin layout for demo_admin");
-            return superAdminLayout;
-          }
-        }
+      if (defaultLayout) {
+        console.log("Using default layout for all users");
+        return defaultLayout;
       }
 
-      // If no layouts found, return null (will use DEFAULT_LAYOUT)
+      // If no default layout exists, return null (will use DEFAULT_LAYOUT hardcoded)
+      console.log("No default layout found, using hardcoded DEFAULT_LAYOUT");
       return null;
     },
   });
