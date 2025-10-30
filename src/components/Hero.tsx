@@ -21,7 +21,7 @@ const Hero = () => {
           </span>
         </h1>
         
-        <p className="mx-auto max-w-2xl text-lg text-muted-foreground mb-10">Platform digital untuk memonitor, mendokumentasi, dan memvalidasi proses SPM SP2D pertanggungjawaban Bendahara di BKAD Kab Kolaka Utara</p>
+        <p className="mx-auto max-w-2xl text-lg text-muted-foreground mb-10">Platform digital sebagai pendamping Administrasi SP2D yang diterbitkan oleh SIPD untuk untuk memonitor, mendokumentasi, dan memvalidasi proses SPM SP2D pertanggungjawaban Bendahara serta mengarsipkan seluruh SPM SP2D. Sehingga m</p>
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
