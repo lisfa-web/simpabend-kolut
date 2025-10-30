@@ -135,12 +135,12 @@ const SpmSp2dTableWidget = memo(() => {
       <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
         <div className="flex-1 overflow-auto max-h-[600px]">
           <Table>
-            <TableHeader className="sticky top-0 bg-background z-10">
-              <TableRow className="bg-muted/50">
-                <TableHead className="font-semibold">Informasi SPM</TableHead>
-                <TableHead className="font-semibold">Penerima</TableHead>
-                <TableHead className="font-semibold">Verifikasi</TableHead>
-                <TableHead className="font-semibold">Informasi SP2D</TableHead>
+            <TableHeader className="sticky top-0 z-10">
+              <TableRow>
+                <TableHead className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Informasi SPM</TableHead>
+                <TableHead className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Penerima</TableHead>
+                <TableHead className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Verifikasi</TableHead>
+                <TableHead className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 text-primary-foreground font-bold border-b-2 border-primary">Informasi SP2D</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
