@@ -39,9 +39,9 @@ const AVAILABLE_ROLES: AppRole[] = [
 export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRoleSelectProps) => {
   const [selectedRole, setSelectedRole] = useState<AppRole | "">("");
 
-  // Add demo_admin to available roles only for super admins
+  // Add super_admin and demo_admin to available roles only for super admins
   const availableRoles = isSuperAdmin 
-    ? [...AVAILABLE_ROLES, "demo_admin" as AppRole]
+    ? [...AVAILABLE_ROLES, "super_admin" as AppRole, "demo_admin" as AppRole]
     : AVAILABLE_ROLES;
 
   const handleAddRole = () => {

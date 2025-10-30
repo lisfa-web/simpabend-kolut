@@ -174,9 +174,11 @@ const UserForm = () => {
         opd_id: ur.opd_id ?? undefined, // Convert null to undefined for Zod validation
       })) || [];
       
-      // Filter out demo_admin role if current user is not super admin
+      // Filter out super_admin and demo_admin roles if current user is not super admin
       if (!isSuperAdmin()) {
-        userRoles = userRoles.filter((r: any) => r.role !== 'demo_admin');
+        userRoles = userRoles.filter((r: any) => 
+          r.role !== 'demo_admin' && r.role !== 'super_admin'
+        );
       }
       
       setRoles(userRoles);
