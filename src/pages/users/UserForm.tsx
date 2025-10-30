@@ -226,6 +226,10 @@ const UserForm = () => {
     console.log("Current roles:", roles);
     console.log("is_active value:", data.is_active);
     
+    // BUG FIX: Use data.roles from form instead of state roles
+    // to ensure we get the validated and current form values
+    const submittedRoles = (data as any).roles || roles;
+    
     if (isEdit) {
       updateUser.mutate(
         {
@@ -233,7 +237,7 @@ const UserForm = () => {
           full_name: data.full_name,
           phone: data.phone,
           is_active: data.is_active ?? true,
-          roles,
+          roles: submittedRoles,
         },
         {
           onSuccess: () => {
@@ -256,7 +260,7 @@ const UserForm = () => {
           password: data.password,
           full_name: data.full_name,
           phone: data.phone,
-          roles,
+          roles: submittedRoles,
         },
         {
           onSuccess: () => {
