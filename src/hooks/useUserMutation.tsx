@@ -45,6 +45,7 @@ export const useUserMutation = () => {
     const errorMessage = error?.message || '';
     
     const errorMap: Record<string, string> = {
+      'Email sudah terdaftar di sistem': 'Email ini sudah terdaftar di sistem',
       'Email sudah digunakan': 'Email ini sudah terdaftar di sistem',
       'User with this email already exists': 'Email ini sudah terdaftar di sistem',
       'Invalid email': 'Format email tidak valid',

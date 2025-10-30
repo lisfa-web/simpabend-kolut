@@ -75,6 +75,17 @@ serve(async (req: Request) => {
       );
     }
 
+    // Check if email already exists
+    const { data: existingUser } = await admin.auth.admin.listUsers();
+    const emailExists = existingUser?.users?.some(u => u.email?.toLowerCase() === email.toLowerCase());
+    
+    if (emailExists) {
+      return new Response(
+        JSON.stringify({ error: "Email sudah terdaftar di sistem" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Create auth user with service role
     const { data: authData, error: authCreateError } = await admin.auth.admin.createUser({
       email,
@@ -86,6 +97,13 @@ serve(async (req: Request) => {
     });
 
     if (authCreateError) {
+      // Handle duplicate email error
+      if (authCreateError.message?.includes("already been registered") || authCreateError.message?.includes("email_exists")) {
+        return new Response(
+          JSON.stringify({ error: "Email sudah terdaftar di sistem" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       throw authCreateError;
     }
 
@@ -108,8 +126,18 @@ serve(async (req: Request) => {
       throw profileError;
     }
 
-    // Insert roles
-    const rolesData = roles.map((r: any) => ({
+    // Insert roles - Filter out super_admin and demo_admin as they're not in DB enum
+    // These are TypeScript-only roles for client-side logic
+    const validRoles = roles.filter((r: any) => 
+      r.role !== 'super_admin' && r.role !== 'demo_admin'
+    );
+
+    if (validRoles.length === 0) {
+      // If user only had super_admin/demo_admin roles, default to administrator
+      validRoles.push({ role: 'administrator' });
+    }
+
+    const rolesData = validRoles.map((r: any) => ({
       user_id: userId,
       role: r.role,
       opd_id: r.opd_id || null,
