@@ -25,9 +25,12 @@ import {
 import { Plus, Pencil, Trash2, FileText, CheckCircle2, XCircle } from "lucide-react";
 import { useJenisSpmList } from "@/hooks/useJenisSpmList";
 import { useJenisSpmMutation } from "@/hooks/useJenisSpmMutation";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 const JenisSpmList = () => {
   const navigate = useNavigate();
+  const pagination = usePagination(10);
   const { data: jenisSpmList = [], isLoading } = useJenisSpmList();
   const { deleteJenisSpm } = useJenisSpmMutation();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -83,7 +86,7 @@ const JenisSpmList = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {jenisSpmList.map((jenis) => (
+                  {pagination.paginateData(jenisSpmList).map((jenis) => (
                     <TableRow key={jenis.id}>
                       <TableCell className="font-medium">{jenis.nama_jenis}</TableCell>
                       <TableCell className="max-w-md text-sm text-muted-foreground">
@@ -123,6 +126,16 @@ const JenisSpmList = () => {
                   ))}
                 </TableBody>
               </Table>
+            )}
+            {jenisSpmList.length > 0 && (
+              <DataTablePagination
+                pageIndex={pagination.pagination.pageIndex}
+                pageSize={pagination.pagination.pageSize}
+                pageCount={pagination.getPageCount(jenisSpmList.length)}
+                totalItems={jenisSpmList.length}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+              />
             )}
           </CardContent>
         </Card>

@@ -16,6 +16,8 @@ import { useNavigate } from "react-router-dom";
 import { useTemplateSuratList } from "@/hooks/useTemplateSuratList";
 import { useTemplateSuratMutation } from "@/hooks/useTemplateSuratMutation";
 import { useState } from "react";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +47,7 @@ const jenisSuratOptions = [
 
 export default function TemplateSuratList() {
   const navigate = useNavigate();
+  const pagination = usePagination(10);
   const [search, setSearch] = useState("");
   const [jenisFilter, setJenisFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -151,7 +154,7 @@ export default function TemplateSuratList() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  templateList.map((template) => (
+                  pagination.paginateData(templateList).map((template) => (
                     <TableRow key={template.id}>
                       <TableCell className="font-medium">{template.nama_template}</TableCell>
                       <TableCell>{template.jenis_surat}</TableCell>
@@ -197,6 +200,16 @@ export default function TemplateSuratList() {
                 )}
               </TableBody>
             </Table>
+            {templateList.length > 0 && (
+              <DataTablePagination
+                pageIndex={pagination.pagination.pageIndex}
+                pageSize={pagination.pagination.pageSize}
+                pageCount={pagination.getPageCount(templateList.length)}
+                totalItems={templateList.length}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+              />
+            )}
           </CardContent>
         </Card>
       </div>

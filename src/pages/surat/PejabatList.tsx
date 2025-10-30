@@ -19,6 +19,8 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +43,7 @@ import { useOpdList } from "@/hooks/useOpdList";
 export default function PejabatList() {
   const navigate = useNavigate();
   const { isSuperAdmin } = useAuth();
+  const pagination = usePagination(10);
   const [search, setSearch] = useState("");
   const [opdFilter, setOpdFilter] = useState<string>("");
   const [showInactive, setShowInactive] = useState(false);
@@ -158,7 +161,7 @@ export default function PejabatList() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  pejabatList.map((pejabat) => (
+                  pagination.paginateData(pejabatList).map((pejabat) => (
                     <TableRow key={pejabat.id}>
                       <TableCell className="font-mono">{pejabat.nip}</TableCell>
                       <TableCell className="font-medium">{pejabat.nama_lengkap}</TableCell>
@@ -210,6 +213,16 @@ export default function PejabatList() {
                 )}
               </TableBody>
             </Table>
+            {pejabatList.length > 0 && (
+              <DataTablePagination
+                pageIndex={pagination.pagination.pageIndex}
+                pageSize={pagination.pagination.pageSize}
+                pageCount={pagination.getPageCount(pejabatList.length)}
+                totalItems={pejabatList.length}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+              />
+            )}
           </CardContent>
         </Card>
       </div>

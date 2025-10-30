@@ -25,6 +25,8 @@ import {
 import { Plus, Pencil, Trash2, Receipt } from "lucide-react";
 import { useMasterPajakList } from "@/hooks/useMasterPajakList";
 import { useMasterPajakMutation } from "@/hooks/useMasterPajakMutation";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 const jenisPajakLabels: Record<string, string> = {
   pph_21: "PPh 21",
@@ -36,6 +38,7 @@ const jenisPajakLabels: Record<string, string> = {
 
 const MasterPajakList = () => {
   const navigate = useNavigate();
+  const pagination = usePagination(10);
   const { data: pajakList = [], isLoading } = useMasterPajakList();
   const { deletePajak } = useMasterPajakMutation();
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -93,7 +96,7 @@ const MasterPajakList = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pajakList.map((pajak) => (
+                  {pagination.paginateData(pajakList).map((pajak) => (
                     <TableRow key={pajak.id}>
                       <TableCell className="font-medium">{pajak.kode_pajak}</TableCell>
                       <TableCell>{pajak.nama_pajak}</TableCell>
@@ -135,6 +138,16 @@ const MasterPajakList = () => {
                   ))}
                 </TableBody>
               </Table>
+            )}
+            {pajakList.length > 0 && (
+              <DataTablePagination
+                pageIndex={pagination.pagination.pageIndex}
+                pageSize={pagination.pagination.pageSize}
+                pageCount={pagination.getPageCount(pajakList.length)}
+                totalItems={pajakList.length}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+              />
             )}
           </CardContent>
         </Card>

@@ -27,8 +27,11 @@ import { AuditDetailModal } from "./components/AuditDetailModal";
 import { Search, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 const AuditTrail = () => {
+  const pagination = usePagination(10);
   const [filters, setFilters] = useState({
     tanggal_dari: "",
     tanggal_sampai: "",
@@ -237,7 +240,7 @@ const AuditTrail = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  auditLogs?.map((audit: any) => (
+                  pagination.paginateData(auditLogs)?.map((audit: any) => (
                     <TableRow key={audit.id}>
                       <TableCell className="whitespace-nowrap">
                         {format(new Date(audit.created_at), "dd/MM/yyyy HH:mm", {
@@ -277,6 +280,16 @@ const AuditTrail = () => {
                 )}
               </TableBody>
             </Table>
+            {auditLogs && auditLogs.length > 0 && (
+              <DataTablePagination
+                pageIndex={pagination.pagination.pageIndex}
+                pageSize={pagination.pagination.pageSize}
+                pageCount={pagination.getPageCount(auditLogs.length)}
+                totalItems={auditLogs.length}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+              />
+            )}
           </CardContent>
         </Card>
       </div>

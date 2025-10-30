@@ -26,6 +26,8 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Search, Eye, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 const getRoleLabel = (spm: any, userId: string): string => {
   if (spm.bendahara_id === userId) return "Pengaju";
@@ -40,6 +42,7 @@ const getRoleLabel = (spm: any, userId: string): string => {
 const MySpmTable = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const pagination = usePagination(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -112,7 +115,7 @@ const MySpmTable = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                spmData.data.map((spm: any) => (
+                pagination.paginateData(spmData.data).map((spm: any) => (
                   <TableRow key={spm.id}>
                     <TableCell className="font-medium">
                       {spm.nomor_spm || "-"}
@@ -146,6 +149,18 @@ const MySpmTable = () => {
               )}
             </TableBody>
           </Table>
+          {spmData?.data && spmData.data.length > 0 && (
+            <div className="p-4 border-t">
+              <DataTablePagination
+                pageIndex={pagination.pagination.pageIndex}
+                pageSize={pagination.pagination.pageSize}
+                pageCount={pagination.getPageCount(spmData.data.length)}
+                totalItems={spmData.data.length}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+              />
+            </div>
+          )}
         </div>
       </div>
     </Card>

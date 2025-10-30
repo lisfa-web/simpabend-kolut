@@ -15,10 +15,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Pencil, Loader2 } from "lucide-react";
 import { useBendaharaPengeluaranList } from "@/hooks/useBendaharaPengeluaranList";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 const BendaharaPengeluaranList = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const pagination = usePagination(10);
   const { data: bendaharaList, isLoading } = useBendaharaPengeluaranList({ is_active: true });
 
   const filteredData = bendaharaList?.filter((item) =>
@@ -76,7 +79,7 @@ const BendaharaPengeluaranList = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredData && filteredData.length > 0 ? (
-                      filteredData.map((bendahara) => (
+                      pagination.paginateData(filteredData).map((bendahara) => (
                         <TableRow key={bendahara.id}>
                           <TableCell className="font-medium">
                             {bendahara.nama_bendahara}
@@ -126,6 +129,16 @@ const BendaharaPengeluaranList = () => {
                   </TableBody>
                 </Table>
               </div>
+            )}
+            {filteredData && filteredData.length > 0 && (
+              <DataTablePagination
+                pageIndex={pagination.pagination.pageIndex}
+                pageSize={pagination.pagination.pageSize}
+                pageCount={pagination.getPageCount(filteredData.length)}
+                totalItems={filteredData.length}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+              />
             )}
           </CardContent>
         </Card>

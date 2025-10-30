@@ -25,6 +25,8 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Search, Eye, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 const getRoleLabel = (sp2d: any, userId: string): string => {
   if (sp2d.created_by === userId) return "Pembuat";
@@ -37,6 +39,7 @@ const getRoleLabel = (sp2d: any, userId: string): string => {
 const MySp2dTable = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const pagination = usePagination(10);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
@@ -104,7 +107,7 @@ const MySp2dTable = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                sp2dData.data.map((sp2d: any) => (
+                pagination.paginateData(sp2dData.data).map((sp2d: any) => (
                   <TableRow key={sp2d.id}>
                     <TableCell className="font-medium">
                       {sp2d.nomor_sp2d}
@@ -138,6 +141,18 @@ const MySp2dTable = () => {
               )}
             </TableBody>
           </Table>
+          {sp2dData?.data && sp2dData.data.length > 0 && (
+            <div className="p-4 border-t">
+              <DataTablePagination
+                pageIndex={pagination.pagination.pageIndex}
+                pageSize={pagination.pagination.pageSize}
+                pageCount={pagination.getPageCount(sp2dData.data.length)}
+                totalItems={sp2dData.data.length}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+              />
+            </div>
+          )}
         </div>
       </div>
     </Card>
