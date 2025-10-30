@@ -188,6 +188,7 @@ const App = () => (
             
             {/* Panduan Routes */}
             <Route path="/panduan" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />
+            <Route path="/panduan-manual" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />
             <Route path="/panduan/admin" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PanduanManualAdmin /></RoleProtectedRoute>} />
             
             <Route path="*" element={<NotFound />} />
