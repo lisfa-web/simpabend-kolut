@@ -12,7 +12,7 @@ import { X, Plus } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getRoleDisplayName } from "@/lib/auth";
 
-type AppRole = Database["public"]["Enums"]["app_role"];
+type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin' | 'demo_admin';
 
 interface UserRole {
   role: AppRole;
@@ -22,6 +22,7 @@ interface UserRole {
 interface UserRoleSelectProps {
   value: UserRole[];
   onChange: (roles: UserRole[]) => void;
+  isSuperAdmin?: boolean;
 }
 
 const AVAILABLE_ROLES: AppRole[] = [
@@ -35,8 +36,13 @@ const AVAILABLE_ROLES: AppRole[] = [
   "kuasa_bud",
 ];
 
-export const UserRoleSelect = ({ value, onChange }: UserRoleSelectProps) => {
+export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRoleSelectProps) => {
   const [selectedRole, setSelectedRole] = useState<AppRole | "">("");
+
+  // Add demo_admin to available roles only for super admins
+  const availableRoles = isSuperAdmin 
+    ? [...AVAILABLE_ROLES, "demo_admin" as AppRole]
+    : AVAILABLE_ROLES;
 
   const handleAddRole = () => {
     if (!selectedRole) return;
@@ -66,7 +72,7 @@ export const UserRoleSelect = ({ value, onChange }: UserRoleSelectProps) => {
             <SelectValue placeholder="Pilih Role" />
           </SelectTrigger>
           <SelectContent>
-            {AVAILABLE_ROLES.map((role) => (
+            {availableRoles.map((role) => (
               <SelectItem key={role} value={role}>
                 {getRoleDisplayName(role)}
               </SelectItem>

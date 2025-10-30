@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRoleSelect } from "./components/UserRoleSelect";
 import { Database } from "@/integrations/supabase/types";
+import { useAuth } from "@/hooks/useAuth";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -60,6 +61,7 @@ const UserForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
+  const { isSuperAdmin } = useAuth();
 
   const [roles, setRoles] = useState<{ role: AppRole; opd_id?: string }[]>([]);
   const [password, setPassword] = useState("");
@@ -167,10 +169,16 @@ const UserForm = () => {
 
   useEffect(() => {
     if (userData) {
-      const userRoles = userData.user_roles?.map((ur: any) => ({
+      let userRoles = userData.user_roles?.map((ur: any) => ({
         role: ur.role,
         opd_id: ur.opd_id ?? undefined, // Convert null to undefined for Zod validation
       })) || [];
+      
+      // Filter out demo_admin role if current user is not super admin
+      if (!isSuperAdmin()) {
+        userRoles = userRoles.filter((r: any) => r.role !== 'demo_admin');
+      }
+      
       setRoles(userRoles);
 
       reset({
@@ -182,7 +190,7 @@ const UserForm = () => {
       });
       clearErrors(["roles"]);
     }
-  }, [userData, reset, clearErrors]);
+  }, [userData, reset, clearErrors, isSuperAdmin]);
 
   const onSubmit = (data: UserFormData) => {
     console.log("Form submitted with data:", data);
@@ -526,6 +534,7 @@ const UserForm = () => {
                     setValue("roles" as any, newRoles as any, { shouldValidate: true, shouldDirty: true });
                     clearErrors(["roles"]);
                   }}
+                  isSuperAdmin={isSuperAdmin()}
                 />
                 {errors.roles && (
                   <p className="text-sm text-destructive">{errors.roles.message}</p>
