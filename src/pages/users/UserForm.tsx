@@ -561,9 +561,9 @@ const UserForm = () => {
                 <UserRoleSelect
                   value={roles}
                   onChange={(newRoles) => {
+                    console.log('[UserForm] Roles changed', newRoles);
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     setRoles(newRoles as any);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     setValue("roles" as any, newRoles as any, { shouldValidate: true, shouldDirty: true });
                     clearErrors(["roles"]);
                   }}
