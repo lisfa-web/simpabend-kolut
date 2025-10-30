@@ -36,7 +36,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin';
+type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin' | 'demo_admin';
 
 interface MenuItem {
   name: string;
@@ -162,6 +162,13 @@ export function AppSidebar() {
 
   const canAccessMenu = (menuRoles?: AppRole[]) => {
     if (!menuRoles || menuRoles.length === 0) return true;
+    
+    // Demo admin gets same menu access as regular administrator
+    const hasDemoAdmin = roles.some((role) => role === 'demo_admin');
+    if (hasDemoAdmin && menuRoles.includes('administrator')) {
+      return true;
+    }
+    
     return roles.some((role) => menuRoles.includes(role));
   };
 
