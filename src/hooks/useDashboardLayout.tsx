@@ -42,14 +42,43 @@ export const useDashboardLayout = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
 
-      const { data, error } = await supabase
+      // Try to get user's own layout
+      const { data: userLayout, error: userError } = await supabase
         .from("dashboard_layout")
         .select("*")
         .eq("user_id", user.id)
         .single();
 
-      if (error && error.code !== "PGRST116") throw error;
-      return data;
+      // If user has their own layout, return it
+      if (userLayout && !userError) {
+        return userLayout;
+      }
+
+      // If user doesn't have layout, try to get superadmin's layout as default
+      // First, get superadmin user_id
+      const { data: superAdminRoles } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "super_admin")
+        .limit(1)
+        .single();
+
+      if (superAdminRoles?.user_id) {
+        const { data: superAdminLayout } = await supabase
+          .from("dashboard_layout")
+          .select("*")
+          .eq("user_id", superAdminRoles.user_id)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (superAdminLayout) {
+          return superAdminLayout;
+        }
+      }
+
+      // If no layouts found, return null (will use DEFAULT_LAYOUT)
+      return null;
     },
   });
 
