@@ -291,8 +291,22 @@ const Sp2dList = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        paginationReady.paginateData(approvedSpm)?.map((spm) => (
-                          <TableRow key={spm.id}>
+                        paginationReady.paginateData(approvedSpm)?.map((spm, index) => {
+                          const colors = [
+                            "bg-blue-50 hover:bg-blue-100",
+                            "bg-green-50 hover:bg-green-100", 
+                            "bg-purple-50 hover:bg-purple-100",
+                            "bg-pink-50 hover:bg-pink-100",
+                            "bg-amber-50 hover:bg-amber-100",
+                            "bg-cyan-50 hover:bg-cyan-100",
+                            "bg-rose-50 hover:bg-rose-100",
+                            "bg-indigo-50 hover:bg-indigo-100",
+                          ];
+                          return (
+                          <TableRow 
+                            key={spm.id}
+                            className={`${colors[index % colors.length]} transition-colors duration-200`}
+                          >
                             <TableCell className="font-medium">
                               {spm.nomor_spm || "-"}
                             </TableCell>
@@ -330,7 +344,8 @@ const Sp2dList = () => {
                               </div>
                             </TableCell>
                           </TableRow>
-                        ))
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
@@ -388,8 +403,22 @@ const Sp2dList = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        paginationTerbit.paginateData(sp2dTerbit)?.map((sp2d) => (
-                          <TableRow key={sp2d.id}>
+                        paginationTerbit.paginateData(sp2dTerbit)?.map((sp2d, index) => {
+                          const colors = [
+                            "bg-blue-50 hover:bg-blue-100",
+                            "bg-green-50 hover:bg-green-100", 
+                            "bg-purple-50 hover:bg-purple-100",
+                            "bg-pink-50 hover:bg-pink-100",
+                            "bg-amber-50 hover:bg-amber-100",
+                            "bg-cyan-50 hover:bg-cyan-100",
+                            "bg-rose-50 hover:bg-rose-100",
+                            "bg-indigo-50 hover:bg-indigo-100",
+                          ];
+                          return (
+                          <TableRow 
+                            key={sp2d.id}
+                            className={`${colors[index % colors.length]} transition-colors duration-200`}
+                          >
                             <TableCell className="font-medium">
                               {sp2d.nomor_sp2d || "-"}
                             </TableCell>
@@ -418,7 +447,8 @@ const Sp2dList = () => {
                               </Button>
                             </TableCell>
                           </TableRow>
-                        ))
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
@@ -476,8 +506,22 @@ const Sp2dList = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        paginationUjiBank.paginateData(sp2dUjiBank)?.map((sp2d) => (
-                          <TableRow key={sp2d.id}>
+                        paginationUjiBank.paginateData(sp2dUjiBank)?.map((sp2d, index) => {
+                          const colors = [
+                            "bg-blue-50 hover:bg-blue-100",
+                            "bg-green-50 hover:bg-green-100", 
+                            "bg-purple-50 hover:bg-purple-100",
+                            "bg-pink-50 hover:bg-pink-100",
+                            "bg-amber-50 hover:bg-amber-100",
+                            "bg-cyan-50 hover:bg-cyan-100",
+                            "bg-rose-50 hover:bg-rose-100",
+                            "bg-indigo-50 hover:bg-indigo-100",
+                          ];
+                          return (
+                          <TableRow 
+                            key={sp2d.id}
+                            className={`${colors[index % colors.length]} transition-colors duration-200`}
+                          >
                             <TableCell className="font-medium">
                               {sp2d.nomor_sp2d || "-"}
                             </TableCell>
@@ -506,7 +550,8 @@ const Sp2dList = () => {
                               </Button>
                             </TableCell>
                           </TableRow>
-                        ))
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
@@ -565,8 +610,22 @@ const Sp2dList = () => {
                           </TableCell>
                         </TableRow>
                       ) : (
-                        paginationCair.paginateData(sp2dCair)?.map((sp2d) => (
-                          <TableRow key={sp2d.id}>
+                        paginationCair.paginateData(sp2dCair)?.map((sp2d, index) => {
+                          const colors = [
+                            "bg-blue-50 hover:bg-blue-100",
+                            "bg-green-50 hover:bg-green-100", 
+                            "bg-purple-50 hover:bg-purple-100",
+                            "bg-pink-50 hover:bg-pink-100",
+                            "bg-amber-50 hover:bg-amber-100",
+                            "bg-cyan-50 hover:bg-cyan-100",
+                            "bg-rose-50 hover:bg-rose-100",
+                            "bg-indigo-50 hover:bg-indigo-100",
+                          ];
+                          return (
+                          <TableRow 
+                            key={sp2d.id}
+                            className={`${colors[index % colors.length]} transition-colors duration-200`}
+                          >
                             <TableCell className="font-medium">
                               {sp2d.nomor_sp2d || "-"}
                             </TableCell>
@@ -598,7 +657,8 @@ const Sp2dList = () => {
                               </Button>
                             </TableCell>
                           </TableRow>
-                        ))
+                          );
+                        })
                       )}
                     </TableBody>
                   </Table>
