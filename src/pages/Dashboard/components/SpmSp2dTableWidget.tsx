@@ -2,16 +2,8 @@ import { useState, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Clock, FileText } from "lucide-react";
+import { CheckCircle, XCircle, Clock, FileText, Building2, Calendar, Hash, Wallet, TrendingUp, ArrowRight } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -24,46 +16,101 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const VerificationBadge = ({ isVerified }: { isVerified: boolean | null }) => {
-  if (isVerified === null) {
-    return (
-      <Badge variant="outline" className="gap-1 bg-muted/50">
-        <Clock className="h-3 w-3" />
-        Pending
-      </Badge>
-    );
-  }
-  
-  return isVerified ? (
-    <Badge variant="default" className="gap-1 bg-success/20 text-success border-success/30">
-      <CheckCircle className="h-3 w-3" />
-      Verified
-    </Badge>
-  ) : (
-    <Badge variant="destructive" className="gap-1 bg-destructive/20 text-destructive border-destructive/30">
-      <XCircle className="h-3 w-3" />
-      Rejected
-    </Badge>
+// Timeline component for verification steps
+const VerificationTimeline = memo(({ 
+  pbmdVerified, 
+  akuntansiVerified, 
+  perbendaharaanVerified 
+}: { 
+  pbmdVerified: boolean | null;
+  akuntansiVerified: boolean | null;
+  perbendaharaanVerified: boolean | null;
+}) => {
+  const steps = [
+    { label: "PBMD", verified: pbmdVerified, icon: CheckCircle },
+    { label: "Akuntansi", verified: akuntansiVerified, icon: CheckCircle },
+    { label: "Perbendaharaan", verified: perbendaharaanVerified, icon: CheckCircle },
+  ];
+
+  return (
+    <div className="flex items-center justify-between gap-2">
+      {steps.map((step, index) => {
+        const Icon = step.verified === null ? Clock : step.verified ? CheckCircle : XCircle;
+        const bgColor = step.verified === null 
+          ? "bg-muted" 
+          : step.verified 
+          ? "bg-success" 
+          : "bg-destructive";
+        const textColor = step.verified === null 
+          ? "text-muted-foreground" 
+          : step.verified 
+          ? "text-success" 
+          : "text-destructive";
+
+        return (
+          <div key={step.label} className="flex items-center gap-2 flex-1">
+            <div className="flex flex-col items-center flex-1">
+              <div className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
+                bgColor,
+                step.verified && "animate-scale-in"
+              )}>
+                <Icon className="h-4 w-4 text-white" />
+              </div>
+              <span className={cn("text-xs mt-1 font-medium", textColor)}>
+                {step.label}
+              </span>
+            </div>
+            {index < steps.length - 1 && (
+              <ArrowRight className={cn("h-4 w-4", textColor)} />
+            )}
+          </div>
+        );
+      })}
+    </div>
   );
-};
+});
 
-const Sp2dStatusBadge = ({ status }: { status: string }) => {
+VerificationTimeline.displayName = "VerificationTimeline";
+
+const Sp2dStatusBadge = memo(({ status }: { status: string }) => {
   const statusConfig = {
-    diterbitkan: { label: "Diterbitkan", className: "bg-blue-500/20 text-blue-700 border-blue-300" },
-    terkirim_bank: { label: "Terkirim Bank", className: "bg-purple-500/20 text-purple-700 border-purple-300" },
-    dikonfirmasi_bank: { label: "Dikonfirmasi", className: "bg-indigo-500/20 text-indigo-700 border-indigo-300" },
-    cair: { label: "Cair", className: "bg-green-500/20 text-green-700 border-green-300" },
+    diterbitkan: { 
+      label: "Diterbitkan", 
+      className: "bg-info/20 text-info border-info/30",
+      icon: FileText
+    },
+    terkirim_bank: { 
+      label: "Terkirim Bank", 
+      className: "bg-primary/20 text-primary border-primary/30",
+      icon: TrendingUp
+    },
+    dikonfirmasi_bank: { 
+      label: "Dikonfirmasi", 
+      className: "bg-accent/20 text-accent border-accent/30",
+      icon: CheckCircle
+    },
+    cair: { 
+      label: "Cair", 
+      className: "bg-success/20 text-success border-success/30",
+      icon: Wallet
+    },
   };
 
   const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.diterbitkan;
+  const Icon = config.icon;
 
   return (
-    <Badge variant="outline" className={config.className}>
+    <Badge variant="outline" className={cn("gap-1.5 font-medium", config.className)}>
+      <Icon className="h-3.5 w-3.5" />
       {config.label}
     </Badge>
   );
-};
+});
+
+Sp2dStatusBadge.displayName = "Sp2dStatusBadge";
 
 const SpmSp2dTableWidget = memo(() => {
   const [page, setPage] = useState(1);
@@ -115,155 +162,159 @@ const SpmSp2dTableWidget = memo(() => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
-            <CardTitle className="text-lg">Tabel Timeline SPM & SP2D</CardTitle>
+            <CardTitle className="text-lg">Timeline SPM & SP2D</CardTitle>
           </div>
-          <Badge variant="secondary" className="font-mono">
+          <Badge variant="secondary" className="font-mono text-sm px-3 py-1">
             {data?.count || 0} Records
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-0 overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-auto max-h-[600px]">
-          <Table>
-            <TableHeader className="sticky top-0 bg-background z-10">
-              <TableRow className="bg-muted/50">
-                <TableHead className="font-semibold">Informasi SPM</TableHead>
-                <TableHead className="font-semibold">Penerima</TableHead>
-                <TableHead className="font-semibold">Verifikasi</TableHead>
-                <TableHead className="font-semibold">Informasi SP2D</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    Loading data...
-                  </TableCell>
-                </TableRow>
-              ) : data?.data && data.data.length > 0 ? (
-                data.data.map((spm: any) => {
-                  const sp2d = Array.isArray(spm.sp2d) ? spm.sp2d[0] : spm.sp2d;
-                  
-                  return (
-                    <TableRow key={spm.id} className="hover:bg-accent/5">
-                      <TableCell>
-                        <div className="flex flex-col gap-1 min-w-[280px]">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">No. Antrian:</span>
-                            <span className="font-mono text-sm font-medium">{spm.nomor_antrian || "-"}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">Tanggal:</span>
-                            <span className="text-sm">
-                              {spm.tanggal_ajuan
-                                ? format(new Date(spm.tanggal_ajuan), "dd MMM yyyy", { locale: id })
-                                : "-"}
+        <div className="flex-1 overflow-auto p-4 space-y-4 max-h-[600px]">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-center space-y-2">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary mx-auto" />
+                <p className="text-sm text-muted-foreground">Loading data...</p>
+              </div>
+            </div>
+          ) : data?.data && data.data.length > 0 ? (
+            <div className="grid gap-4">
+              {data.data.map((spm: any) => {
+                const sp2d = Array.isArray(spm.sp2d) ? spm.sp2d[0] : spm.sp2d;
+                const pbmdVerified = spm.status === "disetujui" || sp2d
+                  ? true
+                  : spm.verified_by_pbmd
+                  ? spm.status !== "perlu_revisi"
+                  : null;
+                const akuntansiVerified = spm.status === "disetujui" || sp2d
+                  ? true
+                  : spm.verified_by_akuntansi
+                  ? spm.status !== "perlu_revisi"
+                  : null;
+                const perbendaharaanVerified = spm.status === "disetujui" || sp2d
+                  ? true
+                  : spm.verified_by_perbendaharaan
+                  ? spm.status !== "perlu_revisi"
+                  : null;
+
+                return (
+                  <Card 
+                    key={spm.id} 
+                    className={cn(
+                      "group hover:shadow-lg hover:scale-[1.01] transition-all duration-300 cursor-pointer",
+                      "border-l-4",
+                      sp2d && sp2d.status === "cair" 
+                        ? "border-l-success" 
+                        : pbmdVerified && akuntansiVerified && perbendaharaanVerified
+                        ? "border-l-accent"
+                        : "border-l-primary"
+                    )}
+                  >
+                    <CardContent className="p-4 space-y-4">
+                      {/* Header Section */}
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Hash className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-mono text-lg font-bold text-primary">
+                              {spm.nomor_antrian || "-"}
                             </span>
                           </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">No. SPM:</span>
-                            <span className="font-mono text-sm font-medium">{spm.nomor_spm || "-"}</span>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar className="h-3.5 w-3.5" />
+                            {spm.tanggal_ajuan
+                              ? format(new Date(spm.tanggal_ajuan), "dd MMMM yyyy", { locale: id })
+                              : "-"}
                           </div>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-[200px]">
-                          <p className="font-medium text-sm truncate">{spm.nama_penerima}</p>
+                        <div className="text-right space-y-1">
+                          <div className="text-xs text-muted-foreground">No. SPM</div>
+                          <div className="font-mono text-sm font-semibold">
+                            {spm.nomor_spm || "-"}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Penerima & OPD */}
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                        <Building2 className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm truncate">{spm.nama_penerima}</p>
                           <p className="text-xs text-muted-foreground truncate">
                             {spm.opd?.nama_opd}
                           </p>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1 min-w-[280px]">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">PBMD:</span>
-                            <VerificationBadge
-                              isVerified={
-                                // If SPM is approved or has SP2D, all verifications are done
-                                spm.status === "disetujui" || sp2d
-                                  ? true
-                                  : spm.verified_by_pbmd
-                                  ? spm.status !== "perlu_revisi"
-                                  : null
-                              }
-                            />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">Akuntansi:</span>
-                            <VerificationBadge
-                              isVerified={
-                                // If SPM is approved or has SP2D, all verifications are done
-                                spm.status === "disetujui" || sp2d
-                                  ? true
-                                  : spm.verified_by_akuntansi
-                                  ? spm.status !== "perlu_revisi"
-                                  : null
-                              }
-                            />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs text-muted-foreground whitespace-nowrap">Perbendaharaan:</span>
-                            <VerificationBadge
-                              isVerified={
-                                // If SPM is approved or has SP2D, all verifications are done
-                                spm.status === "disetujui" || sp2d
-                                  ? true
-                                  : spm.verified_by_perbendaharaan
-                                  ? spm.status !== "perlu_revisi"
-                                  : null
-                              }
-                            />
-                          </div>
+                      </div>
+
+                      {/* Verification Timeline */}
+                      <div className="space-y-2">
+                        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                          Timeline Verifikasi
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        {sp2d ? (
-                          <div className="flex flex-col gap-1 min-w-[280px]">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">Nomor SP2D:</span>
-                              <span className="font-mono text-sm font-medium">{sp2d.nomor_sp2d}</span>
+                        <VerificationTimeline
+                          pbmdVerified={pbmdVerified}
+                          akuntansiVerified={akuntansiVerified}
+                          perbendaharaanVerified={perbendaharaanVerified}
+                        />
+                      </div>
+
+                      {/* SP2D Information */}
+                      {sp2d ? (
+                        <div className="space-y-3 pt-3 border-t">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                              Informasi SP2D
+                            </span>
+                            <Sp2dStatusBadge status={sp2d.status} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <div className="text-xs text-muted-foreground">Nomor SP2D</div>
+                              <div className="font-mono text-sm font-semibold">{sp2d.nomor_sp2d}</div>
                             </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">Nilai SP2D:</span>
-                              <span className="text-sm font-medium">{formatCurrency(sp2d.nilai_sp2d)}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs text-muted-foreground whitespace-nowrap">Status:</span>
-                              <div className="flex flex-col items-end gap-1">
-                                <Sp2dStatusBadge status={sp2d.status} />
-                                {sp2d.status === "cair" && sp2d.tanggal_cair && (
-                                  <span className="text-xs text-muted-foreground">
-                                    {format(new Date(sp2d.tanggal_cair), "dd MMM yyyy", { locale: id })}
-                                  </span>
-                                )}
+                            <div className="space-y-1 text-right">
+                              <div className="text-xs text-muted-foreground">Nilai SP2D</div>
+                              <div className="font-semibold text-sm text-success">
+                                {formatCurrency(sp2d.nilai_sp2d)}
                               </div>
                             </div>
                           </div>
-                        ) : (
-                          <Badge variant="outline" className="bg-muted/50">
-                            No SP2D
+                          {sp2d.status === "cair" && sp2d.tanggal_cair && (
+                            <div className="flex items-center gap-2 text-xs text-success">
+                              <Wallet className="h-3.5 w-3.5" />
+                              Cair pada {format(new Date(sp2d.tanggal_cair), "dd MMMM yyyy", { locale: id })}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="pt-3 border-t">
+                          <Badge variant="outline" className="bg-muted/50 w-full justify-center py-2">
+                            <FileText className="h-3.5 w-3.5 mr-1.5" />
+                            SP2D Belum Diterbitkan
                           </Badge>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    No data available
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
+              <p className="text-sm font-medium text-muted-foreground">No data available</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">
+                SPM records will appear here once submitted
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Pagination */}
         <div className="border-t p-4 bg-muted/20">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">Rows per page:</span>
               <Select
                 value={pageSize.toString()}
@@ -272,7 +323,7 @@ const SpmSp2dTableWidget = memo(() => {
                   setPage(1);
                 }}
               >
-                <SelectTrigger className="w-[70px] h-8">
+                <SelectTrigger className="w-[80px] h-9">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -284,15 +335,15 @@ const SpmSp2dTableWidget = memo(() => {
               </Select>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground font-medium">
                 Page {page} of {totalPages || 1}
               </span>
               <div className="flex gap-1">
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-9 w-9 hover:bg-primary hover:text-primary-foreground transition-colors"
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
                 >
@@ -301,7 +352,7 @@ const SpmSp2dTableWidget = memo(() => {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-9 w-9 hover:bg-primary hover:text-primary-foreground transition-colors"
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                 >
