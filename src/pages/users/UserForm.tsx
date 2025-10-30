@@ -167,11 +167,12 @@ const UserForm = () => {
     register("roles" as any);
   }, [register]);
 
+  // Populate form with fetched user data (only runs when userData changes)
   useEffect(() => {
     if (userData) {
       let userRoles = userData.user_roles?.map((ur: any) => ({
         role: ur.role,
-        opd_id: ur.opd_id ?? undefined, // Convert null to undefined for Zod validation
+        opd_id: ur.opd_id ?? undefined,
       })) || [];
       
       // Filter out super_admin and demo_admin roles if current user is not super admin
@@ -194,12 +195,14 @@ const UserForm = () => {
     }
   }, [userData, reset, clearErrors, isSuperAdmin]);
 
-  // Keep RHF in sync with local roles state to avoid validation desync
+  // Sync roles with RHF when changed via UserRoleSelect (skip if userData is still loading)
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setValue("roles" as any, roles as any, { shouldValidate: true, shouldDirty: true });
-    if (roles.length > 0) clearErrors(["roles"]);
-  }, [roles, setValue, clearErrors]);
+    if (!userData || userData.user_roles) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setValue("roles" as any, roles as any, { shouldValidate: true });
+      if (roles.length > 0) clearErrors(["roles"]);
+    }
+  }, [roles, setValue, clearErrors, userData]);
 
   const onSubmit = (data: UserFormData) => {
     console.log("Form submitted with data:", data);

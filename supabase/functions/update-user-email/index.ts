@@ -37,13 +37,18 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Check if user is admin
+    // Check if user is admin and can write (exclude demo_admin)
     const { data: userRoles, error: rolesError } = await supabaseClient
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id);
 
     if (rolesError) throw rolesError;
+
+    const isDemoAdmin = userRoles?.some(r => r.role === 'demo_admin');
+    if (isDemoAdmin) {
+      throw new Error('Demo admin tidak dapat mengubah email user');
+    }
 
     const isAdmin = userRoles?.some(r => r.role === 'administrator' || r.role === 'super_admin');
     if (!isAdmin) {

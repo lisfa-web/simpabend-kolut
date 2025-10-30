@@ -43,11 +43,19 @@ serve(async (req: Request) => {
       );
     }
 
-    // Check if calling user has admin role
+    // Check if calling user has admin role and can write (exclude demo_admin)
     const { data: userRoles } = await admin
       .from("user_roles")
       .select("role")
       .eq("user_id", callingUser.id);
+
+    const isDemoAdmin = userRoles?.some(r => r.role === "demo_admin");
+    if (isDemoAdmin) {
+      return new Response(
+        JSON.stringify({ error: "Demo admin tidak dapat membuat user baru" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const isAdmin = userRoles?.some(r => r.role === "administrator" || r.role === "kepala_bkad");
     if (!isAdmin) {

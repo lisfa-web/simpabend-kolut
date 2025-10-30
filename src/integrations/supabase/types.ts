@@ -1330,6 +1330,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_write: { Args: { _user_id: string }; Returns: boolean }
       check_jenis_spm_dependencies: {
         Args: { jenis_spm_id_param: string }
         Returns: Json
