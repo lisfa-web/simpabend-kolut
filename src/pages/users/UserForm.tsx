@@ -194,6 +194,13 @@ const UserForm = () => {
     }
   }, [userData, reset, clearErrors, isSuperAdmin]);
 
+  // Keep RHF in sync with local roles state to avoid validation desync
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setValue("roles" as any, roles as any, { shouldValidate: true, shouldDirty: true });
+    if (roles.length > 0) clearErrors(["roles"]);
+  }, [roles, setValue, clearErrors]);
+
   const onSubmit = (data: UserFormData) => {
     console.log("Form submitted with data:", data);
     console.log("Current roles:", roles);

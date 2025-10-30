@@ -97,7 +97,10 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
             <button
               type="button"
               onClick={() => handleRemoveRole(userRole.role)}
-              className="hover:text-destructive"
+              className="hover:text-destructive disabled:opacity-50"
+              disabled={value.length <= 1}
+              aria-disabled={value.length <= 1}
+              title={value.length <= 1 ? "Minimal 1 role wajib ada" : "Hapus role"}
             >
               <X className="h-3 w-3" />
             </button>
