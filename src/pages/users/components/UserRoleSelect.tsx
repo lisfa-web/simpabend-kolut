@@ -39,7 +39,9 @@ const AVAILABLE_ROLES: AppRole[] = [
 export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRoleSelectProps) => {
   const [selectedRole, setSelectedRole] = useState<AppRole | "">("");
 
-  // Add super_admin and demo_admin to available roles only for super admins
+  // SECURITY: Add super_admin and demo_admin to available roles only for super admins
+  // Regular admins should never see or be able to assign these privileged roles
+  // EDGE CASE: This prevents privilege escalation where regular admin creates super admin
   const availableRoles = isSuperAdmin 
     ? [...AVAILABLE_ROLES, "super_admin" as AppRole, "demo_admin" as AppRole]
     : AVAILABLE_ROLES;
@@ -47,6 +49,7 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
   const handleAddRole = () => {
     if (!selectedRole) return;
 
+    // VALIDATION: Prevent duplicate roles - each user can only have a role once
     const roleExists = value.some((r) => r.role === selectedRole);
     if (roleExists) {
       return;
@@ -61,6 +64,8 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
   };
 
   const handleRemoveRole = (roleToRemove: AppRole) => {
+    // DATA INTEGRITY: Allow removal even if it's the last role
+    // Form validation at parent level will prevent submitting without roles
     onChange(value.filter((r) => r.role !== roleToRemove));
   };
 
@@ -102,6 +107,8 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
               aria-disabled={value.length <= 1}
               title={value.length <= 1 ? "Minimal 1 role wajib ada" : "Hapus role"}
             >
+              {/* UX: Visual feedback that button is disabled when only 1 role remains */}
+              {/* VALIDATION: Form-level validation enforces minimum 1 role requirement */}
               <X className="h-3 w-3" />
             </button>
           </Badge>

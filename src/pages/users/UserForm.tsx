@@ -190,7 +190,8 @@ const UserForm = () => {
         opd_id: ur.opd_id ?? undefined,
       })) || [];
       
-      // Filter out super_admin and demo_admin roles if current user is not super admin
+      // SECURITY: Filter out super_admin and demo_admin roles if current user is not super admin
+      // This prevents privilege escalation attacks where regular admins might see or modify super admin roles
       if (!isSuperAdmin()) {
         userRoles = userRoles.filter((r: any) => 
           r.role !== 'demo_admin' && r.role !== 'super_admin'
@@ -211,6 +212,8 @@ const UserForm = () => {
   }, [userData, reset, clearErrors, isSuperAdmin]);
 
   // Sync roles with RHF when changed via UserRoleSelect (skip if userData is still loading)
+  // This ensures form validation stays in sync with the role selection component
+  // EDGE CASE: Only sync if userData has been loaded to avoid premature validation errors
   useEffect(() => {
     if (!userData || userData.user_roles) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

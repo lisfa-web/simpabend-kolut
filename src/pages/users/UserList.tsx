@@ -123,7 +123,9 @@ const UserList = () => {
 
   const { resetPassword, toggleUserStatus } = useUserMutation();
 
-  // Filter out super admin and demo admin users for regular admins
+  // SECURITY: Filter out super admin and demo admin users for regular admins
+  // This prevents regular administrators from viewing, editing, or managing super admin/demo admin accounts
+  // EDGE CASE: Super admins can see all users including other super admins and demo admins
   const filteredUsers = users?.filter((user: any) => {
     if (isSuperAdminUser) return true; // Super admin sees all users
     
@@ -134,6 +136,8 @@ const UserList = () => {
   });
 
   const handleResetPassword = () => {
+    // INPUT VALIDATION: Enforce 8 character minimum for security
+    // This matches the password validation in UserForm and database schema
     if (!newPassword || newPassword.length < 8) {
       return;
     }
@@ -152,6 +156,8 @@ const UserList = () => {
   };
 
   const handleToggleStatus = (userId: string, currentStatus: boolean) => {
+    // UX: Close confirmation dialog immediately after action to prevent double-submission
+    // AUDIT: All status changes are logged in audit_log table via mutation hook
     toggleUserStatus.mutate({
       userId,
       isActive: !currentStatus,
