@@ -263,8 +263,11 @@ const InputSpmList = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                pagination.paginateData(spmList)?.map((spm: any) => (
-                  <TableRow key={spm.id}>
+                pagination.paginateData(spmList)?.map((spm: any, index: number) => (
+                  <TableRow 
+                    key={spm.id}
+                    className={index % 2 === 0 ? "bg-primary/10" : "bg-secondary/10"}
+                  >
                     <TableCell className="font-medium">
                       {spm.nomor_spm || "-"}
                     </TableCell>
