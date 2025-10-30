@@ -54,26 +54,36 @@ export const useDashboardLayout = () => {
         return userLayout;
       }
 
-      // If user doesn't have layout, try to get superadmin's layout as default
-      // First, get superadmin user_id
-      const { data: superAdminRoles } = await supabase
+      // Check if user is demo_admin
+      const { data: userRole } = await supabase
         .from("user_roles")
-        .select("user_id")
-        .eq("role", "super_admin")
-        .limit(1)
-        .single();
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "demo_admin")
+        .maybeSingle();
 
-      if (superAdminRoles?.user_id) {
-        const { data: superAdminLayout } = await supabase
-          .from("dashboard_layout")
-          .select("*")
-          .eq("user_id", superAdminRoles.user_id)
-          .order("updated_at", { ascending: false })
+      // If user is demo_admin and doesn't have layout, use superadmin's layout as default
+      if (userRole?.role === "demo_admin") {
+        // Get superadmin user_id
+        const { data: superAdminRoles } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "super_admin")
           .limit(1)
-          .maybeSingle();
+          .single();
 
-        if (superAdminLayout) {
-          return superAdminLayout;
+        if (superAdminRoles?.user_id) {
+          const { data: superAdminLayout } = await supabase
+            .from("dashboard_layout")
+            .select("*")
+            .eq("user_id", superAdminRoles.user_id)
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (superAdminLayout) {
+            return superAdminLayout;
+          }
         }
       }
 
