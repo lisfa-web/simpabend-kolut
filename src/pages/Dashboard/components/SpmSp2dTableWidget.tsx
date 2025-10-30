@@ -69,14 +69,14 @@ const SpmSp2dTableWidget = memo(() => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Palette warna dengan kontras lebih tinggi untuk alternating rows
+  // Palette warna dengan kontras tinggi untuk alternating rows
   const rowColorClasses = [
-    "bg-blue-50/60 hover:bg-blue-100/80 border-l-4 border-blue-400 dark:bg-blue-900/40 dark:hover:bg-blue-800/50 dark:border-blue-500",
-    "bg-violet-50/60 hover:bg-violet-100/80 border-l-4 border-violet-400 dark:bg-violet-900/40 dark:hover:bg-violet-800/50 dark:border-violet-500",
-    "bg-emerald-50/60 hover:bg-emerald-100/80 border-l-4 border-emerald-400 dark:bg-emerald-900/40 dark:hover:bg-emerald-800/50 dark:border-emerald-500",
-    "bg-amber-50/60 hover:bg-amber-100/80 border-l-4 border-amber-400 dark:bg-amber-900/40 dark:hover:bg-amber-800/50 dark:border-amber-500",
-    "bg-rose-50/60 hover:bg-rose-100/80 border-l-4 border-rose-400 dark:bg-rose-900/40 dark:hover:bg-rose-800/50 dark:border-rose-500",
-    "bg-cyan-50/60 hover:bg-cyan-100/80 border-l-4 border-cyan-400 dark:bg-cyan-900/40 dark:hover:bg-cyan-800/50 dark:border-cyan-500",
+    "bg-blue-100/90 hover:bg-blue-200/95 border-l-4 border-blue-500 dark:bg-blue-800/60 dark:hover:bg-blue-700/70 dark:border-blue-400",
+    "bg-violet-100/90 hover:bg-violet-200/95 border-l-4 border-violet-500 dark:bg-violet-800/60 dark:hover:bg-violet-700/70 dark:border-violet-400",
+    "bg-emerald-100/90 hover:bg-emerald-200/95 border-l-4 border-emerald-500 dark:bg-emerald-800/60 dark:hover:bg-emerald-700/70 dark:border-emerald-400",
+    "bg-amber-100/90 hover:bg-amber-200/95 border-l-4 border-amber-500 dark:bg-amber-800/60 dark:hover:bg-amber-700/70 dark:border-amber-400",
+    "bg-rose-100/90 hover:bg-rose-200/95 border-l-4 border-rose-500 dark:bg-rose-800/60 dark:hover:bg-rose-700/70 dark:border-rose-400",
+    "bg-cyan-100/90 hover:bg-cyan-200/95 border-l-4 border-cyan-500 dark:bg-cyan-800/60 dark:hover:bg-cyan-700/70 dark:border-cyan-400",
   ];
 
   const { data, isLoading } = useQuery({
