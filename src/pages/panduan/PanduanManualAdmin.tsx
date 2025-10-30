@@ -3,13 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { usePanduanManual } from "@/hooks/usePanduanManual";
 import { useState } from "react";
 import { Plus, Edit, Trash2, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { getRoleDisplayName } from "@/lib/auth";
+import { RichTextEditor } from "@/components/surat/RichTextEditor";
 
 const AVAILABLE_ROLES = [
   "administrator",
@@ -115,18 +115,15 @@ const PanduanManualAdmin = () => {
                 </div>
 
                 <div>
-                  <Label>Konten (HTML)</Label>
-                  <Textarea
-                    rows={12}
+                  <Label>Konten</Label>
+                  <RichTextEditor
                     value={editingPanduan?.konten || ""}
-                    onChange={(e) =>
+                    onChange={(html) =>
                       setEditingPanduan({
                         ...editingPanduan,
-                        konten: e.target.value,
+                        konten: html,
                       })
                     }
-                    className="font-mono text-sm"
-                    placeholder="<h2>Judul</h2><p>Paragraf...</p><ul><li>Item</li></ul>"
                   />
                 </div>
 
