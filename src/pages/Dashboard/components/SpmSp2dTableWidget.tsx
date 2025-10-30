@@ -69,6 +69,16 @@ const SpmSp2dTableWidget = memo(() => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  // Palette warna soft untuk alternating rows
+  const rowColorClasses = [
+    "bg-blue-50/30 hover:bg-blue-50/50 dark:bg-blue-950/20 dark:hover:bg-blue-950/30",
+    "bg-purple-50/30 hover:bg-purple-50/50 dark:bg-purple-950/20 dark:hover:bg-purple-950/30",
+    "bg-green-50/30 hover:bg-green-50/50 dark:bg-green-950/20 dark:hover:bg-green-950/30",
+    "bg-amber-50/30 hover:bg-amber-50/50 dark:bg-amber-950/20 dark:hover:bg-amber-950/30",
+    "bg-pink-50/30 hover:bg-pink-50/50 dark:bg-pink-950/20 dark:hover:bg-pink-950/30",
+    "bg-cyan-50/30 hover:bg-cyan-50/50 dark:bg-cyan-950/20 dark:hover:bg-cyan-950/30",
+  ];
+
   const { data, isLoading } = useQuery({
     queryKey: ["spm-sp2d-table", page, pageSize],
     queryFn: async () => {
@@ -141,11 +151,14 @@ const SpmSp2dTableWidget = memo(() => {
                   </TableCell>
                 </TableRow>
               ) : data?.data && data.data.length > 0 ? (
-                data.data.map((spm: any) => {
+                data.data.map((spm: any, index: number) => {
                   const sp2d = Array.isArray(spm.sp2d) ? spm.sp2d[0] : spm.sp2d;
                   
                   return (
-                    <TableRow key={spm.id} className="hover:bg-accent/5">
+                    <TableRow 
+                      key={spm.id} 
+                      className={`${rowColorClasses[index % rowColorClasses.length]} transition-colors duration-200 border-b border-border/30`}
+                    >
                       <TableCell>
                         <div className="flex flex-col gap-1 min-w-[280px]">
                           <div className="flex items-center justify-between">
