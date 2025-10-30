@@ -72,7 +72,15 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
   return (
     <div className="space-y-4">
       <div className="flex gap-2">
-        <Select value={selectedRole} onValueChange={(v) => setSelectedRole(v as AppRole)}>
+        <Select value={selectedRole} onValueChange={(v) => {
+          const role = v as AppRole;
+          setSelectedRole(role);
+          // UX: Auto-add role on select to avoid extra click on + button
+          const roleExists = value.some((r) => r.role === role);
+          if (!roleExists) {
+            onChange([...value, { role }]);
+          }
+        }}>
           <SelectTrigger className="flex-1">
             <SelectValue placeholder="Pilih Role" />
           </SelectTrigger>

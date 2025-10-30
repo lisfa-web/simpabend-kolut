@@ -116,6 +116,7 @@ export const useUserMutation = () => {
         .eq("user_id", data.id);
 
       // Update profile
+      console.log("[UserUpdate] Starting update", data);
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -125,7 +126,11 @@ export const useUserMutation = () => {
         })
         .eq("id", data.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("[UserUpdate] Profile update error", profileError);
+        throw profileError;
+      }
+      console.log("[UserUpdate] Profile updated");
 
       // Delete existing roles
       const { error: deleteRolesError } = await supabase
@@ -161,8 +166,11 @@ export const useUserMutation = () => {
 
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_res, variables) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      if (variables?.id) {
+        queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
+      }
       toast.success("User berhasil diupdate");
     },
     onError: (error: any) => {
