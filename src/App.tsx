@@ -119,10 +119,11 @@ const App = () => (
             
             {/* User Management Routes */}
             <Route path="/users" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserList /></RoleProtectedRoute>} />
-            <Route path="/users/new" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserForm /></RoleProtectedRoute>} />
-            <Route path="/users/create" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserForm /></RoleProtectedRoute>} />
+            {/* SECURITY: Only super admin can create and edit users */}
+            <Route path="/users/new" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><UserForm /></RoleProtectedRoute>} />
+            <Route path="/users/create" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><UserForm /></RoleProtectedRoute>} />
             <Route path="/users/:id" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserDetail /></RoleProtectedRoute>} />
-            <Route path="/users/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserForm /></RoleProtectedRoute>} />
+            <Route path="/users/:id/edit" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><UserForm /></RoleProtectedRoute>} />
             
             {/* Master Data Routes */}
             <Route path="/masterdata" element={<ProtectedRoute><MasterDataIndex /></ProtectedRoute>} />
