@@ -573,6 +573,7 @@ const UserForm = () => {
                   type="button"
                   variant="outline"
                   onClick={() => navigate("/users")}
+                  disabled={createUser.isPending || updateUser.isPending}
                 >
                   Batal
                 </Button>
@@ -580,7 +581,11 @@ const UserForm = () => {
                   type="submit"
                   disabled={createUser.isPending || updateUser.isPending}
                 >
-                  {isEdit ? "Simpan Perubahan" : "Buat User"}
+                  {createUser.isPending || updateUser.isPending
+                    ? "Menyimpan..."
+                    : isEdit
+                    ? "Simpan Perubahan"
+                    : "Buat User"}
                 </Button>
               </div>
             </form>

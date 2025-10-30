@@ -65,6 +65,12 @@ const UserList = () => {
     userId: string;
     userName: string;
   }>({ open: false, userId: "", userName: "" });
+  const [toggleStatusDialog, setToggleStatusDialog] = useState<{
+    open: boolean;
+    userId: string;
+    userName: string;
+    currentStatus: boolean;
+  }>({ open: false, userId: "", userName: "", currentStatus: true });
   const [newPassword, setNewPassword] = useState("");
 
   // Calculate password strength
@@ -150,6 +156,7 @@ const UserList = () => {
       userId,
       isActive: !currentStatus,
     });
+    setToggleStatusDialog({ open: false, userId: "", userName: "", currentStatus: true });
   };
 
   return (
@@ -287,7 +294,7 @@ const UserList = () => {
                                     userName: user.full_name,
                                   })
                                 }
-                                disabled={isDemoUser}
+                                disabled={isDemoUser || resetPassword.isPending}
                               >
                                 <Key className="h-4 w-4" />
                               </Button>
@@ -301,8 +308,15 @@ const UserList = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => handleToggleStatus(user.id, user.is_active)}
-                                disabled={isDemoUser}
+                                onClick={() =>
+                                  setToggleStatusDialog({
+                                    open: true,
+                                    userId: user.id,
+                                    userName: user.full_name,
+                                    currentStatus: user.is_active,
+                                  })
+                                }
+                                disabled={isDemoUser || toggleUserStatus.isPending}
                               >
                                 <Power
                                   className={`h-4 w-4 ${
@@ -401,9 +415,57 @@ const UserList = () => {
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleResetPassword}
-              disabled={!newPassword || newPassword.length < 8}
+              disabled={!newPassword || newPassword.length < 8 || resetPassword.isPending}
             >
-              Reset Password
+              {resetPassword.isPending ? "Mereset..." : "Reset Password"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Toggle Status Confirmation Dialog */}
+      <AlertDialog
+        open={toggleStatusDialog.open}
+        onOpenChange={(open) =>
+          !open && setToggleStatusDialog({ open: false, userId: "", userName: "", currentStatus: true })
+        }
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {toggleStatusDialog.currentStatus ? "Nonaktifkan User?" : "Aktifkan User?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Anda akan{" "}
+              <strong>
+                {toggleStatusDialog.currentStatus ? "menonaktifkan" : "mengaktifkan"}
+              </strong>{" "}
+              user: <strong>{toggleStatusDialog.userName}</strong>
+              <br />
+              <br />
+              {toggleStatusDialog.currentStatus ? (
+                <span className="text-sm text-amber-600 dark:text-amber-400">
+                  ⚠️ User tidak akan bisa login ke sistem setelah dinonaktifkan.
+                </span>
+              ) : (
+                <span className="text-sm text-green-600 dark:text-green-400">
+                  ✓ User akan dapat login kembali ke sistem.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleToggleStatus(toggleStatusDialog.userId, toggleStatusDialog.currentStatus)}
+              disabled={toggleUserStatus.isPending}
+            >
+              {toggleUserStatus.isPending 
+                ? "Memproses..." 
+                : toggleStatusDialog.currentStatus 
+                  ? "Nonaktifkan" 
+                  : "Aktifkan"
+              }
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
