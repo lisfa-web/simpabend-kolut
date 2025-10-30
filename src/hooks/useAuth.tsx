@@ -21,10 +21,20 @@ export const useAuth = () => {
     return context.hasRole("administrator") || context.hasRole("akuntansi");
   };
 
+  const isDemoAdmin = (): boolean => {
+    return context.hasRole("demo_admin" as any);
+  };
+
+  const canWrite = (): boolean => {
+    return context.isAdmin() && !isDemoAdmin();
+  };
+
   return {
     ...context,
     isSuperAdmin,
     isRegularAdmin,
     isAdminOrAkuntansi,
+    isDemoAdmin,
+    canWrite,
   };
 };

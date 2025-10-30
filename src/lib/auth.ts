@@ -1,19 +1,28 @@
 import { Database } from "@/integrations/supabase/types";
 
-type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin';
+type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin' | 'demo_admin';
 
 export const hasRole = (roles: AppRole[], targetRole: AppRole): boolean => {
   return roles.includes(targetRole);
 };
 
 export const isAdmin = (roles: AppRole[]): boolean => {
-  return roles.includes("administrator") || roles.includes("kepala_bkad");
+  return roles.includes("administrator") || roles.includes("kepala_bkad") || roles.includes("demo_admin");
+};
+
+export const isDemoAdmin = (roles: AppRole[]): boolean => {
+  return roles.includes("demo_admin");
+};
+
+export const canWrite = (roles: AppRole[]): boolean => {
+  return isAdmin(roles) && !isDemoAdmin(roles);
 };
 
 export const getRoleDisplayName = (role: AppRole): string => {
   const roleNames: Record<AppRole, string> = {
     super_admin: "Super Administrator",
     administrator: "Administrator",
+    demo_admin: "Demo Admin (Read-Only)",
     bendahara_opd: "Bendahara OPD",
     resepsionis: "Resepsionis",
     pbmd: "PBMD",
@@ -30,6 +39,7 @@ export const getRoleBadgeColor = (role: AppRole): string => {
   const colors: Record<AppRole, string> = {
     super_admin: "bg-gradient-to-r from-purple-600 to-pink-600 text-white",
     administrator: "bg-destructive text-destructive-foreground",
+    demo_admin: "bg-gradient-to-r from-yellow-500 to-orange-500 text-white",
     kepala_bkad: "bg-primary text-primary-foreground",
     kuasa_bud: "bg-info text-info-foreground",
     perbendaharaan: "bg-accent text-accent-foreground",

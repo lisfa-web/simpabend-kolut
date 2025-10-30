@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { Database } from "@/integrations/supabase/types";
 
-type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin';
+type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin' | 'demo_admin';
 
 export const useUserRole = () => {
   const { user } = useAuth();
@@ -40,12 +40,22 @@ export const useUserRole = () => {
     return hasRole("administrator") && !hasRole("super_admin");
   };
 
+  const isDemoAdmin = (): boolean => {
+    return hasRole("demo_admin");
+  };
+
+  const canWrite = (): boolean => {
+    return isAdmin() && !isDemoAdmin();
+  };
+
   return {
     roles,
     hasRole,
     isAdmin,
     isSuperAdmin,
     isRegularAdmin,
+    isDemoAdmin,
+    canWrite,
     ...rest,
   };
 };

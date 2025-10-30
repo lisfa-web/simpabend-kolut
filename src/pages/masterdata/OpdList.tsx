@@ -31,7 +31,7 @@ import { useOpdMutation } from "@/hooks/useOpdMutation";
 
 const OpdList = () => {
   const navigate = useNavigate();
-  const { isSuperAdmin, isRegularAdmin, isAdminOrAkuntansi } = useAuth();
+  const { isSuperAdmin, isRegularAdmin, isAdminOrAkuntansi, isDemoAdmin, canWrite } = useAuth();
   const [search, setSearch] = useState("");
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
   const [activateId, setActivateId] = useState<string | null>(null);
@@ -45,6 +45,8 @@ const OpdList = () => {
   const isSuperAdminUser = isSuperAdmin();
   const isRegularAdminUser = isRegularAdmin();
   const canManage = isAdminOrAkuntansi();
+  const isDemoUser = isDemoAdmin && isDemoAdmin();
+  const canWriteData = canWrite && canWrite();
 
   const filteredData = opdList?.filter(
     (opd) =>
@@ -86,7 +88,7 @@ const OpdList = () => {
               Kelola data Organisasi Perangkat Daerah
             </p>
           </div>
-          <Button onClick={() => navigate("/masterdata/opd/create")}>
+          <Button onClick={() => navigate("/masterdata/opd/create")} disabled={isDemoUser}>
             <Plus className="mr-2 h-4 w-4" />
             Tambah OPD
           </Button>
@@ -145,6 +147,7 @@ const OpdList = () => {
                           size="icon"
                           onClick={() => navigate(`/masterdata/opd/${opd.id}/edit`)}
                           title="Edit"
+                          disabled={isDemoUser}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -157,6 +160,7 @@ const OpdList = () => {
                                 size="icon"
                                 onClick={() => setDeactivateId(opd.id)}
                                 title="Nonaktifkan"
+                                disabled={isDemoUser}
                               >
                                 <Ban className="h-4 w-4 text-orange-600" />
                               </Button>
@@ -166,6 +170,7 @@ const OpdList = () => {
                                 size="icon"
                                 onClick={() => setActivateId(opd.id)}
                                 title="Aktifkan"
+                                disabled={isDemoUser}
                               >
                                 <CheckCircle className="h-4 w-4 text-green-600" />
                               </Button>

@@ -50,7 +50,7 @@ type AppRole = Database["public"]["Enums"]["app_role"];
 
 const UserList = () => {
   const navigate = useNavigate();
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isDemoAdmin, canWrite } = useAuth();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -58,6 +58,8 @@ const UserList = () => {
   const pagination = usePagination(10);
   
   const isSuperAdminUser = isSuperAdmin();
+  const isDemoUser = isDemoAdmin && isDemoAdmin();
+  const canWriteData = canWrite && canWrite();
   const [resetPasswordDialog, setResetPasswordDialog] = useState<{
     open: boolean;
     userId: string;
@@ -158,7 +160,7 @@ const UserList = () => {
               Kelola user dan role akses sistem
             </p>
           </div>
-          <Button onClick={() => navigate("/users/create")}>
+          <Button onClick={() => navigate("/users/create")} disabled={isDemoUser}>
             <Plus className="mr-2 h-4 w-4" />
             Tambah User
           </Button>
@@ -262,6 +264,7 @@ const UserList = () => {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => navigate(`/users/${user.id}/edit`)}
+                                disabled={isDemoUser}
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
@@ -282,6 +285,7 @@ const UserList = () => {
                                     userName: user.full_name,
                                   })
                                 }
+                                disabled={isDemoUser}
                               >
                                 <Key className="h-4 w-4" />
                               </Button>
@@ -296,6 +300,7 @@ const UserList = () => {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => handleToggleStatus(user.id, user.is_active)}
+                                disabled={isDemoUser}
                               >
                                 <Power
                                   className={`h-4 w-4 ${

@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { FileText, Eye } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useConfigSistem } from "@/hooks/useConfigSistem";
 
 const Header = () => {
-  const { user } = useAuth();
+  const { user, isDemoAdmin } = useAuth();
   const { data: configs } = useConfigSistem();
   const logoUrl = configs?.find(c => c.key === 'logo_bkad_url')?.value;
 
@@ -29,11 +30,19 @@ const Header = () => {
             <span className="text-xs text-muted-foreground">BKAD Kolaka Utara</span>
           </div>
         </div>
-        <Button variant="default" className="font-semibold" asChild>
-          <Link to={user ? "/dashboard" : "/login"}>
-            {user ? "Dashboard" : "Masuk Sistem"}
-          </Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          {user && isDemoAdmin && isDemoAdmin() && (
+            <Badge variant="outline" className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 gap-1">
+              <Eye className="h-3 w-3" />
+              Mode Demo - Read Only
+            </Badge>
+          )}
+          <Button variant="default" className="font-semibold" asChild>
+            <Link to={user ? "/dashboard" : "/login"}>
+              {user ? "Dashboard" : "Masuk Sistem"}
+            </Link>
+          </Button>
+        </div>
       </div>
     </header>
   );

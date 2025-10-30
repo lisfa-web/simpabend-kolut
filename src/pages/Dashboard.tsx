@@ -3,10 +3,12 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, CheckCircle, Clock, AlertCircle, TrendingUp, Sparkles, Calendar, RefreshCw, ArrowUpRight, Edit, Save, Settings } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FileText, CheckCircle, Clock, AlertCircle, TrendingUp, Sparkles, Calendar, RefreshCw, ArrowUpRight, Edit, Save, Settings, Eye } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
 import { useUserProfile } from "@/hooks/useUserProfile";
+import { useAuth } from "@/hooks/useAuth";
 import { formatCurrency } from "@/lib/currency";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ActionItemsWidget } from "./Dashboard/components/ActionItemsWidget";
@@ -93,6 +95,7 @@ const Dashboard = () => {
   const {
     data: profile
   } = useUserProfile();
+  const { isDemoAdmin } = useAuth();
   const {
     data: stats,
     isLoading,
@@ -171,6 +174,17 @@ const Dashboard = () => {
   const isWidgetHidden = (widgetId: string) => hiddenWidgets.includes(widgetId);
   return <DashboardLayout>
       <CommandPalette />
+      
+      {/* Demo Mode Alert */}
+      {isDemoAdmin && isDemoAdmin() && (
+        <Alert className="mb-6 border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
+          <Eye className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="text-yellow-800 dark:text-yellow-200">
+            <strong>Mode Demo - Read Only:</strong> Anda login sebagai demo admin. Semua menu dapat diakses, tetapi tidak dapat melakukan perubahan data (create, edit, atau delete).
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="space-y-6">
         {/* Enhanced Header with Actions */}
         <div className="space-y-4 pb-6 border-b">
