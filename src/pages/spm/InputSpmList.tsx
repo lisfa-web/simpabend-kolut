@@ -263,10 +263,21 @@ const InputSpmList = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                pagination.paginateData(spmList)?.map((spm: any, index: number) => (
+                pagination.paginateData(spmList)?.map((spm: any, index: number) => {
+                  const colors = [
+                    "bg-blue-50 hover:bg-blue-100",
+                    "bg-green-50 hover:bg-green-100", 
+                    "bg-purple-50 hover:bg-purple-100",
+                    "bg-pink-50 hover:bg-pink-100",
+                    "bg-amber-50 hover:bg-amber-100",
+                    "bg-cyan-50 hover:bg-cyan-100",
+                    "bg-rose-50 hover:bg-rose-100",
+                    "bg-indigo-50 hover:bg-indigo-100",
+                  ];
+                  return (
                   <TableRow 
                     key={spm.id}
-                    className={index % 2 === 0 ? "bg-primary/10" : "bg-secondary/10"}
+                    className={`${colors[index % colors.length]} transition-colors duration-200`}
                   >
                     <TableCell className="font-medium">
                       {spm.nomor_spm || "-"}
@@ -324,7 +335,8 @@ const InputSpmList = () => {
                       )}
                     </TableCell>
                   </TableRow>
-                ))
+                  );
+                })
               )}
             </TableBody>
           </Table>
