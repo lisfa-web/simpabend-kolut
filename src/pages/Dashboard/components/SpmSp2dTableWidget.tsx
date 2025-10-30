@@ -69,14 +69,14 @@ const SpmSp2dTableWidget = memo(() => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Palette warna soft untuk alternating rows
+  // Palette warna dengan kontras lebih tinggi untuk alternating rows
   const rowColorClasses = [
-    "bg-blue-50/30 hover:bg-blue-50/50 dark:bg-blue-950/20 dark:hover:bg-blue-950/30",
-    "bg-purple-50/30 hover:bg-purple-50/50 dark:bg-purple-950/20 dark:hover:bg-purple-950/30",
-    "bg-green-50/30 hover:bg-green-50/50 dark:bg-green-950/20 dark:hover:bg-green-950/30",
-    "bg-amber-50/30 hover:bg-amber-50/50 dark:bg-amber-950/20 dark:hover:bg-amber-950/30",
-    "bg-pink-50/30 hover:bg-pink-50/50 dark:bg-pink-950/20 dark:hover:bg-pink-950/30",
-    "bg-cyan-50/30 hover:bg-cyan-50/50 dark:bg-cyan-950/20 dark:hover:bg-cyan-950/30",
+    "bg-blue-50/60 hover:bg-blue-100/80 border-l-4 border-blue-400 dark:bg-blue-900/40 dark:hover:bg-blue-800/50 dark:border-blue-500",
+    "bg-violet-50/60 hover:bg-violet-100/80 border-l-4 border-violet-400 dark:bg-violet-900/40 dark:hover:bg-violet-800/50 dark:border-violet-500",
+    "bg-emerald-50/60 hover:bg-emerald-100/80 border-l-4 border-emerald-400 dark:bg-emerald-900/40 dark:hover:bg-emerald-800/50 dark:border-emerald-500",
+    "bg-amber-50/60 hover:bg-amber-100/80 border-l-4 border-amber-400 dark:bg-amber-900/40 dark:hover:bg-amber-800/50 dark:border-amber-500",
+    "bg-rose-50/60 hover:bg-rose-100/80 border-l-4 border-rose-400 dark:bg-rose-900/40 dark:hover:bg-rose-800/50 dark:border-rose-500",
+    "bg-cyan-50/60 hover:bg-cyan-100/80 border-l-4 border-cyan-400 dark:bg-cyan-900/40 dark:hover:bg-cyan-800/50 dark:border-cyan-500",
   ];
 
   const { data, isLoading } = useQuery({
