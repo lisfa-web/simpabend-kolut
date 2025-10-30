@@ -62,18 +62,24 @@ export const useDashboardLayout = () => {
         .eq("role", "demo_admin")
         .maybeSingle();
 
+      console.log("User role check:", { userId: user.id, userRole });
+
       // If user is demo_admin and doesn't have layout, use superadmin's layout as default
       if (userRole?.role === "demo_admin") {
+        console.log("User is demo_admin, fetching super_admin layout...");
+        
         // Get superadmin user_id
-        const { data: superAdminRoles } = await supabase
+        const { data: superAdminRoles, error: superAdminError } = await supabase
           .from("user_roles")
           .select("user_id")
           .eq("role", "super_admin")
           .limit(1)
-          .single();
+          .maybeSingle();
+
+        console.log("Super admin query result:", { superAdminRoles, superAdminError });
 
         if (superAdminRoles?.user_id) {
-          const { data: superAdminLayout } = await supabase
+          const { data: superAdminLayout, error: layoutError } = await supabase
             .from("dashboard_layout")
             .select("*")
             .eq("user_id", superAdminRoles.user_id)
@@ -81,7 +87,13 @@ export const useDashboardLayout = () => {
             .limit(1)
             .maybeSingle();
 
+          console.log("Super admin layout result:", { 
+            hasLayout: !!superAdminLayout, 
+            layoutError 
+          });
+
           if (superAdminLayout) {
+            console.log("Using super_admin layout for demo_admin");
             return superAdminLayout;
           }
         }
