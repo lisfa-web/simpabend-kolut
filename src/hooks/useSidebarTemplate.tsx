@@ -20,7 +20,10 @@ export const useSidebarTemplate = () => {
 
       return (data?.value as SidebarTemplate) || "blue-gradient";
     },
-    staleTime: Infinity,
+    staleTime: 60000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: "always",
+
   });
 };
 
