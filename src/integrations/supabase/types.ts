@@ -140,6 +140,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_default: boolean
           layout_config: Json
           updated_at: string
           user_id: string
@@ -147,6 +148,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_default?: boolean
           layout_config: Json
           updated_at?: string
           user_id: string
@@ -154,6 +156,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_default?: boolean
           layout_config?: Json
           updated_at?: string
           user_id?: string
@@ -1353,6 +1356,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      has_role_text: {
+        Args: { _role: string; _user_id: string }
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
