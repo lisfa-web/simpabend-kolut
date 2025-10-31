@@ -6,69 +6,72 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { RoleProtectedRoute } from "@/components/auth/RoleProtectedRoute";
-import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import About from "./pages/About";
-import NotFound from "./pages/NotFound";
-import Login from "./pages/auth/Login";
-import Unauthorized from "./pages/auth/Unauthorized";
-import InitialSetup from "./pages/auth/InitialSetup";
-import InputSpmList from "./pages/spm/InputSpmList";
-import InputSpmForm from "./pages/spm/InputSpmForm";
-import InputSpmDetail from "./pages/spm/InputSpmDetail";
-import VerifikasiResepsionis from "./pages/spm/VerifikasiResepsionis";
-import VerifikasiPbmd from "./pages/spm/VerifikasiPbmd";
-import VerifikasiAkuntansi from "./pages/spm/VerifikasiAkuntansi";
-import VerifikasiPerbendaharaan from "./pages/spm/VerifikasiPerbendaharaan";
-import ApprovalKepalaBkad from "./pages/spm/ApprovalKepalaBkad";
-import UserList from "./pages/users/UserList";
-import UserForm from "./pages/users/UserForm";
-import UserDetail from "./pages/users/UserDetail";
-import MasterDataIndex from "./pages/masterdata/MasterDataIndex";
-import OpdList from "./pages/masterdata/OpdList";
-import OpdForm from "./pages/masterdata/OpdForm";
-import VendorForm from "./pages/masterdata/VendorForm";
-import VendorList from "./pages/masterdata/VendorList";
-import BendaharaPengeluaranList from "./pages/masterdata/BendaharaPengeluaranList";
-import BendaharaPengeluaranForm from "./pages/masterdata/BendaharaPengeluaranForm";
-import JenisSpmList from "./pages/masterdata/JenisSpmList";
-import JenisSpmForm from "./pages/masterdata/JenisSpmForm";
-import MasterPajakList from "./pages/masterdata/MasterPajakList";
-import MasterPajakForm from "./pages/masterdata/MasterPajakForm";
-import PajakPerJenisSpmList from "./pages/masterdata/PajakPerJenisSpmList";
-import PajakPerJenisSpmForm from "./pages/masterdata/PajakPerJenisSpmForm";
-import Sp2dList from "./pages/spm/Sp2dList";
-import Sp2dForm from "./pages/spm/Sp2dForm";
-import Sp2dDetail from "./pages/spm/Sp2dDetail";
-import Sp2dTimelineDetail from "./pages/spm/Sp2dTimelineDetail";
-import SpmTimelineDetail from "./pages/spm/SpmTimelineDetail";
-import LaporanIndex from "./pages/laporan/LaporanIndex";
-import LaporanSpm from "./pages/laporan/LaporanSpm";
-import LaporanSp2d from "./pages/laporan/LaporanSp2d";
-import LaporanVerifikasi from "./pages/laporan/LaporanVerifikasi";
-import LaporanKeuangan from "./pages/laporan/LaporanKeuangan";
-import SuratIndex from "./pages/surat/SuratIndex";
-import PejabatList from "./pages/surat/PejabatList";
-import PejabatForm from "./pages/surat/PejabatForm";
-import PejabatDetail from "./pages/surat/PejabatDetail";
-import TemplateSuratList from "./pages/surat/TemplateSuratList";
-import TemplateSuratForm from "./pages/surat/TemplateSuratForm";
-import TemplateSuratDetail from "./pages/surat/TemplateSuratDetail";
-import GenerateSurat from "./pages/surat/GenerateSurat";
-import PengaturanIndex from "./pages/pengaturan/PengaturanIndex";
-import ConfigList from "./pages/pengaturan/ConfigList";
-import FormatNomorList from "./pages/pengaturan/FormatNomorList";
-import FormatNomorForm from "./pages/pengaturan/FormatNomorForm";
-import WaGatewayConfig from "./pages/pengaturan/WaGatewayConfig";
-import EmailConfig from "./pages/pengaturan/EmailConfig";
-import PermissionsList from "./pages/pengaturan/PermissionsList";
-import AuditTrail from "./pages/pengaturan/AuditTrail";
-import EmergencyMode from "./pages/pengaturan/EmergencyMode";
-import SidebarTemplate from "./pages/pengaturan/SidebarTemplate";
-import DatabaseBackup from "./pages/pengaturan/DatabaseBackup";
-import PanduanManual from "./pages/panduan/PanduanManual";
-import PanduanManualAdmin from "./pages/panduan/PanduanManualAdmin";
-import ProfilePage from "./pages/profile/ProfilePage";
+import { lazy, Suspense } from "react";
+
+// Lazy load all pages
+const Index = lazy(() => import("./pages/Index"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const About = lazy(() => import("./pages/About"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Login = lazy(() => import("./pages/auth/Login"));
+const Unauthorized = lazy(() => import("./pages/auth/Unauthorized"));
+const InitialSetup = lazy(() => import("./pages/auth/InitialSetup"));
+const InputSpmList = lazy(() => import("./pages/spm/InputSpmList"));
+const InputSpmForm = lazy(() => import("./pages/spm/InputSpmForm"));
+const InputSpmDetail = lazy(() => import("./pages/spm/InputSpmDetail"));
+const VerifikasiResepsionis = lazy(() => import("./pages/spm/VerifikasiResepsionis"));
+const VerifikasiPbmd = lazy(() => import("./pages/spm/VerifikasiPbmd"));
+const VerifikasiAkuntansi = lazy(() => import("./pages/spm/VerifikasiAkuntansi"));
+const VerifikasiPerbendaharaan = lazy(() => import("./pages/spm/VerifikasiPerbendaharaan"));
+const ApprovalKepalaBkad = lazy(() => import("./pages/spm/ApprovalKepalaBkad"));
+const UserList = lazy(() => import("./pages/users/UserList"));
+const UserForm = lazy(() => import("./pages/users/UserForm"));
+const UserDetail = lazy(() => import("./pages/users/UserDetail"));
+const MasterDataIndex = lazy(() => import("./pages/masterdata/MasterDataIndex"));
+const OpdList = lazy(() => import("./pages/masterdata/OpdList"));
+const OpdForm = lazy(() => import("./pages/masterdata/OpdForm"));
+const VendorForm = lazy(() => import("./pages/masterdata/VendorForm"));
+const VendorList = lazy(() => import("./pages/masterdata/VendorList"));
+const BendaharaPengeluaranList = lazy(() => import("./pages/masterdata/BendaharaPengeluaranList"));
+const BendaharaPengeluaranForm = lazy(() => import("./pages/masterdata/BendaharaPengeluaranForm"));
+const JenisSpmList = lazy(() => import("./pages/masterdata/JenisSpmList"));
+const JenisSpmForm = lazy(() => import("./pages/masterdata/JenisSpmForm"));
+const MasterPajakList = lazy(() => import("./pages/masterdata/MasterPajakList"));
+const MasterPajakForm = lazy(() => import("./pages/masterdata/MasterPajakForm"));
+const PajakPerJenisSpmList = lazy(() => import("./pages/masterdata/PajakPerJenisSpmList"));
+const PajakPerJenisSpmForm = lazy(() => import("./pages/masterdata/PajakPerJenisSpmForm"));
+const Sp2dList = lazy(() => import("./pages/spm/Sp2dList"));
+const Sp2dForm = lazy(() => import("./pages/spm/Sp2dForm"));
+const Sp2dDetail = lazy(() => import("./pages/spm/Sp2dDetail"));
+const Sp2dTimelineDetail = lazy(() => import("./pages/spm/Sp2dTimelineDetail"));
+const SpmTimelineDetail = lazy(() => import("./pages/spm/SpmTimelineDetail"));
+const LaporanIndex = lazy(() => import("./pages/laporan/LaporanIndex"));
+const LaporanSpm = lazy(() => import("./pages/laporan/LaporanSpm"));
+const LaporanSp2d = lazy(() => import("./pages/laporan/LaporanSp2d"));
+const LaporanVerifikasi = lazy(() => import("./pages/laporan/LaporanVerifikasi"));
+const LaporanKeuangan = lazy(() => import("./pages/laporan/LaporanKeuangan"));
+const SuratIndex = lazy(() => import("./pages/surat/SuratIndex"));
+const PejabatList = lazy(() => import("./pages/surat/PejabatList"));
+const PejabatForm = lazy(() => import("./pages/surat/PejabatForm"));
+const PejabatDetail = lazy(() => import("./pages/surat/PejabatDetail"));
+const TemplateSuratList = lazy(() => import("./pages/surat/TemplateSuratList"));
+const TemplateSuratForm = lazy(() => import("./pages/surat/TemplateSuratForm"));
+const TemplateSuratDetail = lazy(() => import("./pages/surat/TemplateSuratDetail"));
+const GenerateSurat = lazy(() => import("./pages/surat/GenerateSurat"));
+const PengaturanIndex = lazy(() => import("./pages/pengaturan/PengaturanIndex"));
+const ConfigList = lazy(() => import("./pages/pengaturan/ConfigList"));
+const FormatNomorList = lazy(() => import("./pages/pengaturan/FormatNomorList"));
+const FormatNomorForm = lazy(() => import("./pages/pengaturan/FormatNomorForm"));
+const WaGatewayConfig = lazy(() => import("./pages/pengaturan/WaGatewayConfig"));
+const EmailConfig = lazy(() => import("./pages/pengaturan/EmailConfig"));
+const PermissionsList = lazy(() => import("./pages/pengaturan/PermissionsList"));
+const AuditTrail = lazy(() => import("./pages/pengaturan/AuditTrail"));
+const EmergencyMode = lazy(() => import("./pages/pengaturan/EmergencyMode"));
+const SidebarTemplate = lazy(() => import("./pages/pengaturan/SidebarTemplate"));
+const DatabaseBackup = lazy(() => import("./pages/pengaturan/DatabaseBackup"));
+const PanduanManual = lazy(() => import("./pages/panduan/PanduanManual"));
+const PanduanManualAdmin = lazy(() => import("./pages/panduan/PanduanManualAdmin"));
+const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
 
 const queryClient = new QueryClient();
 
@@ -79,124 +82,126 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/tentang" element={<About />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            <Route path="/initial-setup" element={<InitialSetup />} />
-            
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            
-            {/* SPM Routes - Standardized under /input-spm */}
-            <Route path="/input-spm" element={<ProtectedRoute><InputSpmList /></ProtectedRoute>} />
-            <Route path="/input-spm/buat" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
-            <Route path="/input-spm/detail/:id" element={<ProtectedRoute><InputSpmDetail /></ProtectedRoute>} />
-            <Route path="/input-spm/edit/:id" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
-            <Route path="/input-spm/timeline/:id" element={<ProtectedRoute><SpmTimelineDetail /></ProtectedRoute>} />
-            
-            {/* Backward compatibility redirects for old /spm/input paths */}
-            <Route path="/spm/input" element={<Navigate to="/input-spm" replace />} />
-            <Route path="/spm/input/new" element={<Navigate to="/input-spm/buat" replace />} />
-            <Route path="/spm/input/detail/:id" element={<Navigate to="/input-spm/detail/:id" replace />} />
-            <Route path="/spm/input/:id/edit" element={<Navigate to="/input-spm/edit/:id" replace />} />
-            <Route path="/spm/timeline/:id" element={<Navigate to="/input-spm/timeline/:id" replace />} />
-            
-            <Route path="/spm/verifikasi/resepsionis" element={<ProtectedRoute><VerifikasiResepsionis /></ProtectedRoute>} />
-            <Route path="/spm/verifikasi/pbmd" element={<ProtectedRoute><VerifikasiPbmd /></ProtectedRoute>} />
-            <Route path="/spm/verifikasi/akuntansi" element={<ProtectedRoute><VerifikasiAkuntansi /></ProtectedRoute>} />
-            <Route path="/spm/verifikasi/perbendaharaan" element={<ProtectedRoute><VerifikasiPerbendaharaan /></ProtectedRoute>} />
-            <Route path="/spm/approval/kepala-bkad" element={<ProtectedRoute><ApprovalKepalaBkad /></ProtectedRoute>} />
-            
-            {/* SP2D Routes */}
-            <Route path="/sp2d" element={<ProtectedRoute><Sp2dList /></ProtectedRoute>} />
-            <Route path="/sp2d/new" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
-            <Route path="/sp2d/buat" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
-            <Route path="/sp2d/detail/:id" element={<ProtectedRoute><Sp2dDetail /></ProtectedRoute>} />
-            <Route path="/sp2d/timeline/:id" element={<ProtectedRoute><Sp2dTimelineDetail /></ProtectedRoute>} />
-            <Route path="/sp2d/:id" element={<ProtectedRoute><Sp2dDetail /></ProtectedRoute>} />
-            <Route path="/sp2d/:id/edit" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
-            
-            {/* User Management Routes */}
-            <Route path="/users" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserList /></RoleProtectedRoute>} />
-            {/* SECURITY: Only super admin can create and edit users */}
-            <Route path="/users/new" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><UserForm /></RoleProtectedRoute>} />
-            <Route path="/users/create" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><UserForm /></RoleProtectedRoute>} />
-            <Route path="/users/:id" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserDetail /></RoleProtectedRoute>} />
-            <Route path="/users/:id/edit" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><UserForm /></RoleProtectedRoute>} />
-            
-            {/* Master Data Routes */}
-            <Route path="/masterdata" element={<ProtectedRoute><MasterDataIndex /></ProtectedRoute>} />
-            
-            <Route path="/masterdata/opd" element={<ProtectedRoute><OpdList /></ProtectedRoute>} />
-            <Route path="/masterdata/opd/new" element={<ProtectedRoute><OpdForm /></ProtectedRoute>} />
-            <Route path="/masterdata/opd/create" element={<ProtectedRoute><OpdForm /></ProtectedRoute>} />
-            <Route path="/masterdata/opd/:id/edit" element={<ProtectedRoute><OpdForm /></ProtectedRoute>} />
-            
-            <Route path="/masterdata/vendor" element={<ProtectedRoute><VendorList /></ProtectedRoute>} />
-            <Route path="/masterdata/vendor/new" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
-            <Route path="/masterdata/vendor/create" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
-            <Route path="/masterdata/vendor/:id/edit" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
-            
-            <Route path="/masterdata/bendahara-pengeluaran" element={<ProtectedRoute><BendaharaPengeluaranList /></ProtectedRoute>} />
-            <Route path="/masterdata/bendahara-pengeluaran/tambah" element={<ProtectedRoute><BendaharaPengeluaranForm /></ProtectedRoute>} />
-            <Route path="/masterdata/bendahara-pengeluaran/edit/:id" element={<ProtectedRoute><BendaharaPengeluaranForm /></ProtectedRoute>} />
-            
-            <Route path="/masterdata/jenis-spm" element={<ProtectedRoute><JenisSpmList /></ProtectedRoute>} />
-            <Route path="/masterdata/jenis-spm/tambah" element={<ProtectedRoute><JenisSpmForm /></ProtectedRoute>} />
-            <Route path="/masterdata/jenis-spm/edit/:id" element={<ProtectedRoute><JenisSpmForm /></ProtectedRoute>} />
-            
-            <Route path="/masterdata/pajak" element={<ProtectedRoute><MasterPajakList /></ProtectedRoute>} />
-            <Route path="/masterdata/pajak/tambah" element={<ProtectedRoute><MasterPajakForm /></ProtectedRoute>} />
-            <Route path="/masterdata/pajak/edit/:id" element={<ProtectedRoute><MasterPajakForm /></ProtectedRoute>} />
-            <Route path="/masterdata/pajak/mapping" element={<ProtectedRoute><PajakPerJenisSpmList /></ProtectedRoute>} />
-            <Route path="/masterdata/pajak/mapping/tambah" element={<ProtectedRoute><PajakPerJenisSpmForm /></ProtectedRoute>} />
-            <Route path="/masterdata/pajak/mapping/edit/:id" element={<ProtectedRoute><PajakPerJenisSpmForm /></ProtectedRoute>} />
-            
-            {/* Laporan Routes */}
-            <Route path="/laporan" element={<ProtectedRoute><LaporanIndex /></ProtectedRoute>} />
-            <Route path="/laporan/spm" element={<ProtectedRoute><LaporanSpm /></ProtectedRoute>} />
-            <Route path="/laporan/sp2d" element={<ProtectedRoute><LaporanSp2d /></ProtectedRoute>} />
-            <Route path="/laporan/verifikasi" element={<ProtectedRoute><LaporanVerifikasi /></ProtectedRoute>} />
-            <Route path="/laporan/keuangan" element={<ProtectedRoute><LaporanKeuangan /></ProtectedRoute>} />
-            
-            {/* Surat Routes */}
-            <Route path="/surat" element={<ProtectedRoute><SuratIndex /></ProtectedRoute>} />
-            <Route path="/surat/pejabat" element={<ProtectedRoute><PejabatList /></ProtectedRoute>} />
-            <Route path="/surat/pejabat/new" element={<ProtectedRoute><PejabatForm /></ProtectedRoute>} />
-            <Route path="/surat/pejabat/buat" element={<ProtectedRoute><PejabatForm /></ProtectedRoute>} />
-            <Route path="/surat/pejabat/:id" element={<ProtectedRoute><PejabatDetail /></ProtectedRoute>} />
-            <Route path="/surat/pejabat/:id/edit" element={<ProtectedRoute><PejabatForm /></ProtectedRoute>} />
-            <Route path="/surat/template" element={<ProtectedRoute><TemplateSuratList /></ProtectedRoute>} />
-            <Route path="/surat/template/new" element={<ProtectedRoute><TemplateSuratForm /></ProtectedRoute>} />
-            <Route path="/surat/template/buat" element={<ProtectedRoute><TemplateSuratForm /></ProtectedRoute>} />
-            <Route path="/surat/template/:id" element={<ProtectedRoute><TemplateSuratDetail /></ProtectedRoute>} />
-            <Route path="/surat/template/:id/edit" element={<ProtectedRoute><TemplateSuratForm /></ProtectedRoute>} />
-            <Route path="/surat/generate" element={<ProtectedRoute><GenerateSurat /></ProtectedRoute>} />
-            
-            {/* Pengaturan Routes */}
-            <Route path="/pengaturan" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PengaturanIndex /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/config" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><ConfigList /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/format-nomor" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FormatNomorList /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/format-nomor/new" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FormatNomorForm /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/format-nomor/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FormatNomorForm /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/wa-gateway" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><WaGatewayConfig /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/email" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><EmailConfig /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/permissions" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PermissionsList /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/audit-trail" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><AuditTrail /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/emergency-mode" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><EmergencyMode /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/sidebar-template" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><SidebarTemplate /></RoleProtectedRoute>} />
-            <Route path="/pengaturan/database-backup" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><DatabaseBackup /></RoleProtectedRoute>} />
-            
-            {/* Panduan Routes */}
-            <Route path="/panduan" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />
-            <Route path="/panduan-manual" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />
-            <Route path="/panduan/admin" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PanduanManualAdmin /></RoleProtectedRoute>} />
-            <Route path="/panduan-manual/admin" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PanduanManualAdmin /></RoleProtectedRoute>} />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>}>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/tentang" element={<About />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
+              <Route path="/initial-setup" element={<InitialSetup />} />
+              
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+              
+              {/* SPM Routes - Standardized under /input-spm */}
+              <Route path="/input-spm" element={<ProtectedRoute><InputSpmList /></ProtectedRoute>} />
+              <Route path="/input-spm/buat" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
+              <Route path="/input-spm/detail/:id" element={<ProtectedRoute><InputSpmDetail /></ProtectedRoute>} />
+              <Route path="/input-spm/edit/:id" element={<ProtectedRoute><InputSpmForm /></ProtectedRoute>} />
+              <Route path="/input-spm/timeline/:id" element={<ProtectedRoute><SpmTimelineDetail /></ProtectedRoute>} />
+              
+              {/* Backward compatibility redirects for old /spm/input paths */}
+              <Route path="/spm/input" element={<Navigate to="/input-spm" replace />} />
+              <Route path="/spm/input/new" element={<Navigate to="/input-spm/buat" replace />} />
+              <Route path="/spm/input/detail/:id" element={<Navigate to="/input-spm/detail/:id" replace />} />
+              <Route path="/spm/input/:id/edit" element={<Navigate to="/input-spm/edit/:id" replace />} />
+              <Route path="/spm/timeline/:id" element={<Navigate to="/input-spm/timeline/:id" replace />} />
+              
+              <Route path="/spm/verifikasi/resepsionis" element={<ProtectedRoute><VerifikasiResepsionis /></ProtectedRoute>} />
+              <Route path="/spm/verifikasi/pbmd" element={<ProtectedRoute><VerifikasiPbmd /></ProtectedRoute>} />
+              <Route path="/spm/verifikasi/akuntansi" element={<ProtectedRoute><VerifikasiAkuntansi /></ProtectedRoute>} />
+              <Route path="/spm/verifikasi/perbendaharaan" element={<ProtectedRoute><VerifikasiPerbendaharaan /></ProtectedRoute>} />
+              <Route path="/spm/approval/kepala-bkad" element={<ProtectedRoute><ApprovalKepalaBkad /></ProtectedRoute>} />
+              
+              {/* SP2D Routes */}
+              <Route path="/sp2d" element={<ProtectedRoute><Sp2dList /></ProtectedRoute>} />
+              <Route path="/sp2d/new" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
+              <Route path="/sp2d/buat" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
+              <Route path="/sp2d/detail/:id" element={<ProtectedRoute><Sp2dDetail /></ProtectedRoute>} />
+              <Route path="/sp2d/timeline/:id" element={<ProtectedRoute><Sp2dTimelineDetail /></ProtectedRoute>} />
+              <Route path="/sp2d/:id" element={<ProtectedRoute><Sp2dDetail /></ProtectedRoute>} />
+              <Route path="/sp2d/:id/edit" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
+              
+              {/* User Management Routes */}
+              <Route path="/users" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserList /></RoleProtectedRoute>} />
+              {/* SECURITY: Only super admin can create and edit users */}
+              <Route path="/users/new" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><UserForm /></RoleProtectedRoute>} />
+              <Route path="/users/create" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><UserForm /></RoleProtectedRoute>} />
+              <Route path="/users/:id" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserDetail /></RoleProtectedRoute>} />
+              <Route path="/users/:id/edit" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><UserForm /></RoleProtectedRoute>} />
+              
+              {/* Master Data Routes */}
+              <Route path="/masterdata" element={<ProtectedRoute><MasterDataIndex /></ProtectedRoute>} />
+              
+              <Route path="/masterdata/opd" element={<ProtectedRoute><OpdList /></ProtectedRoute>} />
+              <Route path="/masterdata/opd/new" element={<ProtectedRoute><OpdForm /></ProtectedRoute>} />
+              <Route path="/masterdata/opd/create" element={<ProtectedRoute><OpdForm /></ProtectedRoute>} />
+              <Route path="/masterdata/opd/:id/edit" element={<ProtectedRoute><OpdForm /></ProtectedRoute>} />
+              
+              <Route path="/masterdata/vendor" element={<ProtectedRoute><VendorList /></ProtectedRoute>} />
+              <Route path="/masterdata/vendor/new" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
+              <Route path="/masterdata/vendor/create" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
+              <Route path="/masterdata/vendor/:id/edit" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
+              
+              <Route path="/masterdata/bendahara-pengeluaran" element={<ProtectedRoute><BendaharaPengeluaranList /></ProtectedRoute>} />
+              <Route path="/masterdata/bendahara-pengeluaran/tambah" element={<ProtectedRoute><BendaharaPengeluaranForm /></ProtectedRoute>} />
+              <Route path="/masterdata/bendahara-pengeluaran/edit/:id" element={<ProtectedRoute><BendaharaPengeluaranForm /></ProtectedRoute>} />
+              
+              <Route path="/masterdata/jenis-spm" element={<ProtectedRoute><JenisSpmList /></ProtectedRoute>} />
+              <Route path="/masterdata/jenis-spm/tambah" element={<ProtectedRoute><JenisSpmForm /></ProtectedRoute>} />
+              <Route path="/masterdata/jenis-spm/edit/:id" element={<ProtectedRoute><JenisSpmForm /></ProtectedRoute>} />
+              
+              <Route path="/masterdata/pajak" element={<ProtectedRoute><MasterPajakList /></ProtectedRoute>} />
+              <Route path="/masterdata/pajak/tambah" element={<ProtectedRoute><MasterPajakForm /></ProtectedRoute>} />
+              <Route path="/masterdata/pajak/edit/:id" element={<ProtectedRoute><MasterPajakForm /></ProtectedRoute>} />
+              <Route path="/masterdata/pajak/mapping" element={<ProtectedRoute><PajakPerJenisSpmList /></ProtectedRoute>} />
+              <Route path="/masterdata/pajak/mapping/tambah" element={<ProtectedRoute><PajakPerJenisSpmForm /></ProtectedRoute>} />
+              <Route path="/masterdata/pajak/mapping/edit/:id" element={<ProtectedRoute><PajakPerJenisSpmForm /></ProtectedRoute>} />
+              
+              {/* Laporan Routes */}
+              <Route path="/laporan" element={<ProtectedRoute><LaporanIndex /></ProtectedRoute>} />
+              <Route path="/laporan/spm" element={<ProtectedRoute><LaporanSpm /></ProtectedRoute>} />
+              <Route path="/laporan/sp2d" element={<ProtectedRoute><LaporanSp2d /></ProtectedRoute>} />
+              <Route path="/laporan/verifikasi" element={<ProtectedRoute><LaporanVerifikasi /></ProtectedRoute>} />
+              <Route path="/laporan/keuangan" element={<ProtectedRoute><LaporanKeuangan /></ProtectedRoute>} />
+              
+              {/* Surat Routes */}
+              <Route path="/surat" element={<ProtectedRoute><SuratIndex /></ProtectedRoute>} />
+              <Route path="/surat/pejabat" element={<ProtectedRoute><PejabatList /></ProtectedRoute>} />
+              <Route path="/surat/pejabat/new" element={<ProtectedRoute><PejabatForm /></ProtectedRoute>} />
+              <Route path="/surat/pejabat/buat" element={<ProtectedRoute><PejabatForm /></ProtectedRoute>} />
+              <Route path="/surat/pejabat/:id" element={<ProtectedRoute><PejabatDetail /></ProtectedRoute>} />
+              <Route path="/surat/pejabat/:id/edit" element={<ProtectedRoute><PejabatForm /></ProtectedRoute>} />
+              <Route path="/surat/template" element={<ProtectedRoute><TemplateSuratList /></ProtectedRoute>} />
+              <Route path="/surat/template/new" element={<ProtectedRoute><TemplateSuratForm /></ProtectedRoute>} />
+              <Route path="/surat/template/buat" element={<ProtectedRoute><TemplateSuratForm /></ProtectedRoute>} />
+              <Route path="/surat/template/:id" element={<ProtectedRoute><TemplateSuratDetail /></ProtectedRoute>} />
+              <Route path="/surat/template/:id/edit" element={<ProtectedRoute><TemplateSuratForm /></ProtectedRoute>} />
+              <Route path="/surat/generate" element={<ProtectedRoute><GenerateSurat /></ProtectedRoute>} />
+              
+              {/* Pengaturan Routes */}
+              <Route path="/pengaturan" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PengaturanIndex /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/config" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><ConfigList /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/format-nomor" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FormatNomorList /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/format-nomor/new" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FormatNomorForm /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/format-nomor/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FormatNomorForm /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/wa-gateway" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><WaGatewayConfig /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/email" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><EmailConfig /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/permissions" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PermissionsList /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/audit-trail" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><AuditTrail /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/emergency-mode" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><EmergencyMode /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/sidebar-template" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><SidebarTemplate /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/database-backup" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><DatabaseBackup /></RoleProtectedRoute>} />
+              
+              {/* Panduan Routes */}
+              <Route path="/panduan" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />
+              <Route path="/panduan-manual" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />
+              <Route path="/panduan/admin" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PanduanManualAdmin /></RoleProtectedRoute>} />
+              <Route path="/panduan-manual/admin" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PanduanManualAdmin /></RoleProtectedRoute>} />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
