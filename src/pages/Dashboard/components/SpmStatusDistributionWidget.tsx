@@ -18,7 +18,6 @@ const STATUS_LABELS: Record<string, string> = {
   kepala_bkad_review: "Review Kepala BKAD",
   disetujui: "Disetujui",
   perlu_revisi: "Perlu Revisi",
-  ditolak: "Ditolak",
 };
 
 const COLORS = [

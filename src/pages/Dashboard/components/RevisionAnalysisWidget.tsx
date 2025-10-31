@@ -10,9 +10,9 @@ interface RevisionReason {
   percentage: number;
 }
 
-interface RejectionAnalysisWidgetProps {
+interface RevisionAnalysisWidgetProps {
   data?: {
-    totalRejected: number;
+    totalRevised: number;
     byStage: RevisionReason[];
     trendVsLastMonth: number;
   };
@@ -35,7 +35,7 @@ const STAGE_LABELS: Record<string, string> = {
   "kepala_bkad_review": "Kepala BKAD",
 };
 
-export const RejectionAnalysisWidget = ({ data, isLoading }: RejectionAnalysisWidgetProps) => {
+export const RevisionAnalysisWidget = ({ data, isLoading }: RevisionAnalysisWidgetProps) => {
   if (isLoading) {
     return (
       <Card>
@@ -137,7 +137,7 @@ export const RejectionAnalysisWidget = ({ data, isLoading }: RejectionAnalysisWi
             
             {/* Total Revisions */}
             <div className="text-center mt-4">
-              <div className="text-3xl font-bold text-orange-600">{data.totalRejected}</div>
+              <div className="text-3xl font-bold text-orange-600">{data.totalRevised}</div>
               <div className="text-sm text-muted-foreground">Total Revisi</div>
             </div>
           </div>

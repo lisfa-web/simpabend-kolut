@@ -28,7 +28,7 @@ interface DashboardStats {
     month: string;
     diajukan: number;
     disetujui: number;
-    ditolak: number;
+    revisi: number;
   }>;
   opdBreakdown: Array<{
     nama_opd: string;
@@ -68,7 +68,6 @@ interface DashboardStats {
   };
   successMetrics: {
     successRate: number;
-    rejectionRate: number;
     revisionRate: number;
     trendVsLastMonth: number;
   };
@@ -87,14 +86,14 @@ interface DashboardStats {
       current: {
         submitted: number;
         approved: number;
-        rejected: number;
+        revised: number;
         avgProcessDays: number;
         totalValue: number;
       };
       previous: {
         submitted: number;
         approved: number;
-        rejected: number;
+        revised: number;
         avgProcessDays: number;
         totalValue: number;
       };
@@ -103,21 +102,21 @@ interface DashboardStats {
       current: {
         submitted: number;
         approved: number;
-        rejected: number;
+        revised: number;
         avgProcessDays: number;
         totalValue: number;
       };
       previous: {
         submitted: number;
         approved: number;
-        rejected: number;
+        revised: number;
         avgProcessDays: number;
         totalValue: number;
       };
     };
   };
-  rejectionAnalysis: {
-    totalRejected: number;
+  revisionAnalysis: {
+    totalRevised: number;
     byStage: Array<{
       stage: string;
       count: number;
@@ -475,7 +474,7 @@ export const useDashboardStats = () => {
       const calculatePeriodStats = (spmList: any[]) => {
         const submitted = spmList.length;
         const approved = spmList.filter((s) => s.status === "disetujui").length;
-        const rejected = spmList.filter((s) => s.status === "perlu_revisi").length;
+        const revised = spmList.filter((s) => s.status === "perlu_revisi").length;
         const totalValue = spmList.reduce((sum, s) => sum + Number(s.nilai_spm || 0), 0);
         
         const completedSpm = spmList.filter((s) => s.status === "disetujui" && s.tanggal_ajuan && s.tanggal_disetujui);
@@ -487,7 +486,7 @@ export const useDashboardStats = () => {
             }, 0) / completedSpm.length
           : 0;
 
-        return { submitted, approved, rejected, avgProcessDays, totalValue };
+        return { submitted, approved, revised, avgProcessDays, totalValue };
       };
 
       // Period Comparison - Monthly
@@ -506,38 +505,38 @@ export const useDashboardStats = () => {
         return date >= sixtyDaysAgoDate && date < thirtyDaysAgoDate;
       }) || [];
 
-      // Rejection Analysis
-      const rejectedSpmList = allSpm?.filter((s) => s.status === "perlu_revisi") || [];
+      // Revision Analysis
+      const revisedSpmList = allSpm?.filter((s) => s.status === "perlu_revisi") || [];
       
-      // Count rejections by stage (where they were rejected from)
-      const rejectionByStage = new Map<string, number>();
-      rejectedSpmList.forEach((s) => {
-        // Determine at which stage it was rejected based on the last verification timestamp
-        let rejectionStage = "Unknown";
+      // Count revisions by stage (where they were revised from)
+      const revisionByStage = new Map<string, number>();
+      revisedSpmList.forEach((s) => {
+        // Determine at which stage it was revised based on the last verification timestamp
+        let revisionStage = "Unknown";
         
-        if (s.tanggal_kepala_bkad) rejectionStage = STAGE_LABELS["kepala_bkad_review"];
-        else if (s.tanggal_perbendaharaan) rejectionStage = STAGE_LABELS["perbendaharaan_verifikasi"];
-        else if (s.tanggal_akuntansi) rejectionStage = STAGE_LABELS["akuntansi_validasi"];
-        else if (s.tanggal_pbmd) rejectionStage = STAGE_LABELS["pbmd_verifikasi"];
-        else if (s.tanggal_resepsionis) rejectionStage = STAGE_LABELS["resepsionis_verifikasi"];
+        if (s.tanggal_kepala_bkad) revisionStage = STAGE_LABELS["kepala_bkad_review"];
+        else if (s.tanggal_perbendaharaan) revisionStage = STAGE_LABELS["perbendaharaan_verifikasi"];
+        else if (s.tanggal_akuntansi) revisionStage = STAGE_LABELS["akuntansi_validasi"];
+        else if (s.tanggal_pbmd) revisionStage = STAGE_LABELS["pbmd_verifikasi"];
+        else if (s.tanggal_resepsionis) revisionStage = STAGE_LABELS["resepsionis_verifikasi"];
         
-        rejectionByStage.set(rejectionStage, (rejectionByStage.get(rejectionStage) || 0) + 1);
+        revisionByStage.set(revisionStage, (revisionByStage.get(revisionStage) || 0) + 1);
       });
 
-      const totalRejections = rejectedSpmList.length;
-      const rejectionByStageArray = Array.from(rejectionByStage.entries())
+      const totalRevisions = revisedSpmList.length;
+      const revisionByStageArray = Array.from(revisionByStage.entries())
         .map(([stage, count]) => ({
           stage,
           count,
-          percentage: totalRejections > 0 ? (count / totalRejections) * 100 : 0,
+          percentage: totalRevisions > 0 ? (count / totalRevisions) * 100 : 0,
         }))
         .sort((a, b) => b.count - a.count);
 
-      // Calculate rejection trend vs last month
-      const lastMonthRejected = previousMonthSpm.filter((s) => s.status === "perlu_revisi").length;
-      const currentMonthRejected = currentMonthSpm.filter((s) => s.status === "perlu_revisi").length;
-      const rejectionTrend = lastMonthRejected > 0 
-        ? ((currentMonthRejected - lastMonthRejected) / lastMonthRejected) * 100 
+      // Calculate revision trend vs last month
+      const lastMonthRevised = previousMonthSpm.filter((s) => s.status === "perlu_revisi").length;
+      const currentMonthRevised = currentMonthSpm.filter((s) => s.status === "perlu_revisi").length;
+      const revisionTrend = lastMonthRevised > 0 
+        ? ((currentMonthRevised - lastMonthRevised) / lastMonthRevised) * 100 
         : 0;
 
       return {
@@ -572,7 +571,6 @@ export const useDashboardStats = () => {
         processTimeline,
         successMetrics: {
           successRate,
-          rejectionRate: revisionRate, // rejectionRate sama dengan revisionRate
           revisionRate,
           trendVsLastMonth,
         },
@@ -588,10 +586,10 @@ export const useDashboardStats = () => {
             previous: calculatePeriodStats(previousMonthSpm),
           },
         },
-        rejectionAnalysis: {
-          totalRejected: totalRejections,
-          byStage: rejectionByStageArray,
-          trendVsLastMonth: rejectionTrend,
+        revisionAnalysis: {
+          totalRevised: totalRevisions,
+          byStage: revisionByStageArray,
+          trendVsLastMonth: revisionTrend,
         },
       };
     },

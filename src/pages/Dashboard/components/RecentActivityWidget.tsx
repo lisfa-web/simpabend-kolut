@@ -53,8 +53,6 @@ export const RecentActivityWidget = () => {
     switch (status) {
       case "disetujui":
         return <CheckCircle2 className="w-4 h-4 text-green-600" />;
-      case "ditolak":
-        return <XCircle className="w-4 h-4 text-red-600" />;
       case "perlu_revisi":
         return <AlertCircle className="w-4 h-4 text-yellow-600" />;
       case "draft":
@@ -68,8 +66,6 @@ export const RecentActivityWidget = () => {
     switch (status) {
       case "disetujui":
         return "bg-green-50 hover:bg-green-100 border-green-200";
-      case "ditolak":
-        return "bg-red-50 hover:bg-red-100 border-red-200";
       case "perlu_revisi":
         return "bg-yellow-50 hover:bg-yellow-100 border-yellow-200";
       case "draft":
@@ -89,7 +85,6 @@ export const RecentActivityWidget = () => {
       perbendaharaan_verifikasi: "Verifikasi Perbendaharaan",
       kepala_bkad_review: "Review Kepala BKAD",
       disetujui: "Disetujui",
-      ditolak: "Ditolak",
       perlu_revisi: "Perlu Revisi",
     };
     return statusMap[status] || status;

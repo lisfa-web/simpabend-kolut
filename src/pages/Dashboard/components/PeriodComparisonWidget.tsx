@@ -8,14 +8,14 @@ interface PeriodData {
   current: {
     submitted: number;
     approved: number;
-    rejected: number;
+    revised: number;
     avgProcessDays: number;
     totalValue: number;
   };
   previous: {
     submitted: number;
     approved: number;
-    rejected: number;
+    revised: number;
     avgProcessDays: number;
     totalValue: number;
   };
@@ -168,9 +168,9 @@ export const PeriodComparisonWidget = ({ weeklyData, monthlyData, isLoading }: P
                     previous={weeklyData.previous.approved}
                   />
                   <MetricCard 
-                    label="Total Ditolak"
-                    current={weeklyData.current.rejected}
-                    previous={weeklyData.previous.rejected}
+                    label="Total Revisi"
+                    current={weeklyData.current.revised}
+                    previous={weeklyData.previous.revised}
                     inverse={true}
                   />
                   <MetricCard 
@@ -216,9 +216,9 @@ export const PeriodComparisonWidget = ({ weeklyData, monthlyData, isLoading }: P
                     previous={monthlyData.previous.approved}
                   />
                   <MetricCard 
-                    label="Total Ditolak"
-                    current={monthlyData.current.rejected}
-                    previous={monthlyData.previous.rejected}
+                    label="Total Revisi"
+                    current={monthlyData.current.revised}
+                    previous={monthlyData.previous.revised}
                     inverse={true}
                   />
                   <MetricCard 

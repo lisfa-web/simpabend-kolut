@@ -24,7 +24,7 @@ import { SuccessRateWidget } from "./Dashboard/components/SuccessRateWidget";
 import { SubmissionTrendWidget } from "./Dashboard/components/SubmissionTrendWidget";
 import { BottleneckAnalysisWidget } from "./Dashboard/components/BottleneckAnalysisWidget";
 import { PeriodComparisonWidget } from "./Dashboard/components/PeriodComparisonWidget";
-import { RejectionAnalysisWidget } from "./Dashboard/components/RejectionAnalysisWidget";
+import { RevisionAnalysisWidget } from "./Dashboard/components/RevisionAnalysisWidget";
 import { QuickActions } from "./Dashboard/components/QuickActions";
 import { PeriodFilter } from "./Dashboard/components/PeriodFilter";
 import { SpmSp2dTableWidget } from "./Dashboard/components/SpmSp2dTableWidget";
@@ -510,7 +510,7 @@ const Dashboard = () => {
                     <BottleneckAnalysisWidget data={stats?.bottleneckAnalysis} isLoading={isLoading} />
                     <PeriodComparisonWidget weeklyData={stats?.periodComparison.weekly} monthlyData={stats?.periodComparison.monthly} isLoading={isLoading} />
                   </div>
-                  <RejectionAnalysisWidget data={stats?.rejectionAnalysis} isLoading={isLoading} />
+                  <RevisionAnalysisWidget data={stats?.revisionAnalysis} isLoading={isLoading} />
                 </div>
               </WidgetContainer>
             </div>}

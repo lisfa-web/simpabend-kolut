@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Clock, FileText } from "lucide-react";
+import { CheckCircle, XCircle, Clock, FileText, AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -41,9 +41,9 @@ const VerificationBadge = ({ isVerified }: { isVerified: boolean | null }) => {
       Verified
     </Badge>
   ) : (
-    <Badge variant="destructive" className="gap-1 bg-destructive/20 text-destructive border-destructive/30">
-      <XCircle className="h-3 w-3" />
-      Rejected
+    <Badge variant="outline" className="gap-1 bg-yellow-500/20 text-yellow-700 border-yellow-300">
+      <AlertCircle className="h-3 w-3" />
+      Revisi
     </Badge>
   );
 };

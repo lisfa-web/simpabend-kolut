@@ -5,7 +5,6 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recha
 
 interface SuccessMetrics {
   successRate: number;
-  rejectionRate: number;
   revisionRate: number;
   trendVsLastMonth: number;
 }
@@ -17,7 +16,6 @@ interface SuccessRateWidgetProps {
 
 const COLORS = {
   success: "#22c55e",
-  rejection: "#ef4444",
   revision: "#f59e0b",
 };
 
@@ -40,7 +38,6 @@ export const SuccessRateWidget = ({ data, isLoading }: SuccessRateWidgetProps) =
 
   const chartData = [
     { name: "Disetujui", value: data?.successRate || 0, color: COLORS.success },
-    { name: "Ditolak", value: data?.rejectionRate || 0, color: COLORS.rejection },
     { name: "Revisi", value: data?.revisionRate || 0, color: COLORS.revision },
   ];
 
@@ -61,7 +58,7 @@ export const SuccessRateWidget = ({ data, isLoading }: SuccessRateWidgetProps) =
           <Target className="h-5 w-5" />
           Tingkat Keberhasilan
         </CardTitle>
-        <p className="text-sm text-muted-foreground">Persentase approval vs rejection</p>
+        <p className="text-sm text-muted-foreground">Persentase approval vs revisi</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-center">
@@ -93,7 +90,7 @@ export const SuccessRateWidget = ({ data, isLoading }: SuccessRateWidgetProps) =
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 pt-4 border-t">
+        <div className="grid grid-cols-2 gap-3 pt-4 border-t">
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <div className="w-3 h-3 rounded-full bg-green-500" />
@@ -102,15 +99,6 @@ export const SuccessRateWidget = ({ data, isLoading }: SuccessRateWidgetProps) =
               {data?.successRate.toFixed(1)}%
             </div>
             <div className="text-xs text-muted-foreground">Disetujui</div>
-          </div>
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 mb-1">
-              <div className="w-3 h-3 rounded-full bg-red-500" />
-            </div>
-            <div className="text-lg font-bold text-red-600">
-              {data?.rejectionRate.toFixed(1)}%
-            </div>
-            <div className="text-xs text-muted-foreground">Ditolak</div>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
