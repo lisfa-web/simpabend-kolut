@@ -1351,6 +1351,7 @@ export type Database = {
         Args: { _jenis_dokumen: string; _tanggal?: string }
         Returns: string
       }
+      get_database_schema: { Args: never; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

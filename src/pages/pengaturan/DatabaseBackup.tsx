@@ -21,13 +21,20 @@ const DatabaseBackup = () => {
   const handleDownloadBackup = async () => {
     try {
       setIsDownloading(true);
-      toast.info("Mempersiapkan file backup...");
+      toast.info("Generating backup dari database...");
 
-      // Fetch the SQL file from public directory
-      const response = await fetch('/database-backup-complete.sql');
+      // Call edge function to generate fresh SQL backup
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/generate-database-backup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
       if (!response.ok) {
-        throw new Error('Gagal mengambil file backup');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Gagal generate backup');
       }
 
       const blob = await response.blob();
@@ -43,7 +50,8 @@ const DatabaseBackup = () => {
       toast.success("Backup database berhasil didownload!");
     } catch (error) {
       console.error('Error downloading backup:', error);
-      toast.error("Gagal mendownload backup database");
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      toast.error(`Gagal mendownload backup: ${errorMessage}`);
     } finally {
       setIsDownloading(false);
     }
@@ -65,8 +73,9 @@ const DatabaseBackup = () => {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            File SQL ini berisi <strong>struktur lengkap database</strong> termasuk ENUM types, 
-            tables, functions, triggers, RLS policies, dan indexes. Cocok untuk backup, dokumentasi, 
+            File SQL ini di-<strong>generate real-time</strong> langsung dari database saat ini. 
+            Setiap kali download, Anda akan mendapat backup <strong>terbaru</strong> yang mencerminkan 
+            semua perubahan/migration yang sudah dilakukan. Cocok untuk backup, dokumentasi, 
             atau setup database di hosting baru.
           </AlertDescription>
         </Alert>
@@ -78,7 +87,7 @@ const DatabaseBackup = () => {
               Complete Database Schema
             </CardTitle>
             <CardDescription>
-              Backup lengkap struktur database aplikasi SPM & SP2D
+              Backup lengkap struktur database (real-time dari database saat ini)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
