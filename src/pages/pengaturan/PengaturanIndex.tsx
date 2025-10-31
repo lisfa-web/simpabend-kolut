@@ -1,5 +1,5 @@
 import { Link, Navigate } from "react-router-dom";
-import { Settings, FileText, MessageSquare, Shield, Mail, ScrollText, AlertTriangle, Palette } from "lucide-react";
+import { Settings, FileText, MessageSquare, Shield, Mail, ScrollText, AlertTriangle, Palette, Database } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,13 @@ const PengaturanIndex = () => {
     return <Navigate to="/unauthorized" replace />;
   }
   const settingsModules = [
+    {
+      title: "Database Backup",
+      description: "Download complete SQL schema untuk backup atau migrasi database",
+      icon: Database,
+      href: "/pengaturan/database-backup",
+      color: "text-cyan-600",
+    },
     {
       title: "Mode Emergency",
       description: "Bypass OTP/PIN untuk situasi darurat (HP hilang, gateway down)",

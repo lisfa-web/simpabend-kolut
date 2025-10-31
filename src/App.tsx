@@ -65,6 +65,7 @@ import PermissionsList from "./pages/pengaturan/PermissionsList";
 import AuditTrail from "./pages/pengaturan/AuditTrail";
 import EmergencyMode from "./pages/pengaturan/EmergencyMode";
 import SidebarTemplate from "./pages/pengaturan/SidebarTemplate";
+import DatabaseBackup from "./pages/pengaturan/DatabaseBackup";
 import PanduanManual from "./pages/panduan/PanduanManual";
 import PanduanManualAdmin from "./pages/panduan/PanduanManualAdmin";
 import ProfilePage from "./pages/profile/ProfilePage";
@@ -186,6 +187,7 @@ const App = () => (
             <Route path="/pengaturan/audit-trail" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><AuditTrail /></RoleProtectedRoute>} />
             <Route path="/pengaturan/emergency-mode" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><EmergencyMode /></RoleProtectedRoute>} />
             <Route path="/pengaturan/sidebar-template" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><SidebarTemplate /></RoleProtectedRoute>} />
+            <Route path="/pengaturan/database-backup" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><DatabaseBackup /></RoleProtectedRoute>} />
             
             {/* Panduan Routes */}
             <Route path="/panduan" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />
