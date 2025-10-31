@@ -33,6 +33,8 @@ Deno.serve(async (req) => {
     console.log('[generate-database-backup] Enums:', schemaData.enums?.length || 0);
     console.log('[generate-database-backup] Tables:', schemaData.tables?.length || 0);
     console.log('[generate-database-backup] Functions:', schemaData.functions?.length || 0);
+    console.log('[generate-database-backup] Policies:', schemaData.policies?.length || 0);
+    console.log('[generate-database-backup] Triggers:', schemaData.triggers?.length || 0);
 
     // Generate SQL file content
     const sqlContent = generateSQLBackup(schemaData);
@@ -130,7 +132,19 @@ function generateSQLBackup(schema: any): string {
     }
   }
 
-  // Section 4: RLS Policies
+  // Section 4: Triggers
+  sql += `-- ============================================================================
+-- SECTION 4: TRIGGERS
+-- ============================================================================\n\n`;
+
+  if (schema.triggers && schema.triggers.length > 0) {
+    for (const trigger of schema.triggers) {
+      sql += `-- Trigger: ${trigger.trigger_name} on ${trigger.table_name}\n`;
+      sql += `${trigger.trigger_definition};\n\n`;
+    }
+  }
+
+  // Section 5: RLS Policies
   sql += `-- ============================================================================
 -- SECTION 4: ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================\n\n`;
@@ -158,16 +172,21 @@ function generateSQLBackup(schema: any): string {
       sql += `-- Policies for ${tableName}\n`;
       for (const policy of policies) {
         sql += `CREATE POLICY "${policy.policy_name}" ON ${tableName}\n`;
-        sql += `  FOR ${policy.policy_command}\n`;
-        if (policy.policy_definition) {
-          sql += `  USING (${policy.policy_definition});\n`;
+        const cmd = policy.policy_cmd || 'ALL';
+        sql += `  FOR ${cmd}\n`;
+        
+        if (policy.policy_qual) {
+          sql += `  USING (${policy.policy_qual})\n`;
         }
-        sql += `\n`;
+        if (policy.policy_with_check) {
+          sql += `  WITH CHECK (${policy.policy_with_check})\n`;
+        }
+        sql += `;\n\n`;
       }
     }
   }
 
-  // Section 5: Indexes
+  // Section 6: Indexes
   sql += `-- ============================================================================
 -- SECTION 5: INDEXES
 -- ============================================================================\n\n`;
