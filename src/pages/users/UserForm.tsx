@@ -210,7 +210,8 @@ const UserForm = () => {
       });
       clearErrors(["roles"]);
     }
-  }, [userData, reset, clearErrors, isSuperAdmin]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData]);
 
   // Sync roles with RHF when changed via UserRoleSelect
   // This ensures form validation stays in sync with the role selection component
@@ -512,20 +513,21 @@ const UserForm = () => {
                         id="phone"
                         value={field.value || ""}
                         onChange={(e) => {
-                          let value = e.target.value;
-                          // Auto-convert 0 prefix to 62
-                          if (value.startsWith("0")) {
-                            value = "62" + value.slice(1);
-                          }
-                          field.onChange(value);
+                          const value = e.target.value;
+                          // Only allow numbers and + prefix
+                          const cleaned = value.replace(/[^\d+]/g, '');
+                          field.onChange(cleaned);
                         }}
-                        placeholder="62812xxxxxxxx"
+                        placeholder="081234567890 atau 6281234567890"
                       />
                     )}
                   />
                   {errors.phone && (
                     <p className="text-sm text-destructive">{errors.phone.message}</p>
                   )}
+                  <p className="text-xs text-muted-foreground">
+                    Format: 08xxxxxxxxxx atau 628xxxxxxxxxx
+                  </p>
                 </div>
 
                 {isEdit && (
