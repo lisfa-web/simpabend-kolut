@@ -272,8 +272,11 @@ export const useDashboardActionItems = () => {
       }
     },
     enabled: !!user,
-    staleTime: 2 * 60 * 1000, // Data fresh selama 2 menit
-    gcTime: 5 * 60 * 1000, // Cache disimpan 5 menit
+    staleTime: 3 * 60 * 1000, // Data fresh selama 3 menit
+    gcTime: 10 * 60 * 1000, // Cache disimpan 10 menit
     refetchOnWindowFocus: false,
+    refetchOnMount: false, // Jangan refetch saat component mount
+    retry: false, // Jangan retry kalau error
+    placeholderData: (previousData) => previousData, // Gunakan data lama saat refetch
   });
 };

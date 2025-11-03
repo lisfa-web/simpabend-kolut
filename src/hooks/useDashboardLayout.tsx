@@ -78,6 +78,12 @@ export const useDashboardLayout = () => {
       console.log("No default layout found, using hardcoded DEFAULT_LAYOUT");
       return null;
     },
+    staleTime: 5 * 60 * 1000, // Data fresh selama 5 menit
+    gcTime: 10 * 60 * 1000, // Cache 10 menit
+    refetchOnWindowFocus: false,
+    refetchOnMount: false, // Jangan refetch saat component mount
+    retry: false,
+    placeholderData: (previousData) => previousData,
   });
 
   // Load saved layout when available
