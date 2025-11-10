@@ -209,7 +209,6 @@ export const SpmFilters = ({ onFilterChange, initialFilters }: SpmFiltersProps) 
                   <SelectItem value="perbendaharaan_verifikasi">Verifikasi Perbendaharaan</SelectItem>
                   <SelectItem value="kepala_bkad_review">Review Kepala BKAD</SelectItem>
                   <SelectItem value="disetujui">Disetujui</SelectItem>
-                  <SelectItem value="ditolak">Ditolak</SelectItem>
                   <SelectItem value="perlu_revisi">Perlu Revisi</SelectItem>
                 </SelectContent>
               </Select>
