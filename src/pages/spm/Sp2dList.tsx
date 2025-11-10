@@ -508,7 +508,10 @@ const Sp2dList = () => {
                       <TableRow className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 hover:from-primary hover:via-primary/90 hover:to-primary border-b-2 border-primary">
                         <TableHead className="text-primary-foreground font-bold">Nomor SP2D</TableHead>
                         <TableHead className="text-primary-foreground font-bold">Nomor SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nomor Penguji</TableHead>
                         <TableHead className="text-primary-foreground font-bold">OPD</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Jenis SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nama Penerima</TableHead>
                         <TableHead className="text-primary-foreground font-bold">Nilai SP2D</TableHead>
                         <TableHead className="text-primary-foreground font-bold">Dikirim ke Bank</TableHead>
                         <TableHead className="text-primary-foreground font-bold">Status</TableHead>
@@ -518,7 +521,7 @@ const Sp2dList = () => {
                     <TableBody>
                       {sp2dUjiBank?.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={7} className="text-center py-8">
+                          <TableCell colSpan={10} className="text-center py-8">
                             <div className="flex flex-col items-center gap-2">
                               <Banknote className="h-12 w-12 text-muted-foreground/50" />
                               <p className="text-muted-foreground">
@@ -548,7 +551,26 @@ const Sp2dList = () => {
                               {sp2d.nomor_sp2d || "-"}
                             </TableCell>
                             <TableCell>{sp2d.spm?.nomor_spm || "-"}</TableCell>
+                            <TableCell>
+                              {sp2d.nomor_penguji ? (
+                                <Badge variant="outline" className="font-mono">
+                                  {sp2d.nomor_penguji}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">Belum ada</span>
+                              )}
+                            </TableCell>
                             <TableCell>{sp2d.spm?.opd?.nama_opd || "-"}</TableCell>
+                            <TableCell>
+                              {sp2d.spm?.jenis_spm?.nama_jenis || (
+                                <span className="text-destructive text-xs">Data tidak lengkap</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {sp2d.spm?.nama_penerima || (
+                                <span className="text-destructive text-xs">Data tidak lengkap</span>
+                              )}
+                            </TableCell>
                             <TableCell>
                               {formatCurrency(Number(sp2d.nilai_sp2d))}
                             </TableCell>

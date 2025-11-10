@@ -4,13 +4,13 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Loader2, CheckCircle2, Printer, Wallet, FileCheck, Info } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle2, Printer, Wallet, FileCheck, Info, AlertCircle } from "lucide-react";
 import { useSp2dDetail } from "@/hooks/useSp2dDetail";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { useConfigSistem } from "@/hooks/useConfigSistem";
 import { usePajakPotongan } from "@/hooks/usePajakPotongan";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { formatCurrency } from "@/lib/currency";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
 import { Sp2dTimeline } from "./components/Sp2dTimeline";
@@ -140,6 +140,17 @@ const Sp2dDetail = () => {
           </TabsList>
 
           <TabsContent value="informasi" className="space-y-4 print:block print:space-y-6">
+            {(!sp2d.spm?.jenis_spm || !sp2d.spm?.nama_penerima || !sp2d.spm?.tipe_penerima) && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Data SPM Tidak Lengkap</AlertTitle>
+                <AlertDescription>
+                  Beberapa data SPM tidak tersedia (Jenis SPM, Nama Penerima, atau Tipe Penerima). 
+                  Silakan hubungi administrator untuk melengkapi data.
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <Card>
               <CardHeader>
                 <CardTitle>Informasi SP2D</CardTitle>

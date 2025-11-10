@@ -9,8 +9,10 @@ export const spmDataSchema = z.object({
     required_error: "Tanggal ajuan harus diisi",
     invalid_type_error: "Format tanggal tidak valid",
   }),
-  tipe_penerima: z.enum(['bendahara_pengeluaran', 'vendor', 'pihak_ketiga']).optional(),
-  nama_penerima: z.string().min(1, 'Nama penerima harus diisi').optional(),
+  tipe_penerima: z.enum(['bendahara_pengeluaran', 'vendor', 'pihak_ketiga'], {
+    required_error: "Tipe penerima harus dipilih"
+  }),
+  nama_penerima: z.string().min(1, 'Nama penerima harus diisi'),
   nama_bank: z.string().optional(),
   nomor_rekening: z.string().optional(),
   nama_rekening: z.string().optional(),

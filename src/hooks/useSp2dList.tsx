@@ -27,6 +27,8 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
               nomor_spm,
               nilai_spm,
               nilai_bersih,
+              nama_penerima,
+              tipe_penerima,
               opd:opd_id(nama_opd),
               jenis_spm:jenis_spm_id(nama_jenis),
               bendahara:bendahara_id(full_name, email)
