@@ -78,9 +78,14 @@ const PengaturanIndex = () => {
     },
   ];
 
-  // Filter modules based on role - WA Gateway and Email Config only for super admin
+  // Filter modules based on role - WA Gateway, Email Config, Database Backup, and Sidebar Template only for super admin
   const filteredModules = settingsModules.filter((module) => {
-    if (module.href === "/pengaturan/wa-gateway" || module.href === "/pengaturan/email") {
+    if (
+      module.href === "/pengaturan/wa-gateway" || 
+      module.href === "/pengaturan/email" ||
+      module.href === "/pengaturan/database-backup" ||
+      module.href === "/pengaturan/sidebar-template"
+    ) {
       return isSuperAdmin();
     }
     return true;

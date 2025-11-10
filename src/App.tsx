@@ -190,7 +190,7 @@ const App = () => (
               <Route path="/pengaturan/permissions" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PermissionsList /></RoleProtectedRoute>} />
               <Route path="/pengaturan/audit-trail" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><AuditTrail /></RoleProtectedRoute>} />
               <Route path="/pengaturan/emergency-mode" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><EmergencyMode /></RoleProtectedRoute>} />
-              <Route path="/pengaturan/sidebar-template" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><SidebarTemplate /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/sidebar-template" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><SidebarTemplate /></RoleProtectedRoute>} />
               <Route path="/pengaturan/database-backup" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><DatabaseBackup /></RoleProtectedRoute>} />
               
               {/* Panduan Routes */}
