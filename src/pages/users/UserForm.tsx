@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { UserRoleSelect } from "./components/UserRoleSelect";
 import { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -77,6 +78,7 @@ const UserForm = () => {
   const { id } = useParams();
   const isEdit = !!id;
   const { isSuperAdmin } = useAuth();
+  const { toast } = useToast();
 
   const [roles, setRoles] = useState<{ role: AppRole; opd_id?: string }[]>([]);
   const [password, setPassword] = useState("");
@@ -191,9 +193,27 @@ const UserForm = () => {
         opd_id: ur.opd_id || null,
       })).filter((r: any) => r !== null) || [];
       
-      // SECURITY: Filter out super_admin and demo_admin roles if current user is not super admin
-      // This prevents privilege escalation attacks where regular admins might see or modify super admin roles
+      // SECURITY: Regular admin cannot edit super_admin or demo_admin users
+      // This prevents privilege escalation attacks
       if (!isSuperAdmin()) {
+        // Check if target user has protected roles
+        const hasProtectedRole = userData.user_roles?.some((ur: any) => 
+          ur.role === 'demo_admin' || ur.role === 'super_admin'
+        );
+        
+        if (hasProtectedRole) {
+          console.error("Regular admin attempting to edit protected user");
+          // Show toast notification before redirect
+          toast({
+            title: "Akses Ditolak",
+            description: "Anda tidak memiliki izin untuk mengedit user dengan role Super Admin atau Demo Admin.",
+            variant: "destructive",
+          });
+          navigate("/users");
+          return;
+        }
+        
+        // Filter out protected roles from display (defensive)
         userRoles = userRoles.filter((r: any) => 
           r.role !== 'demo_admin' && r.role !== 'super_admin'
         );
