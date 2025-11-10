@@ -33,8 +33,9 @@ const Sp2dDetail = () => {
   const { verifyOtp, disburseSp2d, sendToBank, confirmFromBank } = useSp2dMutation();
   const { potonganList } = usePajakPotongan(id);
 
-  const canVerify = roles.some((role) =>
-    ["kuasa_bud", "administrator"].includes(role)
+  // Only Kuasa BUD and Super Admin can perform SP2D actions
+  const canManageSp2d = roles.some((role) =>
+    ["kuasa_bud", "super_admin"].includes(role)
   );
 
   const handleVerify = (otp: string) => {
@@ -336,8 +337,58 @@ const Sp2dDetail = () => {
           </TabsContent>
         </Tabs>
 
+        {/* OTP Verification Section - Show for pending SP2D */}
+        {sp2d.status === "pending" && canManageSp2d && (
+          <Card className="border-warning print:hidden">
+            <CardHeader>
+              <CardTitle>Verifikasi OTP SP2D</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                SP2D telah dibuat. Masukkan OTP yang telah dikirim untuk menerbitkan SP2D.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold mb-1">Status: Menunggu Verifikasi OTP</h4>
+                  <p className="text-sm text-muted-foreground">
+                    OTP telah dikirim ke nomor WhatsApp terdaftar
+                  </p>
+                </div>
+                <Button onClick={() => setShowVerifyDialog(true)}>
+                  Verifikasi OTP
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* OTP Verification Section - Show for pending SP2D */}
+        {sp2d.status === "pending" && canManageSp2d && (
+          <Card className="border-warning print:hidden">
+            <CardHeader>
+              <CardTitle>Verifikasi OTP SP2D</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                SP2D telah dibuat. Masukkan OTP yang telah dikirim untuk menerbitkan SP2D.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-semibold mb-1">Status: Menunggu Verifikasi OTP</h4>
+                  <p className="text-sm text-muted-foreground">
+                    OTP telah dikirim ke nomor WhatsApp terdaftar
+                  </p>
+                </div>
+                <Button onClick={() => setShowVerifyDialog(true)}>
+                  Verifikasi OTP
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Uji Bank Section - Show after SP2D is issued */}
-        {sp2d.status === "diterbitkan" && canVerify && (
+        {sp2d.status === "diterbitkan" && canManageSp2d && (
           <Card className="border-primary print:hidden">
             <CardHeader>
               <CardTitle>Uji SP2D - Proses Bank Sultra</CardTitle>
@@ -362,7 +413,7 @@ const Sp2dDetail = () => {
         )}
 
         {/* Bank Confirmation Section */}
-        {sp2d.status === "diuji_bank" && canVerify && (
+        {sp2d.status === "diuji_bank" && canManageSp2d && (
           <Card className="border-warning print:hidden">
             <CardHeader>
               <CardTitle>Uji SP2D - Menunggu Konfirmasi Bank</CardTitle>
@@ -400,7 +451,7 @@ const Sp2dDetail = () => {
         )}
 
         {/* Ready to Disburse Section - Only show after bank confirmation */}
-        {sp2d.status === "diuji_bank" && (sp2d as any).tanggal_konfirmasi_bank && canVerify && (
+        {sp2d.status === "diuji_bank" && (sp2d as any).tanggal_konfirmasi_bank && canManageSp2d && (
           <Card className="border-success print:hidden">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
