@@ -29,7 +29,7 @@ serve(async (req) => {
 
     console.log('Processing disbursement notification for SP2D:', sp2dId);
 
-    // Fetch SP2D with related SPM data
+    // Fetch SP2D with related SPM data including bendahara
     const { data: sp2d, error: sp2dError } = await supabase
       .from('sp2d')
       .select(`
@@ -37,8 +37,12 @@ serve(async (req) => {
         spm:spm_id (
           *,
           opd:opd_id (
-            nama_opd,
-            telepon
+            nama_opd
+          ),
+          bendahara:bendahara_id (
+            full_name,
+            phone,
+            email
           )
         )
       `)
@@ -59,16 +63,17 @@ serve(async (req) => {
       );
     }
 
-    // Get recipient phone from OPD if available
-    const recipientPhone = spm.opd?.telepon;
+    // Get bendahara phone number
+    const bendahara = spm.bendahara;
+    const bendaharaPhone = bendahara?.phone;
     
-    if (!recipientPhone) {
-      console.warn('No phone number available for recipient:', spm.nama_penerima);
+    if (!bendaharaPhone) {
+      console.warn('No phone number available for bendahara:', bendahara?.full_name);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Recipient phone number not available',
-          recipient: spm.nama_penerima 
+          error: 'Bendahara phone number not available',
+          bendahara: bendahara?.full_name || '-'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       );
@@ -107,27 +112,34 @@ serve(async (req) => {
       minimumFractionDigits: 0,
     }).format(sp2d.nilai_sp2d);
 
-    // Prepare WhatsApp message
-    const message = `🎉 *NOTIFIKASI PENCAIRAN DANA*
+    // Prepare WhatsApp message for bendahara
+    const message = `🎉 *NOTIFIKASI PENCAIRAN DANA SP2D*
 
-Kepada Yth. ${spm.nama_penerima}
-OPD: ${spm.opd?.nama_opd || '-'}
+Kepada Yth. ${bendahara?.full_name}
+Bendahara Pengeluaran ${spm.opd?.nama_opd || '-'}
 
-Dana untuk SP2D telah dicairkan:
+Dana SP2D telah berhasil dicairkan:
 
+📄 Nomor SPM: ${spm.nomor_spm || '-'}
 📄 Nomor SP2D: ${sp2d.nomor_sp2d}
-💰 Nilai: ${nilaiFormatted}
+💰 Nilai SP2D: ${nilaiFormatted}
+💰 Nilai Diterima: ${new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(sp2d.nilai_diterima || sp2d.nilai_sp2d)}
+👤 Penerima: ${spm.nama_penerima}
 🏦 Bank: ${spm.nama_bank || sp2d.nama_bank || '-'}
 💳 Rekening: ${spm.nomor_rekening || sp2d.nomor_rekening || '-'}
-👤 Nama Rekening: ${spm.nama_rekening || sp2d.nama_rekening || '-'}
+👤 A/n: ${spm.nama_rekening || sp2d.nama_rekening || '-'}
 📅 Tanggal Cair: ${tanggalCair}
 
-Silakan cek rekening Anda.
+Dana telah ditransfer ke rekening penerima. Silakan informasikan kepada penerima untuk mengecek rekening mereka.
 
 Terima kasih.
 _Sistem Informasi BKAD_`;
 
-    console.log('Sending WhatsApp notification to:', recipientPhone);
+    console.log('Sending WhatsApp notification to bendahara:', bendahara?.full_name, '-', bendaharaPhone);
 
     // Send WhatsApp via Fonnte
     const fonnteResponse = await fetch('https://api.fonnte.com/send', {
@@ -137,7 +149,7 @@ _Sistem Informasi BKAD_`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        target: recipientPhone,
+        target: bendaharaPhone,
         message: message,
         countryCode: '62',
       }),
@@ -150,24 +162,24 @@ _Sistem Informasi BKAD_`;
       throw new Error(`Failed to send WhatsApp: ${JSON.stringify(fonnteResult)}`);
     }
 
-    // Log notification (optional - for tracking purposes)
+    // Log notification to bendahara
     await supabase.from('notifikasi').insert({
-      user_id: sp2d.created_by, // Use SP2D creator as reference
+      user_id: spm.bendahara_id,
       jenis: 'pencairan_dana',
       judul: 'Dana SP2D Telah Dicairkan',
-      pesan: `Dana untuk SP2D ${sp2d.nomor_sp2d} telah dicairkan ke ${spm.nama_penerima}`,
+      pesan: `Dana untuk SP2D ${sp2d.nomor_sp2d} senilai ${nilaiFormatted} telah dicairkan ke rekening ${spm.nama_penerima}`,
       sent_via_wa: true,
       wa_sent_at: new Date().toISOString(),
     });
 
-    console.log('Disbursement notification sent successfully');
+    console.log('Disbursement notification sent successfully to bendahara');
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Notification sent to recipient',
-        recipient: spm.nama_penerima,
-        phone: recipientPhone
+        message: 'Notification sent to bendahara',
+        bendahara: bendahara?.full_name,
+        phone: bendaharaPhone
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
