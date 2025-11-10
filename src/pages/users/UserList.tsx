@@ -288,51 +288,52 @@ const UserList = () => {
                               <p>Lihat Detail</p>
                             </TooltipContent>
                           </Tooltip>
-                          {/* SECURITY: Only super admin can edit or toggle status */}
+                          {/* SECURITY: Only super admin can edit users */}
                           {isSuperAdminUser && (
-                            <>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => navigate(`/users/${user.id}/edit`)}
-                                    disabled={isDemoUser}
-                                  >
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Edit User</p>
-                                </TooltipContent>
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() =>
-                                      setToggleStatusDialog({
-                                        open: true,
-                                        userId: user.id,
-                                        userName: user.full_name,
-                                        currentStatus: user.is_active,
-                                      })
-                                    }
-                                    disabled={isDemoUser || toggleUserStatus.isPending}
-                                  >
-                                    <Power
-                                      className={`h-4 w-4 ${
-                                        user.is_active ? "text-green-600" : "text-gray-400"
-                                      }`}
-                                    />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{user.is_active ? "Nonaktifkan User" : "Aktifkan User"}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => navigate(`/users/${user.id}/edit`)}
+                                  disabled={isDemoUser}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Edit User</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                          {/* SECURITY: Both super admin and administrator can toggle user status */}
+                          {(isSuperAdminUser || (!isDemoUser && canWriteData)) && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() =>
+                                    setToggleStatusDialog({
+                                      open: true,
+                                      userId: user.id,
+                                      userName: user.full_name,
+                                      currentStatus: user.is_active,
+                                    })
+                                  }
+                                  disabled={isDemoUser || toggleUserStatus.isPending}
+                                >
+                                  <Power
+                                    className={`h-4 w-4 ${
+                                      user.is_active ? "text-green-600" : "text-gray-400"
+                                    }`}
+                                  />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{user.is_active ? "Nonaktifkan User" : "Aktifkan User"}</p>
+                              </TooltipContent>
+                            </Tooltip>
                           )}
                           {/* SECURITY: Both super admin and administrator can reset passwords */}
                           {(isSuperAdminUser || (!isDemoUser && canWriteData)) && (
