@@ -150,6 +150,7 @@ export const SpmPajakForm = ({
 
   const totalPotongan = pajaks.reduce((sum, p) => sum + (p.jumlah_pajak || 0), 0);
   const nilaiBersih = nilaiSpm - totalPotongan;
+  const isOverLimit = totalPotongan > nilaiSpm;
 
   const handleAddPajak = () => {
     setPajaks([
@@ -459,7 +460,7 @@ export const SpmPajakForm = ({
       </Card>
 
       {/* Summary Card */}
-      <Card className="border-2 border-primary">
+      <Card className={isOverLimit ? "border-2 border-destructive" : "border-2 border-primary"}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="h-5 w-5" />
@@ -468,31 +469,55 @@ export const SpmPajakForm = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
+            {isOverLimit && (
+              <Alert variant="destructive" className="mb-3">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>Peringatan:</strong> Total potongan melebihi nilai SPM! Silakan koreksi jumlah pajak sebelum melanjutkan.
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="flex justify-between text-lg">
               <span>Nilai SPM (Bruto):</span>
               <span className="font-bold">{formatCurrency(nilaiSpm)}</span>
             </div>
-            <div className="flex justify-between text-lg text-destructive">
+            <div className={`flex justify-between text-lg ${isOverLimit ? "text-destructive" : "text-orange-500"}`}>
               <span>Total Potongan:</span>
               <span className="font-bold">-{formatCurrency(totalPotongan)}</span>
             </div>
             <Separator />
-            <div className="flex justify-between text-xl">
+            <div className={`flex justify-between text-xl p-3 rounded-lg ${isOverLimit ? "bg-destructive/10" : "bg-primary/10"}`}>
               <span className="font-semibold">Nilai Bersih (Netto):</span>
-              <span className="font-bold text-primary">{formatCurrency(nilaiBersih)}</span>
+              <span className={`font-bold ${isOverLimit ? "text-destructive" : "text-primary"}`}>
+                {formatCurrency(nilaiBersih)}
+              </span>
             </div>
+            {nilaiBersih > 0 && !isOverLimit && (
+              <p className="text-xs text-muted-foreground italic mt-2">
+                <span className="font-medium">Terbilang:</span> {terbilangRupiah(nilaiBersih)}
+              </p>
+            )}
+            {isOverLimit && (
+              <p className="text-xs text-muted-foreground italic mt-2">
+                Sisa yang dibutuhkan untuk dikoreksi: <span className="font-semibold text-destructive">{formatCurrency(Math.abs(nilaiBersih))}</span>
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex justify-between">
-        <Button type="button" variant="outline" onClick={onBack}>
-          Kembali
-        </Button>
-        <Button type="button" onClick={handleNext}>
-          Selanjutnya
-        </Button>
-      </div>
+          <div className="flex justify-between">
+            <Button type="button" variant="outline" onClick={onBack}>
+              Kembali
+            </Button>
+            <Button 
+              type="button" 
+              onClick={handleNext}
+              disabled={isOverLimit}
+            >
+              Selanjutnya
+            </Button>
+          </div>
         </div>
       )}
 

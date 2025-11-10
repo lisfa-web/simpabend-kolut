@@ -14,7 +14,9 @@ import { useOpdList } from "@/hooks/useOpdList";
 import { useJenisSpmList } from "@/hooks/useJenisSpmList";
 import { useVendorList } from "@/hooks/useVendorList";
 import { toast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SuccessSpmDialog } from "@/components/SuccessSpmDialog";
 
 const InputSpmForm = () => {
   const { id } = useParams();
@@ -29,6 +31,8 @@ const InputSpmForm = () => {
     spj: [],
     lainnya: [],
   });
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [successData, setSuccessData] = useState<{ nomorSpm: string; spmId: string } | null>(null);
 
   const { createSpm, updateSpm, uploadFile } = useSpmMutation();
   const { data: spmDetail, isLoading: isLoadingSpm } = useSpmDetail(id);
@@ -171,12 +175,9 @@ const InputSpmForm = () => {
         });
       }
 
-      toast({
-        title: "Berhasil",
-        description: "SPM berhasil disimpan sebagai draft. Silakan ajukan dari halaman daftar SPM.",
-      });
-
-      navigate("/input-spm");
+      // Show success dialog instead of immediate navigation
+      setSuccessData({ nomorSpm, spmId });
+      setShowSuccessDialog(true);
     } catch (error: any) {
       console.error("Error submitting SPM:", error);
       toast({
@@ -202,14 +203,41 @@ const InputSpmForm = () => {
     );
   }
 
+  const handleSaveDraft = async () => {
+    if (!formData) {
+      toast({
+        title: "Belum Ada Data",
+        description: "Silakan isi data dasar terlebih dahulu",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Generate temporary nomor for draft
+    const tempNomor = `DRAFT-${Date.now()}`;
+    await handleFinalSubmit(tempNomor);
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold">{id ? "Edit" : "Buat"} SPM</h1>
-          <p className="text-muted-foreground">
-            Lengkapi 5 tahap berikut untuk membuat SPM baru
-          </p>
+        <div className="flex items-start justify-between">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold">{id ? "Edit" : "Buat"} SPM</h1>
+            <p className="text-muted-foreground">
+              Lengkapi 5 tahap berikut untuk membuat SPM baru
+            </p>
+          </div>
+          {formData && activeTab !== "nomor" && (
+            <Button
+              variant="outline"
+              onClick={handleSaveDraft}
+              disabled={createSpm.isPending || updateSpm.isPending}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Simpan Draft
+            </Button>
+          )}
         </div>
 
         {/* Step Indicator */}
@@ -327,11 +355,22 @@ const InputSpmForm = () => {
                 onSubmit={handleNomorSubmit}
                 onBack={() => setActiveTab("review")}
                 isSubmitting={createSpm.isPending || updateSpm.isPending}
+                spmId={id}
               />
             )}
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Success Dialog */}
+      {successData && (
+        <SuccessSpmDialog
+          open={showSuccessDialog}
+          onOpenChange={setShowSuccessDialog}
+          nomorSpm={successData.nomorSpm}
+          spmId={successData.spmId}
+        />
+      )}
     </DashboardLayout>
   );
 };

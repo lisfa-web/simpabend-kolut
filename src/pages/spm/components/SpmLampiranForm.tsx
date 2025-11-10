@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileUploadCard } from "./FileUploadCard";
 import { useConfigSistem, getFileSizeInMB } from "@/hooks/useConfigSistem";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useSpmMutation } from "@/hooks/useSpmMutation";
 import { toast } from "@/hooks/use-toast";
@@ -152,8 +152,34 @@ export const SpmLampiranForm = ({
     onNext();
   };
 
+  // Calculate total file size
+  const totalNewFilesSize = Object.values(files).flat().reduce((sum, file: any) => sum + file.size, 0);
+  const totalExistingSize = existing.reduce((sum, l) => sum + (l.file_size || 0), 0);
+  const totalSize = totalNewFilesSize + totalExistingSize;
+  const totalFileCount = Object.values(files).flat().length + existing.length;
+
   return (
     <div className="space-y-6">
+      {/* File Summary */}
+      {(totalFileCount > 0) && (
+        <Card className="border-primary/50 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Total Lampiran</p>
+                <p className="text-2xl font-bold text-primary">{totalFileCount} file</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm font-medium">Total Ukuran</p>
+                <p className="text-xl font-semibold text-muted-foreground">
+                  {(totalSize / 1024 / 1024).toFixed(2)} MB
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Lampiran yang sudah diunggah */}
       {existing && existing.length > 0 && (
         <Card className="p-4">

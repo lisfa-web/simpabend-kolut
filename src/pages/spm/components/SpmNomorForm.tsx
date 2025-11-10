@@ -1,16 +1,20 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, FileText, AlertCircle } from "lucide-react";
+import { Loader2, FileText, AlertCircle, Sparkles, Check, X } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
+import { useCheckNomorSpmExists } from "@/hooks/useCheckNomorSpm";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SpmNomorFormProps {
   initialNomor?: string;
   onSubmit: (nomor: string) => void;
   onBack: () => void;
   isSubmitting?: boolean;
+  spmId?: string;
 }
 
 export const SpmNomorForm = ({
@@ -18,15 +22,57 @@ export const SpmNomorForm = ({
   onSubmit,
   onBack,
   isSubmitting = false,
+  spmId,
 }: SpmNomorFormProps) => {
   const [nomorSpm, setNomorSpm] = useState(initialNomor || "");
   const [error, setError] = useState("");
+  const [autoGenerate, setAutoGenerate] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  
+  const { data: checkResult, isLoading: isCheckingDuplicate } = useCheckNomorSpmExists(
+    nomorSpm,
+    spmId
+  );
+
+  // Auto-generate if toggle is on and field is empty
+  useEffect(() => {
+    if (autoGenerate && !nomorSpm && !isGenerating) {
+      handleAutoGenerate();
+    }
+  }, [autoGenerate]);
+
+  const handleAutoGenerate = async () => {
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.rpc("generate_document_number", {
+        _jenis_dokumen: "spm",
+        _tanggal: new Date().toISOString(),
+      });
+      
+      if (error) throw error;
+      
+      if (data) {
+        setNomorSpm(data);
+        setError("");
+      }
+    } catch (err: any) {
+      setError(err.message || "Gagal generate nomor otomatis");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleSubmit = () => {
     if (!nomorSpm.trim()) {
       setError("Nomor SPM harus diisi");
       return;
     }
+    
+    if (checkResult?.exists) {
+      setError("Nomor SPM sudah digunakan, gunakan nomor lain");
+      return;
+    }
+    
     setError("");
     onSubmit(nomorSpm.trim());
   };
@@ -53,24 +99,89 @@ export const SpmNomorForm = ({
             </AlertDescription>
           </Alert>
 
-          <div className="space-y-2">
-            <Label htmlFor="nomor_spm">
-              Nomor SPM <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="nomor_spm"
-              value={nomorSpm}
-              onChange={(e) => {
-                setNomorSpm(e.target.value);
-                setError("");
+          <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+            <div className="space-y-0.5">
+              <Label>Generate Nomor Otomatis</Label>
+              <p className="text-xs text-muted-foreground">
+                Sistem akan membuat nomor SPM sesuai format yang dikonfigurasi
+              </p>
+            </div>
+            <Switch
+              checked={autoGenerate}
+              onCheckedChange={(checked) => {
+                setAutoGenerate(checked);
+                if (!checked) {
+                  setNomorSpm("");
+                  setError("");
+                }
               }}
-              placeholder="Contoh: SPM/001/BKAD/2025"
-              className={error ? "border-destructive" : ""}
+              disabled={isGenerating}
             />
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
           </div>
+
+          {!autoGenerate && (
+            <div className="space-y-2">
+              <Label htmlFor="nomor_spm">
+                Nomor SPM <span className="text-destructive">*</span>
+              </Label>
+              <div className="relative">
+                <Input
+                  id="nomor_spm"
+                  value={nomorSpm}
+                  onChange={(e) => {
+                    setNomorSpm(e.target.value);
+                    setError("");
+                  }}
+                  placeholder="Contoh: SPM/001/BKAD/2025"
+                  className={
+                    error || checkResult?.exists
+                      ? "border-destructive pr-10"
+                      : checkResult?.exists === false && nomorSpm
+                      ? "border-primary pr-10"
+                      : "pr-10"
+                  }
+                  disabled={isSubmitting}
+                />
+                {isCheckingDuplicate && (
+                  <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+                {!isCheckingDuplicate && nomorSpm && checkResult?.exists === false && (
+                  <Check className="absolute right-3 top-3 h-4 w-4 text-primary" />
+                )}
+                {!isCheckingDuplicate && checkResult?.exists && (
+                  <X className="absolute right-3 top-3 h-4 w-4 text-destructive" />
+                )}
+              </div>
+              {error && (
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {error}
+                </p>
+              )}
+              {!error && checkResult?.exists && (
+                <p className="text-sm text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  Nomor SPM sudah digunakan
+                </p>
+              )}
+              {!error && checkResult?.exists === false && nomorSpm && (
+                <p className="text-sm text-primary flex items-center gap-1">
+                  <Check className="h-3 w-3" />
+                  Nomor SPM tersedia
+                </p>
+              )}
+            </div>
+          )}
+
+          {autoGenerate && nomorSpm && (
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                <p className="text-sm font-medium">Nomor yang Di-generate:</p>
+              </div>
+              <p className="text-lg font-bold text-primary font-mono">{nomorSpm}</p>
+            </div>
+          )}
 
           <div className="p-4 bg-muted rounded-lg">
             <h4 className="font-medium text-sm mb-2">Tips Penomoran:</h4>
@@ -107,7 +218,12 @@ export const SpmNomorForm = ({
         <Button
           type="button"
           onClick={handleSubmit}
-          disabled={isSubmitting}
+          disabled={
+            isSubmitting ||
+            isCheckingDuplicate ||
+            !nomorSpm ||
+            checkResult?.exists === true
+          }
         >
           {isSubmitting ? (
             <>

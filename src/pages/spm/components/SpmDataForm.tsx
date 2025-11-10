@@ -4,6 +4,8 @@ import { spmDataSchema, SpmDataFormValues } from "@/schemas/spmSchema";
 import { useEffect, useState } from "react";
 import { terbilangRupiah } from "@/lib/formatHelpers";
 import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
+import { format } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
 import {
   Form,
   FormControl,
@@ -29,7 +31,7 @@ import { CurrencyInput } from "./CurrencyInput";
 import { NamaPenerimaCombobox } from "./NamaPenerimaCombobox";
 import { useOpdList } from "@/hooks/useOpdList";
 import { useJenisSpmList } from "@/hooks/useJenisSpmList";
-import { Loader2, Volume2, Info } from "lucide-react";
+import { Loader2, Volume2, Info, CalendarIcon } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +42,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface SpmDataFormProps {
   defaultValues?: Partial<SpmDataFormValues>;
@@ -295,15 +304,40 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
           control={form.control}
           name="tanggal_ajuan"
           render={({ field }) => (
-            <FormItem>
+            <FormItem className="flex flex-col">
               <FormLabel>Tanggal Ajuan</FormLabel>
-              <FormControl>
-                <Input
-                  type="date"
-                  value={field.value instanceof Date ? field.value.toISOString().split('T')[0] : ''}
-                  onChange={(e) => field.onChange(new Date(e.target.value))}
-                />
-              </FormControl>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP", { locale: idLocale })
+                      ) : (
+                        <span>Pilih tanggal</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("2020-01-01")
+                    }
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}
