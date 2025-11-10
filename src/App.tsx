@@ -114,13 +114,41 @@ const App = () => (
               <Route path="/spm/approval/kepala-bkad" element={<ProtectedRoute><ApprovalKepalaBkad /></ProtectedRoute>} />
               
               {/* SP2D Routes */}
-              <Route path="/sp2d" element={<ProtectedRoute><Sp2dList /></ProtectedRoute>} />
-              <Route path="/sp2d/new" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
-              <Route path="/sp2d/buat" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
-              <Route path="/sp2d/detail/:id" element={<ProtectedRoute><Sp2dDetail /></ProtectedRoute>} />
-              <Route path="/sp2d/timeline/:id" element={<ProtectedRoute><Sp2dTimelineDetail /></ProtectedRoute>} />
-              <Route path="/sp2d/:id" element={<ProtectedRoute><Sp2dDetail /></ProtectedRoute>} />
-              <Route path="/sp2d/:id/edit" element={<ProtectedRoute><Sp2dForm /></ProtectedRoute>} />
+              <Route path="/sp2d" element={
+                <RoleProtectedRoute allowedRoles={["kuasa_bud", "kepala_bkad", "administrator", "super_admin", "bendahara_opd"]}>
+                  <Sp2dList />
+                </RoleProtectedRoute>
+              } />
+              <Route path="/sp2d/new" element={
+                <RoleProtectedRoute allowedRoles={["kuasa_bud", "administrator", "super_admin"]}>
+                  <Sp2dForm />
+                </RoleProtectedRoute>
+              } />
+              <Route path="/sp2d/buat" element={
+                <RoleProtectedRoute allowedRoles={["kuasa_bud", "administrator", "super_admin"]}>
+                  <Sp2dForm />
+                </RoleProtectedRoute>
+              } />
+              <Route path="/sp2d/detail/:id" element={
+                <RoleProtectedRoute allowedRoles={["kuasa_bud", "kepala_bkad", "administrator", "super_admin", "bendahara_opd"]}>
+                  <Sp2dDetail />
+                </RoleProtectedRoute>
+              } />
+              <Route path="/sp2d/timeline/:id" element={
+                <RoleProtectedRoute allowedRoles={["kuasa_bud", "kepala_bkad", "administrator", "super_admin", "bendahara_opd"]}>
+                  <Sp2dTimelineDetail />
+                </RoleProtectedRoute>
+              } />
+              <Route path="/sp2d/:id" element={
+                <RoleProtectedRoute allowedRoles={["kuasa_bud", "kepala_bkad", "administrator", "super_admin", "bendahara_opd"]}>
+                  <Sp2dDetail />
+                </RoleProtectedRoute>
+              } />
+              <Route path="/sp2d/:id/edit" element={
+                <RoleProtectedRoute allowedRoles={["kuasa_bud", "administrator", "super_admin"]}>
+                  <Sp2dForm />
+                </RoleProtectedRoute>
+              } />
               
               {/* User Management Routes */}
               <Route path="/users" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><UserList /></RoleProtectedRoute>} />

@@ -24,10 +24,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Eye, Loader2, FileCheck, Banknote } from "lucide-react";
+import { Plus, Search, Eye, Loader2, FileCheck, Banknote, AlertCircle } from "lucide-react";
 import { useSp2dList } from "@/hooks/useSp2dList";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
@@ -38,10 +39,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/currency";
 import { generateSpmPDF } from "@/lib/spmPdfUtils";
 import { getJenisSpmLabel } from "@/lib/jenisSpmOptions";
+import { useAuth } from "@/hooks/useAuth";
 
 const Sp2dList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { hasRole } = useAuth();
   const [search, setSearch] = useState("");
   const [selectedSp2dId, setSelectedSp2dId] = useState<string | null>(null);
   const [showDisburseDialog, setShowDisburseDialog] = useState(false);
@@ -205,9 +208,26 @@ const Sp2dList = () => {
     },
   });
 
+  // Check if user has permission to view SP2D data
+  const canViewSp2d = hasRole("kuasa_bud") || hasRole("kepala_bkad") || 
+                      hasRole("administrator") || hasRole("super_admin") ||
+                      hasRole("bendahara_opd");
+
+  const canManageSp2d = hasRole("kuasa_bud") || hasRole("administrator") || 
+                        hasRole("super_admin");
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
+        {!canViewSp2d && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Akses Terbatas</AlertTitle>
+            <AlertDescription>
+              Anda tidak memiliki akses untuk melihat data SP2D. Halaman ini hanya dapat diakses oleh Kuasa BUD, Kepala BKAD, Administrator, dan Bendahara OPD.
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Pengelolaan SP2D</h1>
@@ -215,10 +235,12 @@ const Sp2dList = () => {
               Kelola Surat Perintah Pencairan Dana
             </p>
           </div>
-          <Button onClick={() => navigate("/sp2d/buat")}>
-            <Plus className="h-4 w-4 mr-2" />
-            Terbit SP2D
-          </Button>
+          {canManageSp2d && (
+            <Button onClick={() => navigate("/sp2d/buat")}>
+              <Plus className="h-4 w-4 mr-2" />
+              Terbit SP2D
+            </Button>
+          )}
         </div>
 
         <Tabs defaultValue="ready" className="w-full">
