@@ -110,7 +110,7 @@ const menuItems: MenuItem[] = [
     name: "Pengaturan", 
     icon: Settings, 
     path: "/pengaturan",
-    roles: ["super_admin"]
+    roles: ["administrator", "super_admin"]
   },
   { 
     name: "Audit Trail", 
