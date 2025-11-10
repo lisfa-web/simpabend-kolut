@@ -1,5 +1,5 @@
 import { Link, Navigate } from "react-router-dom";
-import { Settings, FileText, MessageSquare, Shield, Mail, AlertTriangle, Palette, Database } from "lucide-react";
+import { Settings, FileText, MessageSquare, Shield, Mail, AlertTriangle, Palette, Database, Lock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
@@ -33,6 +33,13 @@ const PengaturanIndex = () => {
       icon: Palette,
       href: "/pengaturan/sidebar-template",
       color: "text-indigo-600",
+    },
+    {
+      title: "Keamanan Session",
+      description: "Atur timeout aktivitas, deteksi sleep/hibernate, dan opsi remember me",
+      icon: Lock,
+      href: "/pengaturan/security",
+      color: "text-purple-600",
     },
     {
       title: "Konfigurasi Sistem",
