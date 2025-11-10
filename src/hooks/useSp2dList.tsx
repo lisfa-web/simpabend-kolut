@@ -29,6 +29,7 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
               nilai_bersih,
               nama_penerima,
               tipe_penerima,
+              opd_id,
               opd:opd_id(nama_opd),
               jenis_spm:jenis_spm_id(nama_jenis),
               bendahara:bendahara_id(full_name, email)
@@ -36,11 +37,12 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
           `)
           .order("created_at", { ascending: false });
 
-        // Apply filters
+        // Apply search filter - search in nomor_sp2d, nomor_spm, and nama_penerima
         if (filters?.search) {
-          query = query.ilike("nomor_sp2d", `%${filters.search}%`);
+          query = query.or(`nomor_sp2d.ilike.%${filters.search}%,spm.nomor_spm.ilike.%${filters.search}%,spm.nama_penerima.ilike.%${filters.search}%`);
         }
 
+        // Apply status filter
         if (filters?.status) {
           if (Array.isArray(filters.status)) {
             query = query.in("status", filters.status as any);
@@ -49,10 +51,7 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
           }
         }
 
-        if (filters?.opd_id) {
-          query = query.eq("spm.opd_id", filters.opd_id);
-        }
-
+        // Apply date range filters
         if (filters?.tanggal_dari) {
           query = query.gte("tanggal_sp2d", filters.tanggal_dari);
         }
@@ -68,7 +67,15 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
           throw error;
         }
         
-        return data || [];
+        // Client-side filtering for OPD since it's a nested field
+        let filteredData = data || [];
+        if (filters?.opd_id) {
+          filteredData = filteredData.filter(
+            (sp2d: any) => sp2d.spm?.opd_id === filters.opd_id
+          );
+        }
+        
+        return filteredData;
       } catch (error) {
         console.error("Error in useSp2dList:", error);
         return [];

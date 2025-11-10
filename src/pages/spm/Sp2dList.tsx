@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { usePagination } from "@/hooks/usePagination";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
@@ -28,10 +27,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Eye, Loader2, FileCheck, Banknote, AlertCircle } from "lucide-react";
+import { Plus, Eye, Loader2, FileCheck, Banknote, AlertCircle } from "lucide-react";
 import { useSp2dList } from "@/hooks/useSp2dList";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
+import { Sp2dFilters } from "./components/Sp2dFilters";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
@@ -45,9 +45,17 @@ const Sp2dList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { hasRole } = useAuth();
-  const [search, setSearch] = useState("");
   const [selectedSp2dId, setSelectedSp2dId] = useState<string | null>(null);
   const [showDisburseDialog, setShowDisburseDialog] = useState(false);
+  
+  // Filter states
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "all",
+    opd_id: "all",
+    tanggal_dari: "",
+    tanggal_sampai: "",
+  });
 
   // Pagination hooks
   const paginationReady = usePagination(10);
@@ -55,21 +63,29 @@ const Sp2dList = () => {
   const paginationUjiBank = usePagination(10);
   const paginationCair = usePagination(10);
 
+  // Prepare filter params for queries
+  const filterParams = {
+    search: filters.search,
+    opd_id: filters.opd_id !== "all" ? filters.opd_id : undefined,
+    tanggal_dari: filters.tanggal_dari || undefined,
+    tanggal_sampai: filters.tanggal_sampai || undefined,
+  };
+
   // Query for SP2D Terbit (pending & diterbitkan)
   const { data: sp2dTerbit, isLoading: isLoadingTerbit } = useSp2dList({
-    search,
+    ...filterParams,
     status: ["pending", "diterbitkan"],
   });
 
   // Query for SP2D in bank testing phase
   const { data: sp2dUjiBank, isLoading: isLoadingUjiBank } = useSp2dList({
-    search,
+    ...filterParams,
     status: "diuji_bank",
   });
 
   // Query for SP2D Cair
   const { data: sp2dCair, isLoading: isLoadingCair } = useSp2dList({
-    search,
+    ...filterParams,
     status: "cair",
   });
 
@@ -159,7 +175,7 @@ const Sp2dList = () => {
 
   // Fetch SPM yang sudah disetujui dan belum ada SP2D
   const { data: approvedSpm, isLoading: isLoadingApproved } = useQuery({
-    queryKey: ["approved-spm-for-sp2d", search],
+    queryKey: ["approved-spm-for-sp2d", filters.search],
     queryFn: async () => {
       try {
         // Ambil semua SPM ID yang sudah punya SP2D
@@ -194,8 +210,8 @@ const Sp2dList = () => {
           query = query.not("id", "in", inList);
         }
 
-        if (search) {
-          query = query.ilike("nomor_spm", `%${search}%`);
+        if (filters.search) {
+          query = query.ilike("nomor_spm", `%${filters.search}%`);
         }
 
         const { data, error } = await query;
@@ -242,6 +258,12 @@ const Sp2dList = () => {
             </Button>
           )}
         </div>
+
+        {/* Filter Component */}
+        <Sp2dFilters 
+          onFilterChange={setFilters}
+          initialFilters={filters}
+        />
 
         <Tabs defaultValue="ready" className="w-full">
           <TabsList className="grid w-full max-w-2xl grid-cols-4">
