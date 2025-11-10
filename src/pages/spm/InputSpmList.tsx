@@ -2,16 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { usePagination } from "@/hooks/usePagination";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -33,31 +25,41 @@ import {
 import { useSpmList } from "@/hooks/useSpmList";
 import { useSpmMutation } from "@/hooks/useSpmMutation";
 import { SpmStatusBadge } from "./components/SpmStatusBadge";
+import { SpmFilters } from "./components/SpmFilters";
 import { SubmitSpmDialog } from "./components/SubmitSpmDialog";
 import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { Plus, Eye, Edit, Trash2, Send, Search, Loader2 } from "lucide-react";
-import { JENIS_SPM_OPTIONS, getJenisSpmLabel } from "@/lib/jenisSpmOptions";
+import { Plus, Eye, Edit, Trash2, Send, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 const InputSpmList = () => {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [jenisSpmFilter, setJenisSpmFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [submitSpmId, setSubmitSpmId] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [isValidating, setIsValidating] = useState(false);
   
+  // Filter states
+  const [filters, setFilters] = useState({
+    search: "",
+    jenis_spm_id: "all",
+    status: "all",
+    opd_id: "all",
+    tanggal_dari: "",
+    tanggal_sampai: "",
+  });
+  
   const pagination = usePagination(10);
 
   const { data: spmList, isLoading } = useSpmList({
-    search,
-    jenis_spm_id: jenisSpmFilter === "all" ? undefined : jenisSpmFilter,
-    status: statusFilter === "all" ? undefined : statusFilter,
+    search: filters.search,
+    jenis_spm_id: filters.jenis_spm_id !== "all" ? filters.jenis_spm_id : undefined,
+    status: filters.status !== "all" ? filters.status : undefined,
+    opd_id: filters.opd_id !== "all" ? filters.opd_id : undefined,
+    tanggal_dari: filters.tanggal_dari || undefined,
+    tanggal_sampai: filters.tanggal_sampai || undefined,
   });
 
   const { deleteSpm, updateSpm } = useSpmMutation();
@@ -198,49 +200,11 @@ const InputSpmList = () => {
           </Button>
         </div>
 
-        {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="relative md:col-span-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Cari nomor SPM atau uraian..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Select value={jenisSpmFilter} onValueChange={setJenisSpmFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Semua Jenis SPM" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Jenis</SelectItem>
-              {JENIS_SPM_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Semua Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Semua Status</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="diajukan">Diajukan</SelectItem>
-              <SelectItem value="resepsionis_verifikasi">Di Resepsionis</SelectItem>
-              <SelectItem value="pbmd_verifikasi">Verifikasi PBMD</SelectItem>
-              <SelectItem value="akuntansi_validasi">Validasi Akuntansi</SelectItem>
-              <SelectItem value="perbendaharaan_verifikasi">Verifikasi Perbendaharaan</SelectItem>
-              <SelectItem value="kepala_bkad_review">Review Kepala BKAD</SelectItem>
-              <SelectItem value="disetujui">Disetujui</SelectItem>
-              <SelectItem value="ditolak">Ditolak</SelectItem>
-              <SelectItem value="perlu_revisi">Perlu Revisi</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Filter Component */}
+        <SpmFilters 
+          onFilterChange={setFilters}
+          initialFilters={filters}
+        />
 
         {/* Table */}
         <div className="border rounded-lg">
