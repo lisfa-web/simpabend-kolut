@@ -413,8 +413,8 @@ const Sp2dDetail = () => {
           </Card>
         )}
 
-        {/* Bank Confirmation Section */}
-        {sp2d.status === "diuji_bank" && canManageSp2d && (
+        {/* Bank Confirmation Section - Waiting for Confirmation */}
+        {sp2d.status === "diuji_bank" && !(sp2d as any).tanggal_konfirmasi_bank && canManageSp2d && (
           <Card className="border-warning print:hidden">
             <CardHeader>
               <CardTitle>Uji SP2D - Menunggu Konfirmasi Bank</CardTitle>
@@ -439,7 +439,7 @@ const Sp2dDetail = () => {
                   <div>
                     <h4 className="font-semibold mb-1">Konfirmasi Pemindahbukuan</h4>
                     <p className="text-sm text-muted-foreground">
-                      Klik tombol setelah menerima konfirmasi dari Bank Sultra
+                      Klik tombol untuk merekam konfirmasi dari Bank Sultra
                     </p>
                   </div>
                   <Button 
@@ -464,6 +464,46 @@ const Sp2dDetail = () => {
           </Card>
         )}
 
+        {/* Bank Confirmation Section - Already Confirmed */}
+        {sp2d.status === "diuji_bank" && (sp2d as any).tanggal_konfirmasi_bank && canManageSp2d && (
+          <Card className="border-success print:hidden">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+                Uji SP2D - Sudah Dikonfirmasi Bank
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                SP2D telah dikonfirmasi oleh Bank Sultra pada{" "}
+                {format(new Date((sp2d as any).tanggal_konfirmasi_bank), "dd MMMM yyyy, HH:mm", {
+                  locale: localeId,
+                })}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {(sp2d as any).nomor_referensi_bank && (
+                  <div className="p-3 bg-muted rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-1">Nomor Referensi Bank</p>
+                    <p className="font-mono font-semibold">{(sp2d as any).nomor_referensi_bank}</p>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="font-semibold mb-1 text-success">Status: Pemindahbukuan Selesai</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Bank telah mengkonfirmasi pemindahbukuan dari rekening kasda
+                    </p>
+                  </div>
+                  <Button variant="outline" disabled>
+                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    Sudah Dikonfirmasi
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Ready to Disburse Section - Only show after bank confirmation */}
         {sp2d.status === "diuji_bank" && (sp2d as any).tanggal_konfirmasi_bank && canManageSp2d && (
           <Card className="border-success print:hidden">
@@ -472,15 +512,26 @@ const Sp2dDetail = () => {
                 <div>
                   <h3 className="font-semibold text-lg">SP2D Siap Dicairkan</h3>
                   <p className="text-muted-foreground">
-                    Bank Sultra telah mengkonfirmasi pemindahbukuan pada{" "}
-                    {format(new Date((sp2d as any).tanggal_konfirmasi_bank), "dd MMMM yyyy, HH:mm", {
-                      locale: localeId,
-                    })}
+                    Bank Sultra telah mengkonfirmasi pemindahbukuan. Klik tombol untuk mencairkan dana.
                   </p>
                 </div>
-                <Button onClick={handleDisburse} disabled={disburseSp2d.isPending}>
-                  <Wallet className="h-4 w-4 mr-2" />
-                  {disburseSp2d.isPending ? "Memproses..." : "Cairkan Dana"}
+                <Button 
+                  onClick={handleDisburse} 
+                  disabled={disburseSp2d.isPending}
+                  size="lg"
+                  className="min-w-[180px]"
+                >
+                  {disburseSp2d.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Memproses...
+                    </>
+                  ) : (
+                    <>
+                      <Wallet className="h-4 w-4 mr-2" />
+                      Cairkan Dana
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>

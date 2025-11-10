@@ -37,7 +37,7 @@ export const useSp2dDetail = (sp2dId: string | undefined) => {
           )
         `)
         .eq("id", sp2dId)
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error("Error fetching SP2D detail:", error);
