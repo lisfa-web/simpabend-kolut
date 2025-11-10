@@ -147,8 +147,8 @@ export const useSp2dMutation = () => {
 
       let otpRecord = null;
       
-      if (!isEmergencyMode) {
-        // Validate OTP from pin_otp table only if not in emergency mode
+      if (!isEmergencyMode && otp) {
+        // Validate OTP from pin_otp table only if not in emergency mode and OTP provided
         const { data: otpData, error: otpError } = await supabase
           .from("pin_otp")
           .select("*")
@@ -187,6 +187,8 @@ export const useSp2dMutation = () => {
           .from("pin_otp")
           .update({ is_used: true })
           .eq("id", otpRecord.id);
+      } else if (!isEmergencyMode && !otp) {
+        console.log('[DIRECT PUBLISH] SP2D published without OTP verification');
       } else {
         console.log('[EMERGENCY MODE] SP2D OTP verification bypassed');
       }
@@ -224,7 +226,7 @@ export const useSp2dMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["sp2d-list"] });
       toast({
         title: "Berhasil",
-        description: "OTP berhasil diverifikasi",
+        description: "SP2D berhasil diterbitkan",
       });
     },
     onError: (error: any) => {

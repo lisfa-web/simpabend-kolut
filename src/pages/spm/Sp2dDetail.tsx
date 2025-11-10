@@ -14,7 +14,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { formatCurrency } from "@/lib/currency";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
 import { Sp2dTimeline } from "./components/Sp2dTimeline";
-import { Sp2dVerificationDialog } from "./components/Sp2dVerificationDialog";
 import { NomorPengujiDialog } from "./components/NomorPengujiDialog";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
@@ -25,7 +24,6 @@ const Sp2dDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { roles, user } = useAuth();
-  const [showVerifyDialog, setShowVerifyDialog] = useState(false);
   const [showNomorPengujiDialog, setShowNomorPengujiDialog] = useState(false);
 
   const { data: sp2d, isLoading } = useSp2dDetail(id);
@@ -37,19 +35,6 @@ const Sp2dDetail = () => {
   const canManageSp2d = roles.some((role) =>
     ["kuasa_bud", "super_admin"].includes(role)
   );
-
-  const handleVerify = (otp: string) => {
-    if (id) {
-      verifyOtp.mutate(
-        { id, otp },
-        {
-          onSuccess: () => {
-            setShowVerifyDialog(false);
-          },
-        }
-      );
-    }
-  };
 
   const handleDisburse = () => {
     if (id) {
@@ -486,15 +471,6 @@ const Sp2dDetail = () => {
           </Card>
         )}
       </div>
-
-      <Sp2dVerificationDialog
-        open={showVerifyDialog}
-        onOpenChange={setShowVerifyDialog}
-        onVerify={handleVerify}
-        loading={verifyOtp.isPending}
-        sp2dId={id || ""}
-        userId={user?.id || ""}
-      />
 
       <NomorPengujiDialog
         open={showNomorPengujiDialog}
