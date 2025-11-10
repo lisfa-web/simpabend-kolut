@@ -57,8 +57,10 @@ serve(async (req: Request) => {
       );
     }
 
-    const isAdmin = userRoles?.some(r => r.role === "administrator" || r.role === "kepala_bkad");
-    if (!isAdmin) {
+    const isSuperAdmin = userRoles?.some(r => r.role === "super_admin");
+    const isRegularAdmin = userRoles?.some(r => r.role === "administrator" || r.role === "kepala_bkad");
+    
+    if (!isSuperAdmin && !isRegularAdmin) {
       return new Response(
         JSON.stringify({ error: "Unauthorized: Admin access required" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -72,6 +74,22 @@ serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: "Missing userId or newPassword" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Get target user's roles to check if they're a super_admin
+    const { data: targetUserRoles } = await admin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId);
+
+    const targetIsSuperAdmin = targetUserRoles?.some(r => r.role === "super_admin");
+    
+    // Regular admin cannot reset super_admin passwords
+    if (!isSuperAdmin && targetIsSuperAdmin) {
+      return new Response(
+        JSON.stringify({ error: "Administrator tidak dapat mereset password Super Admin" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 

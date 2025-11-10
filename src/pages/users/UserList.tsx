@@ -288,7 +288,7 @@ const UserList = () => {
                               <p>Lihat Detail</p>
                             </TooltipContent>
                           </Tooltip>
-                          {/* SECURITY: Only super admin can edit, reset password, or toggle status */}
+                          {/* SECURITY: Only super admin can edit or toggle status */}
                           {isSuperAdminUser && (
                             <>
                               <Tooltip>
@@ -304,27 +304,6 @@ const UserList = () => {
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   <p>Edit User</p>
-                                </TooltipContent>
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() =>
-                                      setResetPasswordDialog({
-                                        open: true,
-                                        userId: user.id,
-                                        userName: user.full_name,
-                                      })
-                                    }
-                                    disabled={isDemoUser || resetPassword.isPending}
-                                  >
-                                    <Key className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Reset Password</p>
                                 </TooltipContent>
                               </Tooltip>
                               <Tooltip>
@@ -354,6 +333,30 @@ const UserList = () => {
                                 </TooltipContent>
                               </Tooltip>
                             </>
+                          )}
+                          {/* SECURITY: Both super admin and administrator can reset passwords */}
+                          {(isSuperAdminUser || (!isDemoUser && canWriteData)) && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() =>
+                                    setResetPasswordDialog({
+                                      open: true,
+                                      userId: user.id,
+                                      userName: user.full_name,
+                                    })
+                                  }
+                                  disabled={isDemoUser || resetPassword.isPending}
+                                >
+                                  <Key className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Reset Password</p>
+                              </TooltipContent>
+                            </Tooltip>
                           )}
                           {/* SECURITY: Both admin and super_admin can delete users (except themselves and super_admins for regular admins) */}
                           {(isSuperAdminUser || (!isDemoUser && canWriteData)) && (
