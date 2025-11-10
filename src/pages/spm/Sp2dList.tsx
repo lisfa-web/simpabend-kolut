@@ -510,8 +510,6 @@ const Sp2dList = () => {
                         <TableHead className="text-primary-foreground font-bold">Nomor SPM</TableHead>
                         <TableHead className="text-primary-foreground font-bold">Nomor Penguji</TableHead>
                         <TableHead className="text-primary-foreground font-bold">OPD</TableHead>
-                        <TableHead className="text-primary-foreground font-bold">Jenis SPM</TableHead>
-                        <TableHead className="text-primary-foreground font-bold">Nama Penerima</TableHead>
                         <TableHead className="text-primary-foreground font-bold">Nilai SP2D</TableHead>
                         <TableHead className="text-primary-foreground font-bold">Dikirim ke Bank</TableHead>
                         <TableHead className="text-primary-foreground font-bold">Status</TableHead>
@@ -521,7 +519,7 @@ const Sp2dList = () => {
                     <TableBody>
                       {sp2dUjiBank?.length === 0 ? (
                         <TableRow>
-                          <TableCell colSpan={10} className="text-center py-8">
+                          <TableCell colSpan={8} className="text-center py-8">
                             <div className="flex flex-col items-center gap-2">
                               <Banknote className="h-12 w-12 text-muted-foreground/50" />
                               <p className="text-muted-foreground">
@@ -561,16 +559,6 @@ const Sp2dList = () => {
                               )}
                             </TableCell>
                             <TableCell>{sp2d.spm?.opd?.nama_opd || "-"}</TableCell>
-                            <TableCell>
-                              {sp2d.spm?.jenis_spm?.nama_jenis || (
-                                <span className="text-destructive text-xs">Data tidak lengkap</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {sp2d.spm?.nama_penerima || (
-                                <span className="text-destructive text-xs">Data tidak lengkap</span>
-                              )}
-                            </TableCell>
                             <TableCell>
                               {formatCurrency(Number(sp2d.nilai_sp2d))}
                             </TableCell>
