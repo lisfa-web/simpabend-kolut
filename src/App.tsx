@@ -185,8 +185,8 @@ const App = () => (
               <Route path="/pengaturan/format-nomor" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FormatNomorList /></RoleProtectedRoute>} />
               <Route path="/pengaturan/format-nomor/new" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FormatNomorForm /></RoleProtectedRoute>} />
               <Route path="/pengaturan/format-nomor/:id/edit" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FormatNomorForm /></RoleProtectedRoute>} />
-              <Route path="/pengaturan/wa-gateway" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><WaGatewayConfig /></RoleProtectedRoute>} />
-              <Route path="/pengaturan/email" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><EmailConfig /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/wa-gateway" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><WaGatewayConfig /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/email" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><EmailConfig /></RoleProtectedRoute>} />
               <Route path="/pengaturan/permissions" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><PermissionsList /></RoleProtectedRoute>} />
               <Route path="/pengaturan/audit-trail" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><AuditTrail /></RoleProtectedRoute>} />
               <Route path="/pengaturan/emergency-mode" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><EmergencyMode /></RoleProtectedRoute>} />

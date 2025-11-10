@@ -5,12 +5,13 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 
 const PengaturanIndex = () => {
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isAdmin } = useAuth();
 
-  // Only super admins can access settings
-  if (!isSuperAdmin()) {
+  // Allow both administrator and super_admin to access settings
+  if (!isAdmin() && !isSuperAdmin()) {
     return <Navigate to="/unauthorized" replace />;
   }
+
   const settingsModules = [
     {
       title: "Database Backup",
@@ -77,6 +78,14 @@ const PengaturanIndex = () => {
     },
   ];
 
+  // Filter modules based on role - WA Gateway and Email Config only for super admin
+  const filteredModules = settingsModules.filter((module) => {
+    if (module.href === "/pengaturan/wa-gateway" || module.href === "/pengaturan/email") {
+      return isSuperAdmin();
+    }
+    return true;
+  });
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -88,7 +97,7 @@ const PengaturanIndex = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {settingsModules.map((module) => (
+          {filteredModules.map((module) => (
             <Link key={module.href} to={module.href}>
               <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardHeader>
