@@ -40,7 +40,9 @@ export const Sp2dTimeline = ({ sp2d }: Sp2dTimelineProps) => {
       label: "Konfirmasi Pemindahbukuan dari Bank",
       date: sp2d.tanggal_konfirmasi_bank,
       icon: Send,
-      description: "Bank telah mengkonfirmasi pemindahbukuan dari Kasda ke Giro Penerima",
+      description: sp2d.tanggal_konfirmasi_bank 
+        ? `Bank telah mengkonfirmasi pemindahbukuan${sp2d.nomor_referensi_bank ? ` (Ref: ${sp2d.nomor_referensi_bank})` : ''}`
+        : "Menunggu konfirmasi dari Bank Sultra",
       isCompleted: !!sp2d.tanggal_konfirmasi_bank || sp2d.status === "cair",
       isCurrent: sp2d.status === "diuji_bank" && !!sp2d.tanggal_konfirmasi_bank && !sp2d.tanggal_cair,
     },

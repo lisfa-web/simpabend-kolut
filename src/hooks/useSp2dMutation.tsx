@@ -352,11 +352,20 @@ export const useSp2dMutation = () => {
   });
 
   const confirmFromBank = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async ({ 
+      id, 
+      nomorReferensi, 
+      tanggalKonfirmasi 
+    }: { 
+      id: string; 
+      nomorReferensi: string; 
+      tanggalKonfirmasi: Date;
+    }) => {
       const { data: result, error } = await supabase
         .from("sp2d")
         .update({ 
-          tanggal_konfirmasi_bank: new Date().toISOString()
+          tanggal_konfirmasi_bank: tanggalKonfirmasi.toISOString(),
+          nomor_referensi_bank: nomorReferensi
         })
         .eq("id", id)
         .select()

@@ -349,6 +349,11 @@ export default function Sp2dTimelineDetail() {
                       <p className="font-medium">
                         {format(new Date(sp2d.tanggal_konfirmasi_bank), "dd MMMM yyyy", { locale: id })}
                       </p>
+                      {sp2d.nomor_referensi_bank && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Ref: {sp2d.nomor_referensi_bank}
+                        </p>
+                      )}
                     </div>
                   </>
                 )}

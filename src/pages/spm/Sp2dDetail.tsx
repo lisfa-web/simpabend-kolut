@@ -15,6 +15,7 @@ import { formatCurrency } from "@/lib/currency";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
 import { Sp2dTimeline } from "./components/Sp2dTimeline";
 import { NomorPengujiDialog } from "./components/NomorPengujiDialog";
+import { KonfirmasiBankDialog } from "./components/KonfirmasiBankDialog";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +26,7 @@ const Sp2dDetail = () => {
   const navigate = useNavigate();
   const { roles, user } = useAuth();
   const [showNomorPengujiDialog, setShowNomorPengujiDialog] = useState(false);
+  const [showKonfirmasiBankDialog, setShowKonfirmasiBankDialog] = useState(false);
 
   const { data: sp2d, isLoading } = useSp2dDetail(id);
   const { data: configs } = useConfigSistem();
@@ -55,9 +57,20 @@ const Sp2dDetail = () => {
     }
   };
 
-  const handleConfirmFromBank = () => {
+  const handleConfirmFromBank = (data: { nomorReferensi: string; tanggalKonfirmasi: Date }) => {
     if (id) {
-      confirmFromBank.mutate(id);
+      confirmFromBank.mutate(
+        { 
+          id, 
+          nomorReferensi: data.nomorReferensi,
+          tanggalKonfirmasi: data.tanggalKonfirmasi 
+        },
+        {
+          onSuccess: () => {
+            setShowKonfirmasiBankDialog(false);
+          },
+        }
+      );
     }
   };
 
@@ -429,8 +442,21 @@ const Sp2dDetail = () => {
                       Klik tombol setelah menerima konfirmasi dari Bank Sultra
                     </p>
                   </div>
-                  <Button onClick={handleConfirmFromBank} disabled={confirmFromBank.isPending}>
-                    {confirmFromBank.isPending ? "Memproses..." : "Konfirmasi dari Bank"}
+                  <Button 
+                    onClick={() => setShowKonfirmasiBankDialog(true)}
+                    disabled={confirmFromBank.isPending}
+                  >
+                    {confirmFromBank.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Memproses...
+                      </>
+                    ) : (
+                      <>
+                        <FileCheck className="h-4 w-4 mr-2" />
+                        Konfirmasi dari Bank
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -488,6 +514,13 @@ const Sp2dDetail = () => {
         onOpenChange={setShowNomorPengujiDialog}
         onSubmit={handleSendToBank}
         loading={sendToBank.isPending}
+      />
+
+      <KonfirmasiBankDialog
+        open={showKonfirmasiBankDialog}
+        onOpenChange={setShowKonfirmasiBankDialog}
+        onSubmit={handleConfirmFromBank}
+        loading={confirmFromBank.isPending}
       />
 
       {/* Print styles */}
