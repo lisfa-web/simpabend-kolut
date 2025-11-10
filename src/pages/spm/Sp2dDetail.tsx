@@ -337,50 +337,42 @@ const Sp2dDetail = () => {
           </TabsContent>
         </Tabs>
 
-        {/* OTP Verification Section - Show for pending SP2D */}
+        {/* Verifikasi Section - Show for pending SP2D */}
         {sp2d.status === "pending" && canManageSp2d && (
-          <Card className="border-warning print:hidden">
+          <Card className="border-primary print:hidden">
             <CardHeader>
-              <CardTitle>Verifikasi OTP SP2D</CardTitle>
+              <CardTitle>Verifikasi SP2D</CardTitle>
               <p className="text-sm text-muted-foreground">
-                SP2D telah dibuat. Masukkan OTP yang telah dikirim untuk menerbitkan SP2D.
+                SP2D telah dibuat dan siap untuk diterbitkan.
               </p>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-semibold mb-1">Status: Menunggu Verifikasi OTP</h4>
+                  <h4 className="font-semibold mb-1">Status: Menunggu Verifikasi</h4>
                   <p className="text-sm text-muted-foreground">
-                    OTP telah dikirim ke nomor WhatsApp terdaftar
+                    Klik tombol untuk menerbitkan SP2D
                   </p>
                 </div>
-                <Button onClick={() => setShowVerifyDialog(true)}>
-                  Verifikasi OTP
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* OTP Verification Section - Show for pending SP2D */}
-        {sp2d.status === "pending" && canManageSp2d && (
-          <Card className="border-warning print:hidden">
-            <CardHeader>
-              <CardTitle>Verifikasi OTP SP2D</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                SP2D telah dibuat. Masukkan OTP yang telah dikirim untuk menerbitkan SP2D.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold mb-1">Status: Menunggu Verifikasi OTP</h4>
-                  <p className="text-sm text-muted-foreground">
-                    OTP telah dikirim ke nomor WhatsApp terdaftar
-                  </p>
-                </div>
-                <Button onClick={() => setShowVerifyDialog(true)}>
-                  Verifikasi OTP
+                <Button 
+                  onClick={() => {
+                    if (id) {
+                      verifyOtp.mutate({ id, otp: '' });
+                    }
+                  }}
+                  disabled={verifyOtp.isPending}
+                >
+                  {verifyOtp.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Memproses...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Terbitkan SP2D
+                    </>
+                  )}
                 </Button>
               </div>
             </CardContent>
