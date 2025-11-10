@@ -185,6 +185,12 @@ export const SpmPajakForm = ({
   };
 
   const handleNext = () => {
+    // Untuk SPM tanpa pajak, langsung tampilkan konfirmasi
+    if (!requiresPajak) {
+      setShowConfirmDialog(true);
+      return;
+    }
+
     // Validasi: total potongan tidak boleh melebihi nilai SPM
     if (totalPotongan > nilaiSpm) {
       alert("Total potongan tidak boleh melebihi nilai SPM!");
@@ -192,13 +198,11 @@ export const SpmPajakForm = ({
     }
 
     // Validasi: semua field wajib diisi untuk SPM yang require pajak
-    if (requiresPajak) {
-      for (let i = 0; i < pajaks.length; i++) {
-        const p = pajaks[i];
-        if (!p.jenis_pajak || p.dasar_pengenaan <= 0 || p.jumlah_pajak <= 0) {
-          alert(`Pajak #${i + 1} belum lengkap. Mohon lengkapi semua field.`);
-          return;
-        }
+    for (let i = 0; i < pajaks.length; i++) {
+      const p = pajaks[i];
+      if (!p.jenis_pajak || p.dasar_pengenaan <= 0 || p.jumlah_pajak <= 0) {
+        alert(`Pajak #${i + 1} belum lengkap. Mohon lengkapi semua field.`);
+        return;
       }
     }
 
@@ -233,40 +237,38 @@ export const SpmPajakForm = ({
     setShowConfirmDialog(false);
   };
 
-  // Jika jenis SPM tidak perlu pajak, tampilkan info dan skip
-  if (!requiresPajak) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Potongan Pajak</CardTitle>
-          <CardDescription>
-            Jenis SPM ini tidak memerlukan potongan pajak
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              SPM jenis <strong>{jenisSpm.toUpperCase().replace(/_/g, ' ')}</strong> tidak memiliki potongan pajak saat penerbitan SPM.
-              {jenisSpm === 'gu' && " Pajak sudah dipotong saat realisasi belanja UP sebelumnya."}
-            </AlertDescription>
-          </Alert>
-
-          <div className="flex justify-between mt-6">
-            <Button type="button" variant="outline" onClick={onBack}>
-              Kembali
-            </Button>
-            <Button type="button" onClick={handleNext}>
-              Selanjutnya
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <div className="space-y-6">
+    <>
+      {/* Jika jenis SPM tidak perlu pajak, tampilkan info saja */}
+      {!requiresPajak ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Potongan Pajak</CardTitle>
+            <CardDescription>
+              Jenis SPM ini tidak memerlukan potongan pajak
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                SPM jenis <strong>{jenisSpm.toUpperCase().replace(/_/g, ' ')}</strong> tidak memiliki potongan pajak saat penerbitan SPM.
+                {jenisSpm === 'gu' && " Pajak sudah dipotong saat realisasi belanja UP sebelumnya."}
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex justify-between mt-6">
+              <Button type="button" variant="outline" onClick={onBack}>
+                Kembali
+              </Button>
+              <Button type="button" onClick={handleNext}>
+                Selanjutnya
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Potongan Pajak SPM</CardTitle>
@@ -491,92 +493,124 @@ export const SpmPajakForm = ({
           Selanjutnya
         </Button>
       </div>
+        </div>
+      )}
 
+      {/* AlertDialog - selalu di-render, visibility dikontrol oleh showConfirmDialog */}
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Konfirmasi Perhitungan Pajak</AlertDialogTitle>
+            <AlertDialogTitle>
+              {!requiresPajak ? "Konfirmasi Data SPM" : "Konfirmasi Perhitungan Pajak"}
+            </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3">
-              <div>
-                <p className="text-sm text-muted-foreground">Apakah perhitungan sudah benar?</p>
-              </div>
-              <div className="rounded-lg bg-muted p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Nilai SPM (Bruto):</span>
-                  <span className="text-base font-bold text-foreground">
-                    {formatCurrency(nilaiSpm)}
-                  </span>
+              {!requiresPajak ? (
+                // Tampilan untuk SPM tanpa pajak
+                <div className="rounded-lg bg-muted p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium">Nilai SPM:</span>
+                    <span className="text-base font-bold text-foreground">
+                      {formatCurrency(nilaiSpm)}
+                    </span>
+                  </div>
+                  <div className="border-t pt-2">
+                    <p className="text-xs text-muted-foreground italic">
+                      {terbilangRupiah(nilaiSpm)}
+                    </p>
+                  </div>
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                      SPM jenis <strong>{jenisSpm.toUpperCase().replace(/_/g, ' ')}</strong> tidak memiliki potongan pajak.
+                      {jenisSpm === 'gu' && " Pajak sudah dipotong saat realisasi belanja UP sebelumnya."}
+                    </AlertDescription>
+                  </Alert>
                 </div>
-                <div className="border-t pt-2">
-                  <p className="text-xs text-muted-foreground italic">
-                    {terbilangRupiah(nilaiSpm)}
-                  </p>
-                </div>
-                
-                <Separator />
-                
-                {/* Rincian Potongan Pajak */}
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold text-foreground">Rincian Potongan Pajak:</p>
-                  {pajaks.map((pajak, index) => {
-                    const pajakOption = pajakOptions.find(opt => opt.value === pajak.jenis_pajak);
-                    return (
-                      <div key={index} className="border rounded-lg p-3 space-y-2 bg-background">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-primary">
-                            #{index + 1} {pajak.nama_pajak || pajak.jenis_pajak}
-                          </span>
-                          <span className="text-sm font-bold text-destructive">
-                            -{formatCurrency(pajak.jumlah_pajak)}
-                          </span>
-                        </div>
-                        
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          <p><span className="font-medium">Uraian:</span> {pajak.uraian}</p>
-                          <p>
-                            <span className="font-medium">Nilai SPM:</span>{' '}
-                            {formatCurrency(pajak.dasar_pengenaan)}
-                          </p>
-                        </div>
-                        
-                        <div className="border-t pt-1">
-                          <p className="text-xs text-muted-foreground italic">
-                            → {terbilangRupiah(pajak.jumlah_pajak)}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                <Separator />
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Total Potongan:</span>
-                  <span className="text-base font-bold text-destructive">
-                    -{formatCurrency(totalPotongan)}
-                  </span>
-                </div>
-                <div className="border-t pt-2">
-                  <p className="text-xs text-muted-foreground italic">
-                    {terbilangRupiah(totalPotongan)}
-                  </p>
-                </div>
-                
-                <Separator />
-                
-                <div className="flex justify-between items-center bg-primary/10 p-3 rounded">
-                  <span className="text-sm font-semibold">Nilai Bersih (Netto):</span>
-                  <span className="text-lg font-bold text-primary">
-                    {formatCurrency(nilaiBersih)}
-                  </span>
-                </div>
-                <div className="border-t pt-2">
-                  <p className="text-xs text-muted-foreground italic font-medium">
-                    {terbilangRupiah(nilaiBersih)}
-                  </p>
-                </div>
-              </div>
+              ) : (
+                // Tampilan untuk SPM dengan pajak
+                <>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Apakah perhitungan sudah benar?</p>
+                  </div>
+                  <div className="rounded-lg bg-muted p-4 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Nilai SPM (Bruto):</span>
+                      <span className="text-base font-bold text-foreground">
+                        {formatCurrency(nilaiSpm)}
+                      </span>
+                    </div>
+                    <div className="border-t pt-2">
+                      <p className="text-xs text-muted-foreground italic">
+                        {terbilangRupiah(nilaiSpm)}
+                      </p>
+                    </div>
+                    
+                    <Separator />
+                    
+                    {/* Rincian Potongan Pajak */}
+                    <div className="space-y-2">
+                      <p className="text-sm font-semibold text-foreground">Rincian Potongan Pajak:</p>
+                      {pajaks.map((pajak, index) => {
+                        const pajakOption = pajakOptions.find(opt => opt.value === pajak.jenis_pajak);
+                        return (
+                          <div key={index} className="border rounded-lg p-3 space-y-2 bg-background">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-semibold text-primary">
+                                #{index + 1} {pajak.nama_pajak || pajak.jenis_pajak}
+                              </span>
+                              <span className="text-sm font-bold text-destructive">
+                                -{formatCurrency(pajak.jumlah_pajak)}
+                              </span>
+                            </div>
+                            
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <p><span className="font-medium">Uraian:</span> {pajak.uraian}</p>
+                              <p>
+                                <span className="font-medium">Nilai SPM:</span>{' '}
+                                {formatCurrency(pajak.dasar_pengenaan)}
+                              </p>
+                            </div>
+                            
+                            <div className="border-t pt-1">
+                              <p className="text-xs text-muted-foreground italic">
+                                → {terbilangRupiah(pajak.jumlah_pajak)}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium">Total Potongan:</span>
+                      <span className="text-base font-bold text-destructive">
+                        -{formatCurrency(totalPotongan)}
+                      </span>
+                    </div>
+                    <div className="border-t pt-2">
+                      <p className="text-xs text-muted-foreground italic">
+                        {terbilangRupiah(totalPotongan)}
+                      </p>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex justify-between items-center bg-primary/10 p-3 rounded">
+                      <span className="text-sm font-semibold">Nilai Bersih (Netto):</span>
+                      <span className="text-lg font-bold text-primary">
+                        {formatCurrency(nilaiBersih)}
+                      </span>
+                    </div>
+                    <div className="border-t pt-2">
+                      <p className="text-xs text-muted-foreground italic font-medium">
+                        {terbilangRupiah(nilaiBersih)}
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -584,11 +618,11 @@ export const SpmPajakForm = ({
               ❌ Tidak, Koreksi
             </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirm}>
-              ✅ Ya, Benar
+              ✅ Ya, {!requiresPajak ? "Lanjutkan" : "Benar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 };
