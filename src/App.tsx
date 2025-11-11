@@ -70,6 +70,7 @@ const EmergencyMode = lazy(() => import("./pages/pengaturan/EmergencyMode"));
 const SidebarTemplate = lazy(() => import("./pages/pengaturan/SidebarTemplate"));
 const DatabaseBackup = lazy(() => import("./pages/pengaturan/DatabaseBackup"));
 const SecuritySettings = lazy(() => import("./pages/pengaturan/SecuritySettings"));
+const AccessControl = lazy(() => import("./pages/pengaturan/AccessControl"));
 const PanduanManual = lazy(() => import("./pages/panduan/PanduanManual"));
 const PanduanManualAdmin = lazy(() => import("./pages/panduan/PanduanManualAdmin"));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
@@ -222,6 +223,7 @@ const App = () => (
               <Route path="/pengaturan/sidebar-template" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><SidebarTemplate /></RoleProtectedRoute>} />
               <Route path="/pengaturan/database-backup" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><DatabaseBackup /></RoleProtectedRoute>} />
               <Route path="/pengaturan/security" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><SecuritySettings /></RoleProtectedRoute>} />
+              <Route path="/pengaturan/access-control" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><AccessControl /></RoleProtectedRoute>} />
               
               {/* Panduan Routes */}
               <Route path="/panduan" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />

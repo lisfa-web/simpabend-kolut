@@ -896,6 +896,36 @@ export type Database = {
           },
         ]
       }
+      setting_access_control: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_configurable: boolean | null
+          setting_key: string
+          setting_title: string
+          superadmin_only: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_configurable?: boolean | null
+          setting_key: string
+          setting_title: string
+          superadmin_only?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_configurable?: boolean | null
+          setting_key?: string
+          setting_title?: string
+          superadmin_only?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       sp2d: {
         Row: {
           catatan: string | null

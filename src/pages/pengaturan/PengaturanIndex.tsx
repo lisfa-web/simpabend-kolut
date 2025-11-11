@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
+import { useSettingAccessControl } from "@/hooks/useSettingAccessControl";
 
 const PengaturanIndex = () => {
   const { isSuperAdmin, isAdmin } = useAuth();
+  const { data: accessControlSettings } = useSettingAccessControl();
 
   // Allow both administrator and super_admin to access settings
   if (!isAdmin() && !isSuperAdmin()) {
@@ -79,16 +81,17 @@ const PengaturanIndex = () => {
     },
   ];
 
-  // Filter modules based on role - WA Gateway, Email Config, Database Backup, and Sidebar Template only for super admin
+  // Filter modules based on dynamic access control from database
   const filteredModules = settingsModules.filter((module) => {
-    if (
-      module.href === "/pengaturan/wa-gateway" || 
-      module.href === "/pengaturan/email" ||
-      module.href === "/pengaturan/database-backup" ||
-      module.href === "/pengaturan/sidebar-template"
-    ) {
+    const settingKey = module.href.replace("/pengaturan/", "");
+    const accessControl = accessControlSettings?.find(
+      (setting) => setting.setting_key === settingKey
+    );
+    
+    if (accessControl?.superadmin_only) {
       return isSuperAdmin();
     }
+    
     return true;
   });
 
@@ -103,26 +106,28 @@ const PengaturanIndex = () => {
         </div>
 
         {isSuperAdmin() && (
-          <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
-            <CardHeader>
-              <div className="flex items-start gap-4">
-                <div className="p-3 rounded-lg bg-muted">
-                  <Lock className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between gap-4">
-                    <CardTitle className="text-xl">Kontrol Akses Pengaturan</CardTitle>
-                    <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-                      Superadmin
-                    </Badge>
+          <Link to="/pengaturan/access-control">
+            <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800 hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader>
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-lg bg-muted">
+                    <Lock className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <CardDescription className="mt-2 text-base">
-                    Kelola pengaturan mana saja yang hanya bisa diakses oleh superadmin
-                  </CardDescription>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-4">
+                      <CardTitle className="text-xl">Kontrol Akses Pengaturan</CardTitle>
+                      <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                        Superadmin
+                      </Badge>
+                    </div>
+                    <CardDescription className="mt-2 text-base">
+                      Kelola pengaturan mana saja yang hanya bisa diakses oleh superadmin
+                    </CardDescription>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-          </Card>
+              </CardHeader>
+            </Card>
+          </Link>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
