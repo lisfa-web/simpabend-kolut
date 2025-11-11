@@ -1,6 +1,7 @@
 import { Link, Navigate } from "react-router-dom";
 import { Settings, FileText, MessageSquare, Shield, Mail, AlertTriangle, Palette, Database, Lock } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -100,6 +101,29 @@ const PengaturanIndex = () => {
             Kelola konfigurasi dan pengaturan sistem
           </p>
         </div>
+
+        {isSuperAdmin() && (
+          <Card className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 border-purple-200 dark:border-purple-800">
+            <CardHeader>
+              <div className="flex items-start gap-4">
+                <div className="p-3 rounded-lg bg-muted">
+                  <Lock className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-4">
+                    <CardTitle className="text-xl">Kontrol Akses Pengaturan</CardTitle>
+                    <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
+                      Superadmin
+                    </Badge>
+                  </div>
+                  <CardDescription className="mt-2 text-base">
+                    Kelola pengaturan mana saja yang hanya bisa diakses oleh superadmin
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredModules.map((module) => (
