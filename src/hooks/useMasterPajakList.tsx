@@ -1,6 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface MasterPajakFilters {
+  is_active?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
 export interface MasterPajak {
   id: string;
   kode_pajak: string;
@@ -14,17 +20,30 @@ export interface MasterPajak {
   updated_at: string;
 }
 
-export const useMasterPajakList = () => {
+export const useMasterPajakList = (filters?: MasterPajakFilters) => {
   return useQuery({
-    queryKey: ["master-pajak"],
+    queryKey: ["master-pajak", filters],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      let query = (supabase as any)
         .from("master_pajak")
-        .select("*")
+        .select("*", { count: "exact" })
         .order("kode_pajak");
+
+      if (filters?.is_active !== undefined) {
+        query = query.eq("is_active", filters.is_active);
+      }
+
+      // Apply pagination
+      if (filters?.page && filters?.pageSize) {
+        const from = (filters.page - 1) * filters.pageSize;
+        const to = from + filters.pageSize - 1;
+        query = query.range(from, to);
+      }
+      
+      const { data, error, count } = await query;
       
       if (error) throw error;
-      return data as MasterPajak[];
+      return { data: data as MasterPajak[], count: count || 0 };
     },
   });
 };

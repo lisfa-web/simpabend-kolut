@@ -8,6 +8,8 @@ interface Sp2dListFilters {
   tanggal_dari?: string;
   tanggal_sampai?: string;
   opd_id?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export const useSp2dList = (filters?: Sp2dListFilters) => {
@@ -16,26 +18,43 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
   return useQuery({
     queryKey: ["sp2d-list", user?.id, filters],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!user?.id) return { data: [], count: 0 };
 
       try {
-        let query = supabase
-          .from("sp2d")
-          .select(`
-            *,
-            spm:spm_id(
-              nomor_spm,
-              nilai_spm,
-              nilai_bersih,
-              nama_penerima,
-              tipe_penerima,
-              opd_id,
-              opd:opd_id(nama_opd),
-              jenis_spm:jenis_spm_id(nama_jenis),
-              bendahara:bendahara_id(full_name, email)
+      let query = supabase
+        .from("sp2d")
+        .select(`
+          *,
+          spm:spm_id (
+            id,
+            nomor_spm,
+            uraian,
+            nilai_spm,
+            nama_penerima,
+            bendahara_id,
+            bendahara:bendahara_id (
+              nama_bendahara,
+              email
             )
-          `)
-          .order("created_at", { ascending: false });
+          ),
+          opd:opd_id (
+            id,
+            nama_opd,
+            kode_opd
+          ),
+          jenis_spm:jenis_spm_id (
+            nama_jenis
+          ),
+          bendahara:bendahara_id (
+            id,
+            nama_bendahara,
+            nip,
+            nama_bank,
+            nomor_rekening,
+            kode_opd
+          )
+        `, { count: "exact" })
+        .order("created_at", { ascending: false });
 
         // Apply search filter - search in nomor_sp2d, nomor_spm, and nama_penerima
         if (filters?.search) {
@@ -56,29 +75,36 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
           query = query.gte("tanggal_sp2d", filters.tanggal_dari);
         }
 
-        if (filters?.tanggal_sampai) {
-          query = query.lte("tanggal_sp2d", filters.tanggal_sampai);
-        }
+      if (filters?.tanggal_sampai) {
+        query = query.lte("tanggal_sp2d", filters.tanggal_sampai);
+      }
 
-        const { data, error } = await query;
+      // Apply pagination
+      if (filters?.page && filters?.pageSize) {
+        const from = (filters.page - 1) * filters.pageSize;
+        const to = from + filters.pageSize - 1;
+        query = query.range(from, to);
+      }
 
-        if (error) {
-          console.error("Error fetching SP2D list:", error);
-          throw error;
-        }
-        
-        // Client-side filtering for OPD since it's a nested field
-        let filteredData = data || [];
-        if (filters?.opd_id) {
-          filteredData = filteredData.filter(
-            (sp2d: any) => sp2d.spm?.opd_id === filters.opd_id
-          );
-        }
-        
-        return filteredData;
+      const { data, error, count } = await query;
+
+      if (error) {
+        console.error("Error fetching SP2D list:", error);
+        throw error;
+      }
+      
+      // Client-side filtering for OPD since it's a nested field
+      let filteredData = data || [];
+      if (filters?.opd_id) {
+        filteredData = filteredData.filter(
+          (sp2d: any) => sp2d.spm?.opd_id === filters.opd_id
+        );
+      }
+      
+      return { data: filteredData, count: count || 0 };
       } catch (error) {
         console.error("Error in useSp2dList:", error);
-        return [];
+        return { data: [], count: 0 };
       }
     },
     enabled: !!user?.id,

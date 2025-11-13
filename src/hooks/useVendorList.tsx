@@ -4,6 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 interface VendorFilters {
   is_active?: boolean;
   enabled?: boolean;
+  search?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export const useVendorList = (filters?: VendorFilters) => {
@@ -13,17 +16,30 @@ export const useVendorList = (filters?: VendorFilters) => {
     queryFn: async () => {
       let query = supabase
         .from("vendor")
-        .select("*")
+        .select("*", { count: "exact" })
         .order("nama_vendor");
+
+      if (filters?.search) {
+        query = query.or(
+          `nama_vendor.ilike.%${filters.search}%,npwp.ilike.%${filters.search}%`
+        );
+      }
 
       if (filters?.is_active !== undefined) {
         query = query.eq("is_active", filters.is_active);
       }
 
-      const { data, error } = await query;
+      // Apply pagination
+      if (filters?.page && filters?.pageSize) {
+        const from = (filters.page - 1) * filters.pageSize;
+        const to = from + filters.pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
-      return data;
+      return { data: data || [], count: count || 0 };
     },
   });
 };

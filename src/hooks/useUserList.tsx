@@ -5,6 +5,8 @@ interface UseUserListParams {
   search?: string;
   role?: string;
   is_active?: boolean;
+  page?: number;
+  pageSize?: number;
 }
 
 export const useUserList = (params: UseUserListParams = {}) => {
@@ -13,7 +15,7 @@ export const useUserList = (params: UseUserListParams = {}) => {
     queryFn: async () => {
       let query = supabase
         .from("profiles")
-        .select("*")
+        .select("*", { count: "exact" })
         .order("created_at", { ascending: false });
 
       if (params.search) {
@@ -26,7 +28,14 @@ export const useUserList = (params: UseUserListParams = {}) => {
         query = query.eq("is_active", params.is_active);
       }
 
-      const { data: profiles, error } = await query;
+      // Apply pagination
+      if (params.page && params.pageSize) {
+        const from = (params.page - 1) * params.pageSize;
+        const to = from + params.pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data: profiles, error, count } = await query;
 
       if (error) throw error;
 
@@ -49,13 +58,14 @@ export const useUserList = (params: UseUserListParams = {}) => {
       }));
 
       // Filter by role if specified
+      let filteredUsers = usersWithRoles;
       if (params.role) {
-        return usersWithRoles?.filter((user: any) =>
+        filteredUsers = usersWithRoles?.filter((user: any) =>
           user.user_roles?.some((ur: any) => ur.role === params.role)
         );
       }
 
-      return usersWithRoles;
+      return { data: filteredUsers || [], count: count || 0 };
     },
   });
 };

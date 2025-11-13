@@ -9,6 +9,8 @@ interface SpmListFilters {
   opd_id?: string;
   tanggal_dari?: string;
   tanggal_sampai?: string;
+  page?: number;
+  pageSize?: number;
 }
 
 export const useSpmList = (filters?: SpmListFilters) => {
@@ -25,7 +27,7 @@ export const useSpmList = (filters?: SpmListFilters) => {
           *,
           opd:opd_id(nama_opd, kode_opd),
           jenis_spm:jenis_spm_id(nama_jenis, ada_pajak, deskripsi)
-        `)
+        `, { count: "exact" })
         .order("created_at", { ascending: false });
 
       // Apply search filter - search in nomor_spm, uraian, and nama_penerima
@@ -61,10 +63,17 @@ export const useSpmList = (filters?: SpmListFilters) => {
         query = query.lte("tanggal_ajuan", filters.tanggal_sampai);
       }
 
-      const { data, error } = await query;
+      // Apply pagination
+      if (filters?.page && filters?.pageSize) {
+        const from = (filters.page - 1) * filters.pageSize;
+        const to = from + filters.pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data, error, count } = await query;
 
       if (error) throw error;
-      return data;
+      return { data: data || [], count: count || 0 };
     },
     enabled: !!user?.id,
   });

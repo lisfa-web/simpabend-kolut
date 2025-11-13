@@ -27,6 +27,8 @@ export interface PajakPerJenisSpm {
 interface UsePajakPerJenisSpmListFilters {
   jenis_spm?: string;
   is_default?: boolean;
+  page?: number;
+  pageSize?: number;
 }
 
 export const usePajakPerJenisSpmList = (filters?: UsePajakPerJenisSpmListFilters) => {
@@ -38,7 +40,7 @@ export const usePajakPerJenisSpmList = (filters?: UsePajakPerJenisSpmListFilters
         .select(`
           *,
           master_pajak:master_pajak_id (*)
-        `)
+        `, { count: "exact" })
         .order("jenis_spm")
         .order("urutan");
 
@@ -49,9 +51,16 @@ export const usePajakPerJenisSpmList = (filters?: UsePajakPerJenisSpmListFilters
         query = query.eq("is_default", filters.is_default);
       }
 
-      const { data, error } = await query;
+      // Apply pagination
+      if (filters?.page && filters?.pageSize) {
+        const from = (filters.page - 1) * filters.pageSize;
+        const to = from + filters.pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data, error, count } = await query;
       if (error) throw error;
-      return data as PajakPerJenisSpm[];
+      return { data: data as PajakPerJenisSpm[], count: count || 0 };
     },
   });
 };

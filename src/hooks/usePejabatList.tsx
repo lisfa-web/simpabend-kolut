@@ -6,6 +6,8 @@ interface PejabatFilters {
   is_active?: boolean;
   search?: string;
   enabled?: boolean;
+  page?: number;
+  pageSize?: number;
 }
 
 export const usePejabatList = (filters?: PejabatFilters) => {
@@ -24,7 +26,7 @@ export const usePejabatList = (filters?: PejabatFilters) => {
             nama_opd,
             kode_opd
           )
-        `)
+        `, { count: "exact" })
         .order("nama_lengkap", { ascending: true });
 
       if (filters?.opd_id) {
@@ -41,7 +43,14 @@ export const usePejabatList = (filters?: PejabatFilters) => {
         );
       }
 
-      const { data, error } = await query;
+      // Apply pagination
+      if (filters?.page && filters?.pageSize) {
+        const from = (filters.page - 1) * filters.pageSize;
+        const to = from + filters.pageSize - 1;
+        query = query.range(from, to);
+      }
+
+      const { data, error, count } = await query;
 
       if (error) {
         console.error("Error fetching pejabat:", error);
@@ -49,7 +58,7 @@ export const usePejabatList = (filters?: PejabatFilters) => {
       }
       
       console.log("Pejabat data fetched:", data);
-      return data;
+      return { data: data || [], count: count || 0 };
     },
   });
 };
