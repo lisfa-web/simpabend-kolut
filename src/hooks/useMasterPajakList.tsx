@@ -3,8 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface MasterPajakFilters {
   is_active?: boolean;
-  page?: number;
-  pageSize?: number;
 }
 
 export interface MasterPajak {
@@ -26,24 +24,17 @@ export const useMasterPajakList = (filters?: MasterPajakFilters) => {
     queryFn: async () => {
       let query = (supabase as any)
         .from("master_pajak")
-        .select("*", { count: "exact" })
+        .select("*")
         .order("kode_pajak");
 
       if (filters?.is_active !== undefined) {
         query = query.eq("is_active", filters.is_active);
       }
-
-      // Apply pagination
-      if (filters?.page && filters?.pageSize) {
-        const from = (filters.page - 1) * filters.pageSize;
-        const to = from + filters.pageSize - 1;
-        query = query.range(from, to);
-      }
       
-      const { data, error, count } = await query;
+      const { data, error } = await query;
       
       if (error) throw error;
-      return { data: data as MasterPajak[], count: count || 0 };
+      return data as MasterPajak[];
     },
   });
 };

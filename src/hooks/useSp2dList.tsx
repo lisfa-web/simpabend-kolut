@@ -8,8 +8,6 @@ interface Sp2dListFilters {
   tanggal_dari?: string;
   tanggal_sampai?: string;
   opd_id?: string;
-  page?: number;
-  pageSize?: number;
 }
 
 export const useSp2dList = (filters?: Sp2dListFilters) => {
@@ -18,7 +16,7 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
   return useQuery({
     queryKey: ["sp2d-list", user?.id, filters],
     queryFn: async () => {
-      if (!user?.id) return { data: [], count: 0 };
+      if (!user?.id) return [];
 
       try {
       let query = supabase
@@ -53,7 +51,7 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
             nomor_rekening,
             kode_opd
           )
-        `, { count: "exact" })
+        `)
         .order("created_at", { ascending: false });
 
         // Apply search filter - search in nomor_sp2d, nomor_spm, and nama_penerima
@@ -79,14 +77,7 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
         query = query.lte("tanggal_sp2d", filters.tanggal_sampai);
       }
 
-      // Apply pagination
-      if (filters?.page && filters?.pageSize) {
-        const from = (filters.page - 1) * filters.pageSize;
-        const to = from + filters.pageSize - 1;
-        query = query.range(from, to);
-      }
-
-      const { data, error, count } = await query;
+      const { data, error } = await query;
 
       if (error) {
         console.error("Error fetching SP2D list:", error);
@@ -101,10 +92,10 @@ export const useSp2dList = (filters?: Sp2dListFilters) => {
         );
       }
       
-      return { data: filteredData, count: count || 0 };
+      return filteredData;
       } catch (error) {
         console.error("Error in useSp2dList:", error);
-        return { data: [], count: 0 };
+        return [];
       }
     },
     enabled: !!user?.id,

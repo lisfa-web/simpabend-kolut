@@ -467,7 +467,7 @@ const Sp2dList = () => {
                               {sp2d.nomor_sp2d || "-"}
                             </TableCell>
                             <TableCell>{sp2d.spm?.nomor_spm || "-"}</TableCell>
-                            <TableCell>{sp2d.spm?.opd?.nama_opd || "-"}</TableCell>
+                            <TableCell>{(sp2d as any).opd?.nama_opd || "-"}</TableCell>
                             <TableCell>
                               {formatCurrency(Number(sp2d.nilai_sp2d))}
                             </TableCell>
@@ -580,7 +580,7 @@ const Sp2dList = () => {
                                 <span className="text-muted-foreground text-xs">Belum ada</span>
                               )}
                             </TableCell>
-                            <TableCell>{sp2d.spm?.opd?.nama_opd || "-"}</TableCell>
+                            <TableCell>{(sp2d as any).opd?.nama_opd || "-"}</TableCell>
                             <TableCell>
                               {formatCurrency(Number(sp2d.nilai_sp2d))}
                             </TableCell>
@@ -684,7 +684,7 @@ const Sp2dList = () => {
                               {sp2d.nomor_sp2d || "-"}
                             </TableCell>
                             <TableCell>{sp2d.spm?.nomor_spm || "-"}</TableCell>
-                            <TableCell>{sp2d.spm?.opd?.nama_opd || "-"}</TableCell>
+                            <TableCell>{(sp2d as any).opd?.nama_opd || "-"}</TableCell>
                             <TableCell>
                               {formatCurrency(Number(sp2d.nilai_sp2d))}
                             </TableCell>

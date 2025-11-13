@@ -5,8 +5,6 @@ interface UseUserListParams {
   search?: string;
   role?: string;
   is_active?: boolean;
-  page?: number;
-  pageSize?: number;
 }
 
 export const useUserList = (params: UseUserListParams = {}) => {
@@ -15,7 +13,7 @@ export const useUserList = (params: UseUserListParams = {}) => {
     queryFn: async () => {
       let query = supabase
         .from("profiles")
-        .select("*", { count: "exact" })
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (params.search) {
@@ -28,14 +26,7 @@ export const useUserList = (params: UseUserListParams = {}) => {
         query = query.eq("is_active", params.is_active);
       }
 
-      // Apply pagination
-      if (params.page && params.pageSize) {
-        const from = (params.page - 1) * params.pageSize;
-        const to = from + params.pageSize - 1;
-        query = query.range(from, to);
-      }
-
-      const { data: profiles, error, count } = await query;
+      const { data: profiles, error } = await query;
 
       if (error) throw error;
 
@@ -65,7 +56,7 @@ export const useUserList = (params: UseUserListParams = {}) => {
         );
       }
 
-      return { data: filteredUsers || [], count: count || 0 };
+      return filteredUsers || [];
     },
   });
 };

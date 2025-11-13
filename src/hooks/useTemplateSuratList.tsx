@@ -5,8 +5,6 @@ interface TemplateSuratFilters {
   jenis_surat?: string;
   is_active?: boolean;
   search?: string;
-  page?: number;
-  pageSize?: number;
 }
 
 export const useTemplateSuratList = (filters?: TemplateSuratFilters) => {
@@ -15,7 +13,7 @@ export const useTemplateSuratList = (filters?: TemplateSuratFilters) => {
     queryFn: async () => {
       let query = supabase
         .from("template_surat")
-        .select("*", { count: "exact" })
+        .select("*")
         .order("nama_template", { ascending: true });
 
       if (filters?.jenis_surat) {
@@ -30,17 +28,10 @@ export const useTemplateSuratList = (filters?: TemplateSuratFilters) => {
         query = query.ilike("nama_template", `%${filters.search}%`);
       }
 
-      // Apply pagination
-      if (filters?.page && filters?.pageSize) {
-        const from = (filters.page - 1) * filters.pageSize;
-        const to = from + filters.pageSize - 1;
-        query = query.range(from, to);
-      }
-
-      const { data, error, count } = await query;
+      const { data, error } = await query;
 
       if (error) throw error;
-      return { data: data || [], count: count || 0 };
+      return data || [];
     },
   });
 };
