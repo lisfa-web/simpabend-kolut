@@ -30,38 +30,63 @@ export const useStorageManager = () => {
       
       const bucketsToFetch = selectedBucket === "all" ? BUCKETS : [selectedBucket];
       
-      for (const bucket of bucketsToFetch) {
-        const { data, error } = await supabase.storage.from(bucket).list("", {
+      // Helper function to recursively list files in folders
+      const listFilesRecursive = async (bucket: string, path: string = ""): Promise<any[]> => {
+        const { data, error } = await supabase.storage.from(bucket).list(path, {
           limit: 1000,
           sortBy: { column: "created_at", order: "desc" },
         });
 
         if (error) {
-          console.error(`Error fetching from ${bucket}:`, error);
-          continue;
+          console.error(`Error fetching from ${bucket}/${path}:`, error);
+          return [];
         }
 
-        if (data) {
-          const filesWithUrls = data.map((file) => {
+        if (!data) return [];
+
+        const files: any[] = [];
+        
+        for (const item of data) {
+          // Skip if it's a folder (id is null)
+          if (item.id === null) {
+            // Recursively list files in this folder
+            const folderPath = path ? `${path}/${item.name}` : item.name;
+            const nestedFiles = await listFilesRecursive(bucket, folderPath);
+            files.push(...nestedFiles);
+          } else {
+            // It's a file, add it with full path
+            const fullPath = path ? `${path}/${item.name}` : item.name;
+            files.push({ ...item, fullPath });
+          }
+        }
+        
+        return files;
+      };
+      
+      for (const bucket of bucketsToFetch) {
+        const bucketFiles = await listFilesRecursive(bucket);
+
+        const filesWithUrls = bucketFiles
+          .filter(file => file.id !== null) // Only actual files, not folders
+          .map((file) => {
             const { data: urlData } = supabase.storage
               .from(bucket)
-              .getPublicUrl(file.name);
+              .getPublicUrl(file.fullPath || file.name);
 
             return {
-              id: file.id,
-              name: file.name,
+              id: file.id || `${bucket}-${file.fullPath || file.name}`,
+              name: file.fullPath || file.name,
               bucket,
               size: file.metadata?.size || 0,
-              created_at: file.created_at,
-              updated_at: file.updated_at,
-              last_accessed_at: file.last_accessed_at,
+              created_at: file.created_at || new Date().toISOString(),
+              updated_at: file.updated_at || new Date().toISOString(),
+              last_accessed_at: file.last_accessed_at || new Date().toISOString(),
               metadata: file.metadata,
               publicUrl: urlData.publicUrl,
             };
           });
 
-          allFiles.push(...filesWithUrls);
-        }
+        allFiles.push(...filesWithUrls);
       }
 
       return allFiles;

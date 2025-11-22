@@ -260,7 +260,16 @@ export default function FileManager() {
                             <span className="text-xl">
                               {getFileIcon(file.name)}
                             </span>
-                            <span className="font-medium">{file.name}</span>
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {file.name.split('/').pop()}
+                              </span>
+                              {file.name.includes('/') && (
+                                <span className="text-xs text-muted-foreground">
+                                  {file.name.substring(0, file.name.lastIndexOf('/'))}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>
