@@ -1,5 +1,5 @@
 import { Link, Navigate } from "react-router-dom";
-import { Settings, FileText, MessageSquare, Shield, Mail, AlertTriangle, Palette, Database, Lock } from "lucide-react";
+import { Settings, FileText, MessageSquare, Shield, Mail, AlertTriangle, Palette, Database, Lock, HardDrive } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -16,6 +16,15 @@ const PengaturanIndex = () => {
   }
 
   const settingsModules = [
+    {
+      title: "File Manager",
+      description: "Kelola dan download file storage dengan fitur batch download & ZIP",
+      icon: HardDrive,
+      href: "/pengaturan/file-manager",
+      color: "text-teal-700 dark:text-teal-400",
+      bgColor: "bg-teal-50 dark:bg-teal-950/30",
+      borderColor: "border-teal-200 dark:border-teal-800",
+    },
     {
       title: "Database Backup",
       description: "Download complete SQL schema untuk backup atau migrasi database",
