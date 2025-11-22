@@ -225,6 +225,7 @@ const App = () => (
               <Route path="/pengaturan/database-backup" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><DatabaseBackup /></RoleProtectedRoute>} />
               <Route path="/pengaturan/security" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><SecuritySettings /></RoleProtectedRoute>} />
               <Route path="/pengaturan/access-control" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><AccessControl /></RoleProtectedRoute>} />
+              {/* File Manager - Storage Management */}
               <Route path="/pengaturan/file-manager" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FileManager /></RoleProtectedRoute>} />
               
               {/* Panduan Routes */}
