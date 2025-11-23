@@ -4,14 +4,19 @@ import { useSpmList } from "@/hooks/useSpmList";
 import { SpmVerificationCard } from "./components/SpmVerificationCard";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2 } from "lucide-react";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 export default function VerifikasiPerbendaharaan() {
   const [search, setSearch] = useState("");
+  const pagination = usePagination(10);
 
   const { data: spmList, isLoading } = useSpmList({
     status: "perbendaharaan_verifikasi",
     search,
   });
+
+  const paginatedSpm = pagination.paginateData(spmList || []);
 
   return (
     <DashboardLayout>
@@ -38,14 +43,24 @@ export default function VerifikasiPerbendaharaan() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : spmList && spmList.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {spmList.map((spm) => (
-              <SpmVerificationCard
-                key={spm.id}
-                spm={spm}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {paginatedSpm.map((spm) => (
+                <SpmVerificationCard
+                  key={spm.id}
+                  spm={spm}
+                />
+              ))}
+            </div>
+            <DataTablePagination
+              pageIndex={pagination.pagination.pageIndex}
+              pageSize={pagination.pagination.pageSize}
+              pageCount={pagination.getPageCount(spmList.length)}
+              totalItems={spmList.length}
+              onPageChange={pagination.goToPage}
+              onPageSizeChange={pagination.setPageSize}
+            />
+          </>
         ) : (
           <div className="text-center py-12 text-muted-foreground">
             Tidak ada SPM untuk diverifikasi
