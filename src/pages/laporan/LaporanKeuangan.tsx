@@ -13,33 +13,30 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/currency";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 const LaporanKeuangan = () => {
   const navigate = useNavigate();
   const [tanggalDari, setTanggalDari] = useState("");
   const [tanggalSampai, setTanggalSampai] = useState("");
   const [opdFilter, setOpdFilter] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const pagination = usePagination(10);
 
   const { data: opdList } = useOpdList();
   const { data, isLoading, error } = useLaporanKeuangan({
     tanggal_dari: tanggalDari,
     tanggal_sampai: tanggalSampai,
     opd_id: opdFilter,
-    page: currentPage,
-    pageSize: pageSize,
   });
 
   const spmData = data?.spm?.data || [];
   const sp2dData = data?.sp2d?.data || [];
-  const spmTotalCount = data?.spm?.count || 0;
-  const sp2dTotalCount = data?.sp2d?.count || 0;
 
   // Reset to page 1 when filters change
   const handleFilterChange = (setter: (value: string) => void) => (value: string) => {
     setter(value);
-    setCurrentPage(1);
+    pagination.goToPage(0);
   };
 
   // Group by OPD
@@ -74,6 +71,7 @@ const LaporanKeuangan = () => {
     return Object.values(summary);
   }, [spmData, sp2dData]);
 
+  const paginatedSummary = pagination.paginateData(opdSummary);
   const totalSpm = spmData.length;
   const totalNilaiSpm = spmData.reduce((sum: number, item: any) => sum + Number(item.nilai_spm || 0), 0);
   const totalNilaiSp2d = sp2dData.reduce((sum: number, item: any) => sum + Number(item.nilai_sp2d || 0), 0);
@@ -163,19 +161,20 @@ const LaporanKeuangan = () => {
                 Gagal memuat data laporan
               </div>
             ) : opdSummary && opdSummary.length > 0 ? (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>OPD</TableHead>
-                      <TableHead className="text-right">Jumlah SPM</TableHead>
-                      <TableHead className="text-right">Total Nilai SPM</TableHead>
-                      <TableHead className="text-right">Total Nilai SP2D Cair</TableHead>
-                      <TableHead className="text-right">Persentase Realisasi</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {opdSummary.map((item: any, index: number) => {
+              <>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>OPD</TableHead>
+                        <TableHead className="text-right">Jumlah SPM</TableHead>
+                        <TableHead className="text-right">Total Nilai SPM</TableHead>
+                        <TableHead className="text-right">Total Nilai SP2D Cair</TableHead>
+                        <TableHead className="text-right">Persentase Realisasi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paginatedSummary.map((item: any, index: number) => {
                       const realisasi = item.total_nilai_spm > 0
                         ? ((item.total_nilai_sp2d / item.total_nilai_spm) * 100).toFixed(2)
                         : 0;
@@ -203,6 +202,15 @@ const LaporanKeuangan = () => {
                   </TableBody>
                 </Table>
               </div>
+              <DataTablePagination
+                pageIndex={pagination.pagination.pageIndex}
+                pageSize={pagination.pagination.pageSize}
+                pageCount={pagination.getPageCount(opdSummary.length)}
+                totalItems={opdSummary.length}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+              />
+            </>
             ) : (
               <div className="text-center p-8 text-muted-foreground">
                 Tidak ada data yang sesuai dengan filter

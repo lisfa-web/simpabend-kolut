@@ -33,6 +33,8 @@ import { Plus, Pencil, Trash2, Link, ArrowUpDown } from "lucide-react";
 import { usePajakPerJenisSpmList } from "@/hooks/usePajakPerJenisSpmList";
 import { usePajakPerJenisSpmMutation } from "@/hooks/usePajakPerJenisSpmMutation";
 import { getJenisSpmLabel } from "@/hooks/useJenisSpmTaxInfo";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 const kategoriColors: Record<string, string> = {
   pajak_pusat: "bg-blue-100 text-blue-800 border-blue-200",
@@ -44,6 +46,7 @@ const kategoriColors: Record<string, string> = {
 const PajakPerJenisSpmList = () => {
   const navigate = useNavigate();
   const [filterJenisSpm, setFilterJenisSpm] = useState<string>("all");
+  const pagination = usePagination(10);
   
   // Pass filter to hook
   const filters = filterJenisSpm !== "all" ? { jenis_spm: filterJenisSpm } : undefined;
@@ -66,6 +69,9 @@ const PajakPerJenisSpmList = () => {
     acc[item.jenis_spm].push(item);
     return acc;
   }, {} as Record<string, typeof mappingList>);
+
+  const allGroupEntries = Object.entries(groupedByJenis);
+  const paginatedGroupEntries = pagination.paginateData(allGroupEntries);
 
   return (
     <DashboardLayout>
@@ -116,8 +122,9 @@ const PajakPerJenisSpmList = () => {
                 Belum ada mapping pajak
               </div>
             ) : (
-              <div className="space-y-6">
-                {Object.entries(groupedByJenis).map(([jenis, items]) => (
+              <>
+                <div className="space-y-6">
+                  {paginatedGroupEntries.map(([jenis, items]) => (
                   <div key={jenis} className="border rounded-lg p-4">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       {getJenisSpmLabel(jenis)}
@@ -203,8 +210,17 @@ const PajakPerJenisSpmList = () => {
                       </TableBody>
                     </Table>
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                <DataTablePagination
+                  pageIndex={pagination.pagination.pageIndex}
+                  pageSize={pagination.pagination.pageSize}
+                  pageCount={pagination.getPageCount(allGroupEntries.length)}
+                  totalItems={allGroupEntries.length}
+                  onPageChange={pagination.goToPage}
+                  onPageSizeChange={pagination.setPageSize}
+                />
+              </>
             )}
           </CardContent>
         </Card>

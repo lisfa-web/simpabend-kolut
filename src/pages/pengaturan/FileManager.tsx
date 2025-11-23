@@ -51,6 +51,8 @@ import { useStorageManager, StorageFile } from "@/hooks/useStorageManager";
 import { formatFileSize, getFileIcon } from "@/lib/fileValidation";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 export default function FileManager() {
   const {
@@ -70,6 +72,7 @@ export default function FileManager() {
     getTotalSize,
   } = useStorageManager();
 
+  const pagination = usePagination(10);
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [previewFile, setPreviewFile] = useState<StorageFile | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<StorageFile | null>(null);
@@ -127,6 +130,8 @@ export default function FileManager() {
   const isPdf = (filename: string) => {
     return /\.pdf$/i.test(filename);
   };
+
+  const paginatedFiles = pagination.paginateData(files);
 
   return (
     <DashboardLayout>
@@ -245,7 +250,7 @@ export default function FileManager() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    files.map((file) => (
+                    paginatedFiles.map((file) => (
                       <TableRow key={file.id}>
                         <TableCell>
                           <Checkbox
@@ -315,6 +320,16 @@ export default function FileManager() {
                 </TableBody>
               </Table>
             </div>
+            {files.length > 0 && (
+              <DataTablePagination
+                pageIndex={pagination.pagination.pageIndex}
+                pageSize={pagination.pagination.pageSize}
+                pageCount={pagination.getPageCount(files.length)}
+                totalItems={files.length}
+                onPageChange={pagination.goToPage}
+                onPageSizeChange={pagination.setPageSize}
+              />
+            )}
           </CardContent>
         </Card>
       </div>
