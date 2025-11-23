@@ -5,9 +5,13 @@ import { SpmVerificationCard } from "./components/SpmVerificationCard";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2, FileText, Inbox } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { usePagination } from "@/hooks/usePagination";
+import { DataTablePagination } from "@/components/ui/data-table-pagination";
 
 export default function VerifikasiResepsionis() {
   const [search, setSearch] = useState("");
+  const paginationBaru = usePagination(10);
+  const paginationProses = usePagination(10);
   
   // Tab "Perlu Verifikasi" hanya untuk status "diajukan" (belum ada nomor antrian)
   const { data: spmListBaru, isLoading: loadingBaru } = useSpmList({
@@ -20,6 +24,9 @@ export default function VerifikasiResepsionis() {
     status: ["resepsionis_verifikasi"],
     search,
   });
+
+  const paginatedSpmBaru = paginationBaru.paginateData(spmListBaru || []);
+  const paginatedSpmProses = paginationProses.paginateData(spmListProses || []);
 
   return (
     <DashboardLayout>
@@ -57,14 +64,24 @@ export default function VerifikasiResepsionis() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : spmListBaru && spmListBaru.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {spmListBaru.map((spm) => (
-                  <SpmVerificationCard
-                    key={spm.id}
-                    spm={spm}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {paginatedSpmBaru.map((spm) => (
+                    <SpmVerificationCard
+                      key={spm.id}
+                      spm={spm}
+                    />
+                  ))}
+                </div>
+                <DataTablePagination
+                  pageIndex={paginationBaru.pagination.pageIndex}
+                  pageSize={paginationBaru.pagination.pageSize}
+                  pageCount={paginationBaru.getPageCount(spmListBaru.length)}
+                  totalItems={spmListBaru.length}
+                  onPageChange={paginationBaru.goToPage}
+                  onPageSizeChange={paginationBaru.setPageSize}
+                />
+              </>
             ) : (
               <div className="text-center py-16 animate-fade-in">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-4">
@@ -84,14 +101,24 @@ export default function VerifikasiResepsionis() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : spmListProses && spmListProses.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {spmListProses.map((spm) => (
-                  <SpmVerificationCard
-                    key={spm.id}
-                    spm={spm}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {paginatedSpmProses.map((spm) => (
+                    <SpmVerificationCard
+                      key={spm.id}
+                      spm={spm}
+                    />
+                  ))}
+                </div>
+                <DataTablePagination
+                  pageIndex={paginationProses.pagination.pageIndex}
+                  pageSize={paginationProses.pagination.pageSize}
+                  pageCount={paginationProses.getPageCount(spmListProses.length)}
+                  totalItems={spmListProses.length}
+                  onPageChange={paginationProses.goToPage}
+                  onPageSizeChange={paginationProses.setPageSize}
+                />
+              </>
             ) : (
               <div className="text-center py-16 animate-fade-in">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted/50 mb-4">
