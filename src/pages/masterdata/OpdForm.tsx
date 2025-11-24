@@ -21,6 +21,8 @@ const opdSchema = z.object({
   alamat: z.string().optional(),
   telepon: z.string().optional(),
   email: z.string().email("Email tidak valid").optional().or(z.literal("")),
+  nama_bendahara: z.string().optional(),
+  nomor_rekening_bendahara: z.string().optional(),
   is_active: z.boolean().optional(),
 });
 
@@ -64,6 +66,8 @@ const OpdForm = () => {
       setValue("alamat", opdData.alamat || "");
       setValue("telepon", opdData.telepon || "");
       setValue("email", opdData.email || "");
+      setValue("nama_bendahara", opdData.nama_bendahara || "");
+      setValue("nomor_rekening_bendahara", opdData.nomor_rekening_bendahara || "");
       setValue("is_active", opdData.is_active);
     }
   }, [opdData, setValue]);
@@ -75,6 +79,8 @@ const OpdForm = () => {
       alamat: data.alamat || undefined,
       telepon: data.telepon || undefined,
       email: data.email || undefined,
+      nama_bendahara: data.nama_bendahara || undefined,
+      nomor_rekening_bendahara: data.nomor_rekening_bendahara || undefined,
       is_active: data.is_active ?? true,
     };
 
@@ -184,6 +190,24 @@ const OpdForm = () => {
                       {errors.email.message}
                     </p>
                   )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="nama_bendahara">Nama Bendahara Pengeluaran</Label>
+                  <Input
+                    id="nama_bendahara"
+                    {...register("nama_bendahara")}
+                    placeholder="Masukkan nama bendahara"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="nomor_rekening_bendahara">Nomor Rekening Bendahara</Label>
+                  <Input
+                    id="nomor_rekening_bendahara"
+                    {...register("nomor_rekening_bendahara")}
+                    placeholder="Masukkan nomor rekening"
+                  />
                 </div>
 
                 {isEdit && (

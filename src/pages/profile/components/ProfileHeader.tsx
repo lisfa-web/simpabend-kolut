@@ -8,6 +8,8 @@ import { format } from "date-fns";
 import { id } from "date-fns/locale";
 import { Mail, Phone, Calendar, Building2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const getRoleDisplayName = (role: string): string => {
   const roleMap: Record<string, string> = {
@@ -37,6 +39,23 @@ const ProfileHeader = () => {
   const { user } = useAuth();
   const { data: profile, isLoading } = useUserProfile();
   const { roles } = useUserRole();
+
+  // Get OPD info for bendahara
+  const bendaharaRole = roles.find(r => r.role === "bendahara_opd");
+  const { data: opdInfo } = useQuery({
+    queryKey: ["opd-info", bendaharaRole?.opd_id],
+    queryFn: async () => {
+      if (!bendaharaRole?.opd_id) return null;
+      const { data, error } = await supabase
+        .from("opd")
+        .select("*")
+        .eq("id", bendaharaRole.opd_id)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!bendaharaRole?.opd_id,
+  });
 
   if (isLoading) {
     return (
@@ -85,10 +104,10 @@ const ProfileHeader = () => {
                 <span>{profile.phone}</span>
               </div>
             )}
-            {roles.some(r => r.opd_id) && (
+            {opdInfo && (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <Building2 className="h-4 w-4" />
-                <span>OPD Terdaftar</span>
+                <span>{opdInfo.nama_opd}</span>
               </div>
             )}
             <div className="flex items-center gap-2 text-muted-foreground">
@@ -98,6 +117,29 @@ const ProfileHeader = () => {
               </span>
             </div>
           </div>
+
+          {opdInfo && bendaharaRole && (
+            <div className="border-t pt-4 space-y-2">
+              <h3 className="font-semibold text-sm">Informasi OPD</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                {opdInfo.alamat && (
+                  <div className="text-muted-foreground">
+                    <span className="font-medium">Alamat:</span> {opdInfo.alamat}
+                  </div>
+                )}
+                {opdInfo.nama_bendahara && (
+                  <div className="text-muted-foreground">
+                    <span className="font-medium">Bendahara:</span> {opdInfo.nama_bendahara}
+                  </div>
+                )}
+                {opdInfo.nomor_rekening_bendahara && (
+                  <div className="text-muted-foreground">
+                    <span className="font-medium">No. Rekening:</span> {opdInfo.nomor_rekening_bendahara}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </Card>

@@ -8,6 +8,8 @@ interface OpdData {
   alamat?: string;
   telepon?: string;
   email?: string;
+  nama_bendahara?: string;
+  nomor_rekening_bendahara?: string;
   is_active?: boolean;
 }
 
