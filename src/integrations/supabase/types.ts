@@ -406,7 +406,9 @@ export type Database = {
           id: string
           is_active: boolean | null
           kode_opd: string
+          nama_bendahara: string | null
           nama_opd: string
+          nomor_rekening_bendahara: string | null
           telepon: string | null
           updated_at: string | null
         }
@@ -417,7 +419,9 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           kode_opd: string
+          nama_bendahara?: string | null
           nama_opd: string
+          nomor_rekening_bendahara?: string | null
           telepon?: string | null
           updated_at?: string | null
         }
@@ -428,7 +432,9 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           kode_opd?: string
+          nama_bendahara?: string | null
           nama_opd?: string
+          nomor_rekening_bendahara?: string | null
           telepon?: string | null
           updated_at?: string | null
         }
