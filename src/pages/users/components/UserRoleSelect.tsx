@@ -8,10 +8,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Plus } from "lucide-react";
+import { X, Plus, Edit2 } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getRoleDisplayName } from "@/lib/auth";
 import { useOpdList } from "@/hooks/useOpdList";
+import { Label } from "@/components/ui/label";
 
 type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin' | 'demo_admin';
 
@@ -40,6 +41,7 @@ const AVAILABLE_ROLES: AppRole[] = [
 export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRoleSelectProps) => {
   const [selectedRole, setSelectedRole] = useState<AppRole | "">("");
   const [selectedOpdId, setSelectedOpdId] = useState<string>("");
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
   
   const { data: opdList } = useOpdList({ is_active: true });
 
@@ -87,6 +89,13 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
     return opd ? opd.nama_opd : null;
   };
 
+  const handleUpdateOpdId = (index: number, opdId: string) => {
+    const updatedRoles = [...value];
+    updatedRoles[index] = { ...updatedRoles[index], opd_id: opdId };
+    onChange(updatedRoles);
+    setEditingIndex(null);
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -130,24 +139,80 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="space-y-3">
         {value.map((userRole, index) => {
           const opdName = getOpdName(userRole.opd_id);
+          const isBendahara = userRole.role === "bendahara_opd";
+          const isEditing = editingIndex === index;
+          
           return (
-            <Badge key={`${userRole.role}-${index}`} variant="secondary" className="gap-2">
-              <span>
-                {getRoleDisplayName(userRole.role)}
-                {opdName && <span className="text-xs ml-1">({opdName})</span>}
-              </span>
-              <button
-                type="button"
-                onClick={() => handleRemoveRole(index)}
-                className="hover:text-destructive"
-                title="Hapus role"
-              >
-                <X className="h-3 w-3" />
-              </button>
-            </Badge>
+            <div key={`${userRole.role}-${index}`} className="flex items-start gap-2">
+              <Badge variant="secondary" className="gap-2 flex-shrink-0">
+                <span>
+                  {getRoleDisplayName(userRole.role)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveRole(index)}
+                  className="hover:text-destructive"
+                  title="Hapus role"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </Badge>
+              
+              {isBendahara && (
+                <div className="flex-1 space-y-1">
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <Select 
+                        value={userRole.opd_id || ""} 
+                        onValueChange={(opdId) => handleUpdateOpdId(index, opdId)}
+                      >
+                        <SelectTrigger className="h-8">
+                          <SelectValue placeholder="Pilih OPD" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {opdList?.map((opd) => (
+                            <SelectItem key={opd.id} value={opd.id}>
+                              {opd.nama_opd}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingIndex(null)}
+                      >
+                        Selesai
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        OPD: {opdName || <span className="text-destructive">Belum dipilih</span>}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingIndex(index)}
+                        title="Edit OPD"
+                      >
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  )}
+                  {!userRole.opd_id && !isEditing && (
+                    <p className="text-xs text-destructive">
+                      Klik tombol edit untuk memilih OPD
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
