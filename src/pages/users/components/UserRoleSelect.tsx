@@ -71,10 +71,11 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
 
     const newRole: UserRole = {
       role: selectedRole,
-      opd_id: selectedRole === "bendahara_opd" ? selectedOpdId : null,
+      opd_id: selectedRole === "bendahara_opd" ? (selectedOpdId || null) : null,
     };
 
-    onChange([...value, newRole]);
+    const updatedRoles = [...value, newRole];
+    onChange(updatedRoles);
     setSelectedRole("");
     setSelectedOpdId("");
   };
@@ -91,7 +92,10 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
 
   const handleUpdateOpdId = (index: number, opdId: string) => {
     const updatedRoles = [...value];
-    updatedRoles[index] = { ...updatedRoles[index], opd_id: opdId };
+    updatedRoles[index] = { 
+      ...updatedRoles[index], 
+      opd_id: opdId || null  // Ensure null instead of empty string
+    };
     onChange(updatedRoles);
     setEditingIndex(null);
   };
