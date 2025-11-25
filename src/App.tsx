@@ -32,8 +32,6 @@ const OpdList = lazy(() => import("./pages/masterdata/OpdList"));
 const OpdForm = lazy(() => import("./pages/masterdata/OpdForm"));
 const VendorForm = lazy(() => import("./pages/masterdata/VendorForm"));
 const VendorList = lazy(() => import("./pages/masterdata/VendorList"));
-const BendaharaPengeluaranList = lazy(() => import("./pages/masterdata/BendaharaPengeluaranList"));
-const BendaharaPengeluaranForm = lazy(() => import("./pages/masterdata/BendaharaPengeluaranForm"));
 const JenisSpmList = lazy(() => import("./pages/masterdata/JenisSpmList"));
 const JenisSpmForm = lazy(() => import("./pages/masterdata/JenisSpmForm"));
 const MasterPajakList = lazy(() => import("./pages/masterdata/MasterPajakList"));
@@ -174,9 +172,6 @@ const App = () => (
               <Route path="/masterdata/vendor/create" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
               <Route path="/masterdata/vendor/:id/edit" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
               
-              <Route path="/masterdata/bendahara-pengeluaran" element={<ProtectedRoute><BendaharaPengeluaranList /></ProtectedRoute>} />
-              <Route path="/masterdata/bendahara-pengeluaran/tambah" element={<ProtectedRoute><BendaharaPengeluaranForm /></ProtectedRoute>} />
-              <Route path="/masterdata/bendahara-pengeluaran/edit/:id" element={<ProtectedRoute><BendaharaPengeluaranForm /></ProtectedRoute>} />
               
               <Route path="/masterdata/jenis-spm" element={<ProtectedRoute><JenisSpmList /></ProtectedRoute>} />
               <Route path="/masterdata/jenis-spm/tambah" element={<ProtectedRoute><JenisSpmForm /></ProtectedRoute>} />

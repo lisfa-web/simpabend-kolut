@@ -56,7 +56,18 @@ const userSchema = z.object({
   roles: z.array(z.object({
     role: z.string(),
     opd_id: z.string().optional().nullable(),
-  })).min(1, "Minimal 1 role harus dipilih"),
+  })).min(1, "Minimal 1 role harus dipilih")
+    .refine((roles) => {
+      // Validasi: bendahara_opd harus punya opd_id
+      return roles.every((r) => {
+        if (r.role === "bendahara_opd") {
+          return !!r.opd_id;
+        }
+        return true;
+      });
+    }, {
+      message: "Role Bendahara OPD harus memiliki OPD yang dipilih",
+    }),
 }).refine(
   (data) => {
     // Only validate password match when creating new user

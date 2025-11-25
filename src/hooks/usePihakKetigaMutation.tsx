@@ -10,6 +10,17 @@ export const usePihakKetigaMutation = () => {
 
   const createPihakKetiga = useMutation({
     mutationFn: async (data: PihakKetigaInsert) => {
+      // Check for duplicate
+      const { data: existing } = await supabase
+        .from("pihak_ketiga")
+        .select("id")
+        .ilike("nama_pihak_ketiga", data.nama_pihak_ketiga)
+        .single();
+      
+      if (existing) {
+        throw new Error("Pihak ketiga dengan nama tersebut sudah ada");
+      }
+
       const { data: result, error } = await supabase
         .from("pihak_ketiga")
         .insert(data)

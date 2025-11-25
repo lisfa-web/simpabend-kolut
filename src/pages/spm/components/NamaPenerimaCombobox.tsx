@@ -23,15 +23,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useVendorList } from "@/hooks/useVendorList";
 import { useVendorMutation } from "@/hooks/useVendorMutation";
-import { useBendaharaPengeluaranList } from "@/hooks/useBendaharaPengeluaranList";
-import { useBendaharaPengeluaranMutation } from "@/hooks/useBendaharaPengeluaranMutation";
 import { usePihakKetigaList } from "@/hooks/usePihakKetigaList";
 import { usePihakKetigaMutation } from "@/hooks/usePihakKetigaMutation";
-import { usePejabatList } from "@/hooks/usePejabatList";
+import { useMasterBankList } from "@/hooks/useMasterBankList";
 import { toast } from "sonner";
 
 interface NamaPenerimaComboboxProps {
@@ -55,7 +60,7 @@ export const NamaPenerimaCombobox = ({
     alamat: "",
     telepon: "",
     email: "",
-    nama_bank: "",
+    bank_id: "",
     nomor_rekening: "",
     nama_rekening: "",
   });
@@ -69,22 +74,19 @@ export const NamaPenerimaCombobox = ({
     is_active: true,
     enabled: tipePenerima === "pihak_ketiga" 
   });
-  const { data: bendaharaPengeluaranList, isLoading: bendaharaPengeluaranLoading } = useBendaharaPengeluaranList({ 
-    is_active: true,
-    enabled: tipePenerima === "bendahara_pengeluaran" 
+  const { data: bankList, isLoading: bankLoading } = useMasterBankList({ 
+    is_active: true 
   });
 
   const { createVendor } = useVendorMutation();
   const { createPihakKetiga } = usePihakKetigaMutation();
-  const { createBendaharaPengeluaran } = useBendaharaPengeluaranMutation();
 
-  const isLoading = vendorLoading || pihakKetigaLoading || bendaharaPengeluaranLoading;
+  const isLoading = vendorLoading || pihakKetigaLoading;
 
   // Get the appropriate list based on recipient type
   const getListData = () => {
     if (tipePenerima === "vendor") return vendorList || [];
     if (tipePenerima === "pihak_ketiga") return pihakKetigaList || [];
-    if (tipePenerima === "bendahara_pengeluaran") return bendaharaPengeluaranList || [];
     return [];
   };
 
@@ -94,7 +96,6 @@ export const NamaPenerimaCombobox = ({
   const getDisplayName = (item: any) => {
     if (tipePenerima === "vendor") return item.nama_vendor;
     if (tipePenerima === "pihak_ketiga") return item.nama_pihak_ketiga;
-    if (tipePenerima === "bendahara_pengeluaran") return item.nama_bendahara;
     return "";
   };
 
@@ -102,34 +103,41 @@ export const NamaPenerimaCombobox = ({
   const getPlaceholder = () => {
     if (tipePenerima === "vendor") return "Pilih atau cari vendor...";
     if (tipePenerima === "pihak_ketiga") return "Pilih atau cari pihak ketiga...";
-    if (tipePenerima === "bendahara_pengeluaran") return "Pilih bendahara pengeluaran...";
     return "Pilih penerima...";
   };
 
   const getSearchPlaceholder = () => {
     if (tipePenerima === "vendor") return "Cari vendor...";
     if (tipePenerima === "pihak_ketiga") return "Cari pihak ketiga...";
-    if (tipePenerima === "bendahara_pengeluaran") return "Cari bendahara...";
     return "Cari...";
   };
 
   const getEmptyText = () => {
     if (tipePenerima === "vendor") return "Vendor tidak ditemukan";
     if (tipePenerima === "pihak_ketiga") return "Pihak ketiga tidak ditemukan";
-    if (tipePenerima === "bendahara_pengeluaran") return "Bendahara tidak ditemukan";
     return "Data tidak ditemukan";
   };
 
   const getDialogTitle = () => {
     if (tipePenerima === "vendor") return "Tambah Vendor Baru";
     if (tipePenerima === "pihak_ketiga") return "Tambah Pihak Ketiga Baru";
-    if (tipePenerima === "bendahara_pengeluaran") return "Tambah Bendahara Pengeluaran Baru";
     return "Tambah Data Baru";
   };
 
   const handleCreate = async () => {
     if (!newItem.nama.trim()) {
       toast.error("Nama harus diisi");
+      return;
+    }
+
+    // Check for duplicate
+    const isDuplicate = listData.some((item: any) => {
+      const displayName = getDisplayName(item);
+      return displayName.toLowerCase() === newItem.nama.toLowerCase().trim();
+    });
+
+    if (isDuplicate) {
+      toast.error(`${tipePenerima === "vendor" ? "Vendor" : "Pihak ketiga"} dengan nama tersebut sudah ada`);
       return;
     }
 
@@ -141,7 +149,7 @@ export const NamaPenerimaCombobox = ({
           alamat: newItem.alamat || undefined,
           telepon: newItem.telepon || undefined,
           email: newItem.email || undefined,
-          nama_bank: newItem.nama_bank || undefined,
+          bank_id: newItem.bank_id || undefined,
           nomor_rekening: newItem.nomor_rekening || undefined,
           nama_rekening: newItem.nama_rekening || undefined,
         });
@@ -152,18 +160,7 @@ export const NamaPenerimaCombobox = ({
           alamat: newItem.alamat || undefined,
           telepon: newItem.telepon || undefined,
           email: newItem.email || undefined,
-          nama_bank: newItem.nama_bank || undefined,
-          nomor_rekening: newItem.nomor_rekening || undefined,
-          nama_rekening: newItem.nama_rekening || undefined,
-        });
-      } else if (tipePenerima === "bendahara_pengeluaran") {
-        await createBendaharaPengeluaran.mutateAsync({
-          nama_bendahara: newItem.nama,
-          nip: newItem.npwp || undefined,
-          alamat: newItem.alamat || undefined,
-          telepon: newItem.telepon || undefined,
-          email: newItem.email || undefined,
-          nama_bank: newItem.nama_bank || undefined,
+          bank_id: newItem.bank_id || undefined,
           nomor_rekening: newItem.nomor_rekening || undefined,
           nama_rekening: newItem.nama_rekening || undefined,
         });
@@ -177,20 +174,20 @@ export const NamaPenerimaCombobox = ({
         alamat: "",
         telepon: "",
         email: "",
-        nama_bank: "",
+        bank_id: "",
         nomor_rekening: "",
         nama_rekening: "",
       });
       
-      const entityType = tipePenerima === "vendor" ? "Vendor" : tipePenerima === "pihak_ketiga" ? "Pihak ketiga" : "Bendahara pengeluaran";
+      const entityType = tipePenerima === "vendor" ? "Vendor" : "Pihak ketiga";
       toast.success(`${entityType} berhasil ditambahkan`);
     } catch (error) {
-      const entityType = tipePenerima === "vendor" ? "vendor" : tipePenerima === "pihak_ketiga" ? "pihak ketiga" : "bendahara pengeluaran";
+      const entityType = tipePenerima === "vendor" ? "vendor" : "pihak ketiga";
       toast.error(`Gagal menambahkan ${entityType}`);
     }
   };
 
-  const canAddNew = tipePenerima === "vendor" || tipePenerima === "pihak_ketiga" || tipePenerima === "bendahara_pengeluaran";
+  const canAddNew = tipePenerima === "vendor" || tipePenerima === "pihak_ketiga";
 
   return (
     <>
@@ -290,7 +287,7 @@ export const NamaPenerimaCombobox = ({
             variant="outline"
             size="icon"
             onClick={() => setDialogOpen(true)}
-            title={`Tambah ${tipePenerima === "vendor" ? "vendor" : tipePenerima === "pihak_ketiga" ? "pihak ketiga" : "bendahara pengeluaran"} baru`}
+            title={`Tambah ${tipePenerima === "vendor" ? "vendor" : "pihak ketiga"} baru`}
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -302,36 +299,36 @@ export const NamaPenerimaCombobox = ({
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{getDialogTitle()}</DialogTitle>
-              <DialogDescription>
-                Masukkan informasi {tipePenerima === "vendor" ? "vendor" : tipePenerima === "pihak_ketiga" ? "pihak ketiga" : "bendahara pengeluaran"} baru. Field yang wajib diisi ditandai dengan *.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="nama">
-                  Nama {tipePenerima === "vendor" ? "Vendor" : tipePenerima === "pihak_ketiga" ? "Pihak Ketiga" : "Bendahara Pengeluaran"} <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="nama"
-                  value={newItem.nama}
-                  onChange={(e) =>
-                    setNewItem({ ...newItem, nama: e.target.value })
-                  }
-                  placeholder={`Nama ${tipePenerima === "vendor" ? "vendor" : tipePenerima === "pihak_ketiga" ? "pihak ketiga" : "bendahara pengeluaran"}`}
-                />
-              </div>
+            <DialogDescription>
+              Masukkan informasi {tipePenerima === "vendor" ? "vendor" : "pihak ketiga"} baru. Field yang wajib diisi ditandai dengan *.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="nama">
+                Nama {tipePenerima === "vendor" ? "Vendor" : "Pihak Ketiga"} <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="nama"
+                value={newItem.nama}
+                onChange={(e) =>
+                  setNewItem({ ...newItem, nama: e.target.value })
+                }
+                placeholder={`Nama ${tipePenerima === "vendor" ? "vendor" : "pihak ketiga"}`}
+              />
+            </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="npwp">{tipePenerima === "bendahara_pengeluaran" ? "NIP" : "NPWP"}</Label>
-                <Input
-                  id="npwp"
-                  value={newItem.npwp}
-                  onChange={(e) =>
-                    setNewItem({ ...newItem, npwp: e.target.value })
-                  }
-                  placeholder={tipePenerima === "bendahara_pengeluaran" ? "NIP bendahara" : "XX.XXX.XXX.X-XXX.XXX"}
-                />
+            <div className="grid gap-2">
+              <Label htmlFor="npwp">NPWP</Label>
+              <Input
+                id="npwp"
+                value={newItem.npwp}
+                onChange={(e) =>
+                  setNewItem({ ...newItem, npwp: e.target.value })
+                }
+                placeholder="XX.XXX.XXX.X-XXX.XXX"
+              />
               </div>
 
               <div className="grid gap-2">
@@ -378,15 +375,25 @@ export const NamaPenerimaCombobox = ({
                 
                 <div className="grid gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="nama_bank">Nama Bank</Label>
-                    <Input
-                      id="nama_bank"
-                      value={newItem.nama_bank}
-                      onChange={(e) =>
-                        setNewItem({ ...newItem, nama_bank: e.target.value })
+                    <Label htmlFor="bank_id">Bank</Label>
+                    <Select
+                      value={newItem.bank_id}
+                      onValueChange={(value) =>
+                        setNewItem({ ...newItem, bank_id: value })
                       }
-                      placeholder="Contoh: Bank Mandiri"
-                    />
+                      disabled={bankLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih bank" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {bankList?.map((bank) => (
+                          <SelectItem key={bank.id} value={bank.id}>
+                            {bank.nama_bank}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="grid gap-2">
@@ -428,7 +435,7 @@ export const NamaPenerimaCombobox = ({
                     alamat: "",
                     telepon: "",
                     email: "",
-                    nama_bank: "",
+                    bank_id: "",
                     nomor_rekening: "",
                     nama_rekening: "",
                   });
@@ -439,15 +446,15 @@ export const NamaPenerimaCombobox = ({
               <Button
                 type="button"
                 onClick={handleCreate}
-                disabled={createVendor.isPending || createPihakKetiga.isPending || createBendaharaPengeluaran.isPending}
+                disabled={createVendor.isPending || createPihakKetiga.isPending}
               >
-                {(createVendor.isPending || createPihakKetiga.isPending || createBendaharaPengeluaran.isPending) ? (
+                {(createVendor.isPending || createPihakKetiga.isPending) ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Menyimpan...
                   </>
                 ) : (
-                  `Simpan ${tipePenerima === "vendor" ? "Vendor" : tipePenerima === "pihak_ketiga" ? "Pihak Ketiga" : "Bendahara Pengeluaran"}`
+                  `Simpan ${tipePenerima === "vendor" ? "Vendor" : "Pihak Ketiga"}`
                 )}
               </Button>
             </DialogFooter>

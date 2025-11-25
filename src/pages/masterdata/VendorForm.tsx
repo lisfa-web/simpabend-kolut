@@ -4,6 +4,7 @@ import { z } from "zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect } from "react";
 import { useVendorMutation } from "@/hooks/useVendorMutation";
+import { useMasterBankList } from "@/hooks/useMasterBankList";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -16,6 +17,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +35,7 @@ const vendorSchema = z.object({
   alamat: z.string().optional(),
   telepon: z.string().optional(),
   email: z.string().email("Email tidak valid").optional().or(z.literal("")),
-  nama_bank: z.string().optional(),
+  bank_id: z.string().optional(),
   nomor_rekening: z.string().optional(),
   nama_rekening: z.string().optional(),
   is_active: z.boolean().default(true),
@@ -40,6 +48,7 @@ export default function VendorForm() {
   const navigate = useNavigate();
   const isEdit = !!id;
   const { createVendor, updateVendor } = useVendorMutation();
+  const { data: bankList, isLoading: bankLoading } = useMasterBankList({ is_active: true });
 
   const { data: vendor } = useQuery({
     queryKey: ["vendor", id],
@@ -64,7 +73,7 @@ export default function VendorForm() {
       alamat: "",
       telepon: "",
       email: "",
-      nama_bank: "",
+      bank_id: "",
       nomor_rekening: "",
       nama_rekening: "",
       is_active: true,
@@ -79,7 +88,7 @@ export default function VendorForm() {
         alamat: vendor.alamat || "",
         telepon: vendor.telepon || "",
         email: vendor.email || "",
-        nama_bank: vendor.nama_bank || "",
+        bank_id: vendor.bank_id || "",
         nomor_rekening: vendor.nomor_rekening || "",
         nama_rekening: vendor.nama_rekening || "",
         is_active: vendor.is_active ?? true,
@@ -95,7 +104,7 @@ export default function VendorForm() {
         alamat: data.alamat || undefined,
         telepon: data.telepon || undefined,
         email: data.email || undefined,
-        nama_bank: data.nama_bank || undefined,
+        bank_id: data.bank_id || undefined,
         nomor_rekening: data.nomor_rekening || undefined,
         nama_rekening: data.nama_rekening || undefined,
         is_active: data.is_active,
@@ -220,13 +229,28 @@ export default function VendorForm() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="nama_bank"
+                        name="bank_id"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Nama Bank</FormLabel>
-                            <FormControl>
-                              <Input {...field} />
-                            </FormControl>
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              disabled={bankLoading}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Pilih bank" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {bankList?.map((bank) => (
+                                  <SelectItem key={bank.id} value={bank.id}>
+                                    {bank.nama_bank}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                             <FormMessage />
                           </FormItem>
                         )}
