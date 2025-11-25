@@ -10,6 +10,7 @@ interface OpdData {
   email?: string;
   nama_bendahara?: string;
   nomor_rekening_bendahara?: string;
+  bank_id?: string;
   is_active?: boolean;
 }
 

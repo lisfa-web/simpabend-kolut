@@ -1,30 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-interface BendaharaPengeluaranFilters {
+interface MasterBankFilters {
   is_active?: boolean;
   enabled?: boolean;
-  search?: string;
 }
 
-export const useBendaharaPengeluaranList = (filters?: BendaharaPengeluaranFilters) => {
+export const useMasterBankList = (filters?: MasterBankFilters) => {
   return useQuery({
-    queryKey: ["bendahara-pengeluaran-list", filters],
+    queryKey: ["master-bank-list", filters],
     enabled: filters?.enabled !== false,
     queryFn: async () => {
       let query = supabase
-        .from("bendahara_pengeluaran")
+        .from("master_bank")
         .select("*")
-        .order("nama_bendahara");
+        .order("nama_bank");
 
       if (filters?.is_active !== undefined) {
         query = query.eq("is_active", filters.is_active);
-      }
-
-      if (filters?.search) {
-        query = query.or(
-          `nama_bendahara.ilike.%${filters.search}%,nip.ilike.%${filters.search}%`
-        );
       }
 
       const { data, error } = await query;

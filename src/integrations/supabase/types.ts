@@ -67,51 +67,6 @@ export type Database = {
           },
         ]
       }
-      bendahara_pengeluaran: {
-        Row: {
-          alamat: string | null
-          created_at: string
-          email: string | null
-          id: string
-          is_active: boolean
-          nama_bank: string | null
-          nama_bendahara: string
-          nama_rekening: string | null
-          nip: string | null
-          nomor_rekening: string | null
-          telepon: string | null
-          updated_at: string
-        }
-        Insert: {
-          alamat?: string | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          is_active?: boolean
-          nama_bank?: string | null
-          nama_bendahara: string
-          nama_rekening?: string | null
-          nip?: string | null
-          nomor_rekening?: string | null
-          telepon?: string | null
-          updated_at?: string
-        }
-        Update: {
-          alamat?: string | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          is_active?: boolean
-          nama_bank?: string | null
-          nama_bendahara?: string
-          nama_rekening?: string | null
-          nip?: string | null
-          nomor_rekening?: string | null
-          telepon?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       config_sistem: {
         Row: {
           description: string | null
@@ -309,6 +264,33 @@ export type Database = {
           },
         ]
       }
+      master_bank: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          kode_bank: string
+          nama_bank: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          kode_bank: string
+          nama_bank: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          kode_bank?: string
+          nama_bank?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       master_pajak: {
         Row: {
           created_at: string | null
@@ -401,6 +383,7 @@ export type Database = {
       opd: {
         Row: {
           alamat: string | null
+          bank_id: string | null
           created_at: string | null
           email: string | null
           id: string
@@ -414,6 +397,7 @@ export type Database = {
         }
         Insert: {
           alamat?: string | null
+          bank_id?: string | null
           created_at?: string | null
           email?: string | null
           id?: string
@@ -427,6 +411,7 @@ export type Database = {
         }
         Update: {
           alamat?: string | null
+          bank_id?: string | null
           created_at?: string | null
           email?: string | null
           id?: string
@@ -438,7 +423,15 @@ export type Database = {
           telepon?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "opd_bank_id_fkey"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "master_bank"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pajak_per_jenis_spm: {
         Row: {
@@ -618,6 +611,7 @@ export type Database = {
       pihak_ketiga: {
         Row: {
           alamat: string | null
+          bank_id: string | null
           created_at: string
           email: string | null
           id: string
@@ -632,6 +626,7 @@ export type Database = {
         }
         Insert: {
           alamat?: string | null
+          bank_id?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -646,6 +641,7 @@ export type Database = {
         }
         Update: {
           alamat?: string | null
+          bank_id?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -658,7 +654,15 @@ export type Database = {
           telepon?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "pihak_ketiga_bank_id_fkey"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "master_bank"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pin_otp: {
         Row: {
@@ -1292,6 +1296,7 @@ export type Database = {
       vendor: {
         Row: {
           alamat: string | null
+          bank_id: string | null
           created_at: string | null
           email: string | null
           id: string
@@ -1306,6 +1311,7 @@ export type Database = {
         }
         Insert: {
           alamat?: string | null
+          bank_id?: string | null
           created_at?: string | null
           email?: string | null
           id?: string
@@ -1320,6 +1326,7 @@ export type Database = {
         }
         Update: {
           alamat?: string | null
+          bank_id?: string | null
           created_at?: string | null
           email?: string | null
           id?: string
@@ -1332,7 +1339,15 @@ export type Database = {
           telepon?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vendor_bank_id_fkey"
+            columns: ["bank_id"]
+            isOneToOne: false
+            referencedRelation: "master_bank"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wa_gateway: {
         Row: {

@@ -8,7 +8,7 @@ interface VendorData {
   alamat?: string;
   telepon?: string;
   email?: string;
-  nama_bank?: string;
+  bank_id?: string;
   nomor_rekening?: string;
   nama_rekening?: string;
   is_active?: boolean;
