@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/hooks/useAuth";
 import { usePagination } from "@/hooks/usePagination";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import {
@@ -25,58 +24,47 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, Edit, Trash2, Ban, CheckCircle } from "lucide-react";
-import { useVendorList } from "@/hooks/useVendorList";
-import { useVendorMutation } from "@/hooks/useVendorMutation";
+import { Plus, Search, Edit, Ban, CheckCircle } from "lucide-react";
+import { usePihakKetigaList } from "@/hooks/usePihakKetigaList";
+import { usePihakKetigaMutation } from "@/hooks/usePihakKetigaMutation";
 import { useMasterBankList } from "@/hooks/useMasterBankList";
 
-const VendorList = () => {
+const PihakKetigaList = () => {
   const navigate = useNavigate();
-  const { isSuperAdmin, isRegularAdmin, isAdminOrAkuntansi } = useAuth();
   const [search, setSearch] = useState("");
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
   const [activateId, setActivateId] = useState<string | null>(null);
-  const [permanentDeleteId, setPermanentDeleteId] = useState<string | null>(null);
   
   const pagination = usePagination(10);
 
-  const { data: vendorList, isLoading } = useVendorList();
+  const { data: pihakKetigaList, isLoading } = usePihakKetigaList();
   const { data: bankList } = useMasterBankList();
-  const { deleteVendor, activateVendor, permanentDeleteVendor } = useVendorMutation();
+  const { updatePihakKetiga, deletePihakKetiga } = usePihakKetigaMutation();
 
-  const isSuperAdminUser = isSuperAdmin();
-  const canManage = isAdminOrAkuntansi();
+  const filteredData = pihakKetigaList?.filter((pk) =>
+    pk.nama_pihak_ketiga.toLowerCase().includes(search.toLowerCase())
+  );
 
   const getBankName = (bankId: string | null) => {
     if (!bankId) return "-";
     return bankList?.find(b => b.id === bankId)?.nama_bank || "-";
   };
 
-  const filteredData = vendorList?.filter((vendor) =>
-    vendor.nama_vendor.toLowerCase().includes(search.toLowerCase())
-  );
-
   const handleDeactivate = () => {
     if (deactivateId) {
-      deleteVendor.mutate(deactivateId, {
-        onSuccess: () => setDeactivateId(null),
-      });
+      updatePihakKetiga.mutate(
+        { id: deactivateId, data: { is_active: false } },
+        { onSuccess: () => setDeactivateId(null) }
+      );
     }
   };
 
   const handleActivate = () => {
     if (activateId) {
-      activateVendor.mutate(activateId, {
-        onSuccess: () => setActivateId(null),
-      });
-    }
-  };
-
-  const handlePermanentDelete = () => {
-    if (permanentDeleteId) {
-      permanentDeleteVendor.mutate(permanentDeleteId, {
-        onSuccess: () => setPermanentDeleteId(null),
-      });
+      updatePihakKetiga.mutate(
+        { id: activateId, data: { is_active: true } },
+        { onSuccess: () => setActivateId(null) }
+      );
     }
   };
 
@@ -85,19 +73,19 @@ const VendorList = () => {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Master Data Vendor</h1>
-            <p className="text-muted-foreground">Kelola data Vendor/Rekanan</p>
+            <h1 className="text-3xl font-bold">Master Data Pihak Ketiga</h1>
+            <p className="text-muted-foreground">Kelola data Pihak Ketiga</p>
           </div>
-          <Button onClick={() => navigate("/masterdata/vendor/create")}>
+          <Button onClick={() => navigate("/masterdata/pihak-ketiga/create")}>
             <Plus className="mr-2 h-4 w-4" />
-            Tambah Vendor
+            Tambah Pihak Ketiga
           </Button>
         </div>
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Cari nama vendor..."
+            placeholder="Cari nama pihak ketiga..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="pl-10"
@@ -108,10 +96,9 @@ const VendorList = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nama Vendor</TableHead>
+                <TableHead>Nama</TableHead>
                 <TableHead>NPWP</TableHead>
                 <TableHead>Telepon</TableHead>
-                <TableHead>Email</TableHead>
                 <TableHead>Bank</TableHead>
                 <TableHead>No. Rekening</TableHead>
                 <TableHead>Status</TableHead>
@@ -121,27 +108,26 @@ const VendorList = () => {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     Memuat data...
                   </TableCell>
                 </TableRow>
               ) : filteredData && filteredData.length > 0 ? (
-                pagination.paginateData(filteredData).map((vendor) => (
+                pagination.paginateData(filteredData).map((pk) => (
                   <TableRow 
-                    key={vendor.id}
-                    className={!vendor.is_active ? "opacity-60 bg-muted/30" : ""}
+                    key={pk.id}
+                    className={!pk.is_active ? "opacity-60 bg-muted/30" : ""}
                   >
                     <TableCell className="font-medium">
-                      {vendor.nama_vendor}
+                      {pk.nama_pihak_ketiga}
                     </TableCell>
-                    <TableCell>{vendor.npwp || "-"}</TableCell>
-                    <TableCell>{vendor.telepon || "-"}</TableCell>
-                    <TableCell>{vendor.email || "-"}</TableCell>
-                    <TableCell>{getBankName(vendor.bank_id)}</TableCell>
-                    <TableCell>{vendor.nomor_rekening || "-"}</TableCell>
+                    <TableCell>{pk.npwp || "-"}</TableCell>
+                    <TableCell>{pk.telepon || "-"}</TableCell>
+                    <TableCell>{getBankName(pk.bank_id)}</TableCell>
+                    <TableCell>{pk.nomor_rekening || "-"}</TableCell>
                     <TableCell>
-                      <Badge variant={vendor.is_active ? "default" : "secondary"}>
-                        {vendor.is_active ? "Aktif" : "Nonaktif"}
+                      <Badge variant={pk.is_active ? "default" : "secondary"}>
+                        {pk.is_active ? "Aktif" : "Nonaktif"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -150,45 +136,30 @@ const VendorList = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() =>
-                            navigate(`/masterdata/vendor/${vendor.id}/edit`)
+                            navigate(`/masterdata/pihak-ketiga/${pk.id}/edit`)
                           }
                           title="Edit"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         
-                        {canManage && (
-                          <>
-                            {vendor.is_active ? (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setDeactivateId(vendor.id)}
-                                title="Nonaktifkan"
-                              >
-                                <Ban className="h-4 w-4 text-orange-600" />
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setActivateId(vendor.id)}
-                                title="Aktifkan"
-                              >
-                                <CheckCircle className="h-4 w-4 text-green-600" />
-                              </Button>
-                            )}
-                          </>
-                        )}
-                        
-                        {isSuperAdminUser && (
+                        {pk.is_active ? (
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setPermanentDeleteId(vendor.id)}
-                            title="Hapus Permanen"
+                            onClick={() => setDeactivateId(pk.id)}
+                            title="Nonaktifkan"
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Ban className="h-4 w-4 text-orange-600" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setActivateId(pk.id)}
+                            title="Aktifkan"
+                          >
+                            <CheckCircle className="h-4 w-4 text-green-600" />
                           </Button>
                         )}
                       </div>
@@ -198,10 +169,10 @@ const VendorList = () => {
               ) : (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={7}
                     className="text-center py-8 text-muted-foreground"
                   >
-                    Tidak ada data vendor
+                    Tidak ada data pihak ketiga
                   </TableCell>
                 </TableRow>
               )}
@@ -223,10 +194,9 @@ const VendorList = () => {
       <AlertDialog open={!!deactivateId} onOpenChange={() => setDeactivateId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Nonaktifkan Vendor</AlertDialogTitle>
+            <AlertDialogTitle>Nonaktifkan Pihak Ketiga</AlertDialogTitle>
             <AlertDialogDescription>
-              Data Vendor akan dinonaktifkan dan tidak muncul di pilihan aktif. 
-              Data tetap tersimpan dan dapat diaktifkan kembali.
+              Data akan dinonaktifkan dan tidak muncul di pilihan aktif.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -241,9 +211,9 @@ const VendorList = () => {
       <AlertDialog open={!!activateId} onOpenChange={() => setActivateId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Aktifkan Vendor</AlertDialogTitle>
+            <AlertDialogTitle>Aktifkan Pihak Ketiga</AlertDialogTitle>
             <AlertDialogDescription>
-              Data Vendor akan diaktifkan kembali dan muncul di pilihan aktif.
+              Data akan diaktifkan kembali dan muncul di pilihan aktif.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -254,39 +224,8 @@ const VendorList = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <AlertDialog open={!!permanentDeleteId} onOpenChange={() => setPermanentDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-destructive">
-              ⚠️ Hapus Permanen Vendor
-            </AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p className="font-semibold text-destructive">
-                PERINGATAN: Tindakan ini tidak dapat dibatalkan!
-              </p>
-              <p>
-                Data Vendor akan dihapus PERMANEN dari database. Semua histori dan 
-                relasi akan hilang selamanya.
-              </p>
-              <p className="text-muted-foreground text-sm">
-                Pastikan tidak ada SPM yang terkait dengan Vendor ini.
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handlePermanentDelete}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              Hapus Permanen
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </DashboardLayout>
   );
 };
 
-export default VendorList;
+export default PihakKetigaList;
