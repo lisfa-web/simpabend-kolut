@@ -32,6 +32,10 @@ const OpdList = lazy(() => import("./pages/masterdata/OpdList"));
 const OpdForm = lazy(() => import("./pages/masterdata/OpdForm"));
 const VendorForm = lazy(() => import("./pages/masterdata/VendorForm"));
 const VendorList = lazy(() => import("./pages/masterdata/VendorList"));
+const MasterBankList = lazy(() => import("./pages/masterdata/MasterBankList"));
+const MasterBankForm = lazy(() => import("./pages/masterdata/MasterBankForm"));
+const PihakKetigaList = lazy(() => import("./pages/masterdata/PihakKetigaList"));
+const PihakKetigaForm = lazy(() => import("./pages/masterdata/PihakKetigaForm"));
 const JenisSpmList = lazy(() => import("./pages/masterdata/JenisSpmList"));
 const JenisSpmForm = lazy(() => import("./pages/masterdata/JenisSpmForm"));
 const MasterPajakList = lazy(() => import("./pages/masterdata/MasterPajakList"));
@@ -171,6 +175,14 @@ const App = () => (
               <Route path="/masterdata/vendor/new" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
               <Route path="/masterdata/vendor/create" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
               <Route path="/masterdata/vendor/:id/edit" element={<ProtectedRoute><VendorForm /></ProtectedRoute>} />
+              
+              <Route path="/masterdata/bank" element={<ProtectedRoute><MasterBankList /></ProtectedRoute>} />
+              <Route path="/masterdata/bank/create" element={<ProtectedRoute><MasterBankForm /></ProtectedRoute>} />
+              <Route path="/masterdata/bank/:id/edit" element={<ProtectedRoute><MasterBankForm /></ProtectedRoute>} />
+              
+              <Route path="/masterdata/pihak-ketiga" element={<ProtectedRoute><PihakKetigaList /></ProtectedRoute>} />
+              <Route path="/masterdata/pihak-ketiga/create" element={<ProtectedRoute><PihakKetigaForm /></ProtectedRoute>} />
+              <Route path="/masterdata/pihak-ketiga/:id/edit" element={<ProtectedRoute><PihakKetigaForm /></ProtectedRoute>} />
               
               
               <Route path="/masterdata/jenis-spm" element={<ProtectedRoute><JenisSpmList /></ProtectedRoute>} />

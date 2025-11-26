@@ -31,6 +31,7 @@ import { CurrencyInput } from "./CurrencyInput";
 import { NamaPenerimaCombobox } from "./NamaPenerimaCombobox";
 import { useOpdList } from "@/hooks/useOpdList";
 import { useJenisSpmList } from "@/hooks/useJenisSpmList";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Loader2, Volume2, Info, CalendarIcon } from "lucide-react";
 import {
   AlertDialog,
@@ -81,9 +82,14 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const tipePenerima = form.watch("tipe_penerima");
 
   const { speak, isSpeaking } = useSpeechSynthesis();
+  const { roles } = useUserRole();
 
   const { data: opdList, isLoading: opdLoading } = useOpdList({ is_active: true });
   const { data: jenisSpmList, isLoading: jenisSpmLoading } = useJenisSpmList({ is_active: true });
+
+  // Auto-set OPD based on logged-in bendahara's role
+  const bendaharaRole = roles.find(r => r.role === 'bendahara_opd');
+  const userOpdId = bendaharaRole?.opd_id || null;
 
   // Get selected jenis SPM data
   const selectedJenisSpm = jenisSpmList?.find((j) => j.id === jenisSpmId);
@@ -97,6 +103,13 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
       });
     }
   }, [defaultValues, form]);
+
+  // Auto-set OPD when component mounts or user OPD changes
+  useEffect(() => {
+    if (userOpdId && !defaultValues?.opd_id) {
+      form.setValue('opd_id', userOpdId);
+    }
+  }, [userOpdId, defaultValues, form]);
 
   const handleNextClick = (data: SpmDataFormValues) => {
     setPendingData(data);
@@ -151,20 +164,16 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
           render={({ field }) => (
             <FormItem>
               <FormLabel>OPD</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih OPD" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {opdList?.map((opd) => (
-                    <SelectItem key={opd.id} value={opd.id}>
-                      {opd.nama_opd}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <Input
+                  value={opdList?.find(o => o.id === field.value)?.nama_opd || ""}
+                  disabled
+                  className="bg-muted"
+                />
+              </FormControl>
+              <p className="text-xs text-muted-foreground mt-1">
+                OPD otomatis terisi berdasarkan akun Anda
+              </p>
               <FormMessage />
             </FormItem>
           )}
