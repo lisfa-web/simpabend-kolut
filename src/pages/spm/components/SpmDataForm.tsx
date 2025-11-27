@@ -32,6 +32,7 @@ import { NamaPenerimaCombobox } from "./NamaPenerimaCombobox";
 import { useOpdList } from "@/hooks/useOpdList";
 import { useJenisSpmList } from "@/hooks/useJenisSpmList";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useMasterBankList } from "@/hooks/useMasterBankList";
 import { Loader2, Volume2, Info, CalendarIcon } from "lucide-react";
 import {
   AlertDialog,
@@ -87,6 +88,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
 
   const { data: opdList, isLoading: opdLoading } = useOpdList({ is_active: true });
   const { data: jenisSpmList, isLoading: jenisSpmLoading } = useJenisSpmList({ is_active: true });
+  const { data: bankList, isLoading: bankLoading } = useMasterBankList({ is_active: true });
 
   // Auto-set OPD based on logged-in bendahara's role
   const bendaharaRole = roles.find(r => r.role === 'bendahara_opd');
@@ -118,21 +120,22 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
       const selectedOpd = opdList?.find(o => o.id === opdId);
       if (selectedOpd?.nama_bendahara) {
         form.setValue('nama_penerima', selectedOpd.nama_bendahara);
-        // Also set bank details if available
-        if (selectedOpd.nama_bendahara) {
-          form.setValue('nama_rekening', selectedOpd.nama_bendahara);
-        }
+        form.setValue('nama_rekening', selectedOpd.nama_bendahara);
+        
         if (selectedOpd.nomor_rekening_bendahara) {
           form.setValue('nomor_rekening', selectedOpd.nomor_rekening_bendahara);
         }
+        
         // Get bank name from bank_id
-        if (selectedOpd.bank_id) {
-          const selectedBank = opdList?.find(o => o.id === opdId);
-          // We'll need to fetch bank data separately
+        if (selectedOpd.bank_id && bankList) {
+          const selectedBank = bankList.find(b => b.id === selectedOpd.bank_id);
+          if (selectedBank) {
+            form.setValue('nama_bank', selectedBank.nama_bank);
+          }
         }
       }
     }
-  }, [tipePenerima, opdId, opdList, form]);
+  }, [tipePenerima, opdId, opdList, bankList, form]);
 
   const handleNextClick = (data: SpmDataFormValues) => {
     setPendingData(data);
@@ -170,7 +173,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
     setPendingData(null);
   };
 
-  if (opdLoading || jenisSpmLoading) {
+  if (opdLoading || jenisSpmLoading || bankLoading) {
     return (
       <div className="flex justify-center p-8">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -293,6 +296,67 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
             </FormItem>
           )}
         />
+
+        {tipePenerima === "bendahara_pengeluaran" && (
+          <>
+            <FormField
+              control={form.control}
+              name="nama_bank"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nama Bank</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled
+                      className="bg-muted"
+                      placeholder="Otomatis terisi dari data OPD"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="nomor_rekening"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nomor Rekening</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled
+                      className="bg-muted"
+                      placeholder="Otomatis terisi dari data OPD"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="nama_rekening"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nama Pemilik Rekening</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      disabled
+                      className="bg-muted"
+                      placeholder="Otomatis terisi dari data OPD"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        )}
 
         <FormField
           control={form.control}
