@@ -80,6 +80,7 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
   const nilaiSpm = form.watch("nilai_spm");
   const isAset = form.watch("is_aset");
   const tipePenerima = form.watch("tipe_penerima");
+  const opdId = form.watch("opd_id");
 
   const { speak, isSpeaking } = useSpeechSynthesis();
   const { roles } = useUserRole();
@@ -110,6 +111,28 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
       form.setValue('opd_id', userOpdId);
     }
   }, [userOpdId, defaultValues, form]);
+
+  // Auto-fill bendahara data when tipe penerima is "bendahara_pengeluaran"
+  useEffect(() => {
+    if (tipePenerima === "bendahara_pengeluaran" && opdId) {
+      const selectedOpd = opdList?.find(o => o.id === opdId);
+      if (selectedOpd?.nama_bendahara) {
+        form.setValue('nama_penerima', selectedOpd.nama_bendahara);
+        // Also set bank details if available
+        if (selectedOpd.nama_bendahara) {
+          form.setValue('nama_rekening', selectedOpd.nama_bendahara);
+        }
+        if (selectedOpd.nomor_rekening_bendahara) {
+          form.setValue('nomor_rekening', selectedOpd.nomor_rekening_bendahara);
+        }
+        // Get bank name from bank_id
+        if (selectedOpd.bank_id) {
+          const selectedBank = opdList?.find(o => o.id === opdId);
+          // We'll need to fetch bank data separately
+        }
+      }
+    }
+  }, [tipePenerima, opdId, opdList, form]);
 
   const handleNextClick = (data: SpmDataFormValues) => {
     setPendingData(data);
@@ -246,12 +269,26 @@ export const SpmDataForm = ({ defaultValues, onSubmit, onBack }: SpmDataFormProp
             <FormItem>
               <FormLabel>Nama Penerima</FormLabel>
               <FormControl>
-                <NamaPenerimaCombobox
-                  value={field.value}
-                  onChange={field.onChange}
-                  tipePenerima={tipePenerima}
-                />
+                {tipePenerima === "bendahara_pengeluaran" ? (
+                  <Input
+                    {...field}
+                    disabled
+                    className="bg-muted"
+                    placeholder="Otomatis terisi dari data OPD"
+                  />
+                ) : (
+                  <NamaPenerimaCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    tipePenerima={tipePenerima}
+                  />
+                )}
               </FormControl>
+              {tipePenerima === "bendahara_pengeluaran" && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Nama penerima otomatis terisi dari data bendahara OPD
+                </p>
+              )}
               <FormMessage />
             </FormItem>
           )}
