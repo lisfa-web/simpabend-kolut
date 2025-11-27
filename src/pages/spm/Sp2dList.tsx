@@ -182,6 +182,7 @@ const Sp2dList = () => {
         const { data: sp2dList, error: sp2dError } = await supabase
           .from("sp2d")
           .select("spm_id");
+        
         if (sp2dError) {
           console.warn("SP2D fetch restricted or failed; proceeding without exclusion.", sp2dError);
         }
@@ -190,7 +191,7 @@ const Sp2dList = () => {
           .map((s) => s.spm_id)
           .filter(Boolean);
 
-        // Ambil SPM yang statusnya sudah di tahap akhir (siap SP2D)
+        // Ambil SPM yang statusnya sudah disetujui (siap SP2D)
         let query = supabase
           .from("spm")
           .select(`
@@ -198,24 +199,30 @@ const Sp2dList = () => {
             nomor_spm,
             nilai_spm,
             tanggal_disetujui,
+            tanggal_kepala_bkad,
             opd:opd_id(nama_opd, kode_opd),
             jenis_spm:jenis_spm_id(nama_jenis)
           `)
-          .in("status", ["disetujui", "kepala_bkad_review"]) 
-          .order("tanggal_disetujui", { ascending: false })
-          .limit(100);
+          .eq("status", "disetujui")
+          .order("tanggal_disetujui", { ascending: false, nullsFirst: false });
 
+        // Exclude SPM yang sudah punya SP2D dengan proper NOT IN
         if (usedSpmIds.length > 0) {
-          const inList = `(${usedSpmIds.map((id: string) => `"${id}"`).join(",")})`;
-          query = query.not("id", "in", inList);
+          query = query.not("id", "in", `(${usedSpmIds.join(",")})`);
         }
 
+        // Apply search filter
         if (filters.search) {
           query = query.ilike("nomor_spm", `%${filters.search}%`);
         }
 
         const { data, error } = await query;
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching approved SPM:", error);
+          throw error;
+        }
+        
+        console.log("Approved SPM fetched:", data?.length || 0, "items");
         return data || [];
       } catch (err) {
         console.error("Error fetching approved SPM:", err);
