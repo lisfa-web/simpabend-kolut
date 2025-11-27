@@ -2,84 +2,37 @@ import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Building2,
-  Users2,
-  FileText,
-  Receipt,
-  Link,
-} from "lucide-react";
+import { FileArchive, FileText } from "lucide-react";
 
-interface MasterDataCard {
+interface ArsipCard {
   title: string;
   description: string;
   icon: any;
   path: string;
-  count?: number;
   gradient: string;
   iconColor: string;
 }
 
-const masterDataList: MasterDataCard[] = [
+const arsipList: ArsipCard[] = [
   {
-    title: "OPD",
-    description: "Organisasi Perangkat Daerah",
-    icon: Building2,
-    path: "/masterdata/opd",
+    title: "Arsip SPM",
+    description: "Arsip dokumen SPM yang telah disetujui",
+    icon: FileText,
+    path: "/arsip/spm",
     gradient: "from-blue-500/10 to-cyan-500/10",
     iconColor: "text-blue-600",
   },
   {
-    title: "Vendor",
-    description: "Data Vendor/Rekanan",
-    icon: Users2,
-    path: "/masterdata/vendor",
+    title: "Arsip SP2D",
+    description: "Arsip dokumen SP2D yang telah diterbitkan",
+    icon: FileArchive,
+    path: "/arsip/sp2d",
     gradient: "from-purple-500/10 to-pink-500/10",
     iconColor: "text-purple-600",
   },
-  {
-    title: "Bank",
-    description: "Data Bank untuk Rekening",
-    icon: Building2,
-    path: "/masterdata/bank",
-    gradient: "from-indigo-500/10 to-blue-500/10",
-    iconColor: "text-indigo-600",
-  },
-  {
-    title: "Jenis SPM",
-    description: "Jenis Surat Perintah Membayar",
-    icon: FileText,
-    path: "/masterdata/jenis-spm",
-    gradient: "from-green-500/10 to-emerald-500/10",
-    iconColor: "text-green-600",
-  },
-  {
-    title: "Master Pajak",
-    description: "Kelola data pajak (PPh, PPN)",
-    icon: Receipt,
-    path: "/masterdata/pajak",
-    gradient: "from-yellow-500/10 to-amber-500/10",
-    iconColor: "text-yellow-600",
-  },
-  {
-    title: "Mapping Pajak SPM",
-    description: "Kelola mapping pajak untuk setiap jenis SPM",
-    icon: Link,
-    path: "/masterdata/pajak/mapping",
-    gradient: "from-teal-500/10 to-cyan-500/10",
-    iconColor: "text-teal-600",
-  },
-  {
-    title: "Pihak Ketiga",
-    description: "Data Pihak Ketiga untuk Penerima Pembayaran",
-    icon: Users2,
-    path: "/masterdata/pihak-ketiga",
-    gradient: "from-orange-500/10 to-red-500/10",
-    iconColor: "text-orange-600",
-  },
 ];
 
-const MasterDataIndex = () => {
+const ArsipIndex = () => {
   const navigate = useNavigate();
 
   return (
@@ -87,15 +40,15 @@ const MasterDataIndex = () => {
       <div className="space-y-6">
         <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-lg border">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Master Data
+            Arsip Dokumen
           </h1>
           <p className="text-muted-foreground mt-2">
-            Kelola seluruh data master sistem dengan mudah
+            Kelola arsip dokumen SPM dan SP2D
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {masterDataList.map((item) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {arsipList.map((item) => (
             <Card
               key={item.path}
               className={`group relative overflow-hidden bg-gradient-to-br ${item.gradient} hover:shadow-xl transition-all duration-300 cursor-pointer border-2 hover:border-primary/20 hover:scale-[1.02]`}
@@ -124,7 +77,7 @@ const MasterDataIndex = () => {
                     navigate(item.path);
                   }}
                 >
-                  Kelola Data →
+                  Lihat Arsip →
                 </Button>
               </CardContent>
             </Card>
@@ -135,4 +88,4 @@ const MasterDataIndex = () => {
   );
 };
 
-export default MasterDataIndex;
+export default ArsipIndex;

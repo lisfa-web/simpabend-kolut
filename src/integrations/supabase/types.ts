@@ -14,6 +14,173 @@ export type Database = {
   }
   public: {
     Tables: {
+      arsip_sp2d: {
+        Row: {
+          archived_at: string | null
+          archived_by: string | null
+          bendahara_id: string
+          created_at: string | null
+          id: string
+          nilai_diterima: number | null
+          nilai_sp2d: number
+          nomor_sp2d: string
+          opd_id: string
+          snapshot_data: Json
+          sp2d_id: string
+          spm_id: string
+          status: string
+          tanggal_sp2d: string
+        }
+        Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
+          bendahara_id: string
+          created_at?: string | null
+          id?: string
+          nilai_diterima?: number | null
+          nilai_sp2d: number
+          nomor_sp2d: string
+          opd_id: string
+          snapshot_data: Json
+          sp2d_id: string
+          spm_id: string
+          status: string
+          tanggal_sp2d: string
+        }
+        Update: {
+          archived_at?: string | null
+          archived_by?: string | null
+          bendahara_id?: string
+          created_at?: string | null
+          id?: string
+          nilai_diterima?: number | null
+          nilai_sp2d?: number
+          nomor_sp2d?: string
+          opd_id?: string
+          snapshot_data?: Json
+          sp2d_id?: string
+          spm_id?: string
+          status?: string
+          tanggal_sp2d?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arsip_sp2d_archived_by_fkey"
+            columns: ["archived_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arsip_sp2d_bendahara_id_fkey"
+            columns: ["bendahara_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arsip_sp2d_opd_id_fkey"
+            columns: ["opd_id"]
+            isOneToOne: false
+            referencedRelation: "opd"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arsip_sp2d_sp2d_id_fkey"
+            columns: ["sp2d_id"]
+            isOneToOne: false
+            referencedRelation: "sp2d"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arsip_sp2d_spm_id_fkey"
+            columns: ["spm_id"]
+            isOneToOne: false
+            referencedRelation: "spm"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      arsip_spm: {
+        Row: {
+          archived_at: string | null
+          archived_by: string | null
+          bendahara_id: string
+          created_at: string | null
+          id: string
+          nama_penerima: string | null
+          nilai_bersih: number | null
+          nilai_spm: number
+          nomor_spm: string
+          opd_id: string
+          snapshot_data: Json
+          spm_id: string
+          status: string
+          tanggal_spm: string
+        }
+        Insert: {
+          archived_at?: string | null
+          archived_by?: string | null
+          bendahara_id: string
+          created_at?: string | null
+          id?: string
+          nama_penerima?: string | null
+          nilai_bersih?: number | null
+          nilai_spm: number
+          nomor_spm: string
+          opd_id: string
+          snapshot_data: Json
+          spm_id: string
+          status: string
+          tanggal_spm: string
+        }
+        Update: {
+          archived_at?: string | null
+          archived_by?: string | null
+          bendahara_id?: string
+          created_at?: string | null
+          id?: string
+          nama_penerima?: string | null
+          nilai_bersih?: number | null
+          nilai_spm?: number
+          nomor_spm?: string
+          opd_id?: string
+          snapshot_data?: Json
+          spm_id?: string
+          status?: string
+          tanggal_spm?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "arsip_spm_archived_by_fkey"
+            columns: ["archived_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arsip_spm_bendahara_id_fkey"
+            columns: ["bendahara_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arsip_spm_opd_id_fkey"
+            columns: ["opd_id"]
+            isOneToOne: false
+            referencedRelation: "opd"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "arsip_spm_spm_id_fkey"
+            columns: ["spm_id"]
+            isOneToOne: false
+            referencedRelation: "spm"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string

@@ -77,6 +77,10 @@ const FileManager = lazy(() => import("./pages/pengaturan/FileManager"));
 const PanduanManual = lazy(() => import("./pages/panduan/PanduanManual"));
 const PanduanManualAdmin = lazy(() => import("./pages/panduan/PanduanManualAdmin"));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
+const ArsipIndex = lazy(() => import("./pages/arsip/ArsipIndex"));
+const ArsipSpm = lazy(() => import("./pages/arsip/ArsipSpm"));
+const ArsipSp2d = lazy(() => import("./pages/arsip/ArsipSp2d"));
+const TimelineIndex = lazy(() => import("./pages/timeline/TimelineIndex"));
 
 const queryClient = new QueryClient();
 
@@ -195,6 +199,14 @@ const App = () => (
               <Route path="/masterdata/pajak/mapping" element={<ProtectedRoute><PajakPerJenisSpmList /></ProtectedRoute>} />
               <Route path="/masterdata/pajak/mapping/tambah" element={<ProtectedRoute><PajakPerJenisSpmForm /></ProtectedRoute>} />
               <Route path="/masterdata/pajak/mapping/edit/:id" element={<ProtectedRoute><PajakPerJenisSpmForm /></ProtectedRoute>} />
+              
+              {/* Arsip Routes */}
+              <Route path="/arsip" element={<ProtectedRoute><ArsipIndex /></ProtectedRoute>} />
+              <Route path="/arsip/spm" element={<ProtectedRoute><ArsipSpm /></ProtectedRoute>} />
+              <Route path="/arsip/sp2d" element={<ProtectedRoute><ArsipSp2d /></ProtectedRoute>} />
+              
+              {/* Timeline Routes */}
+              <Route path="/timeline" element={<ProtectedRoute><TimelineIndex /></ProtectedRoute>} />
               
               {/* Laporan Routes */}
               <Route path="/laporan" element={<ProtectedRoute><LaporanIndex /></ProtectedRoute>} />
