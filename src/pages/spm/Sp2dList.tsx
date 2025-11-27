@@ -175,15 +175,17 @@ const Sp2dList = () => {
     });
   };
 
-  // Fetch SPM yang sudah disetujui dan belum ada SP2D
+  // Fetch SPM yang sudah disetujui dan belum ada SP2D dengan status final
   const { data: approvedSpm, isLoading: isLoadingApproved } = useQuery({
     queryKey: ["approved-spm-for-sp2d", filters.search],
     queryFn: async () => {
       try {
-        // Ambil semua SPM ID yang sudah punya SP2D
+        // Ambil SPM ID yang sudah punya SP2D dengan status final (diterbitkan, diuji_bank, cair)
+        // SPM dengan SP2D status pending/diproses/gagal tetap bisa diproses ulang
         const { data: sp2dList, error: sp2dError } = await supabase
           .from("sp2d")
-          .select("spm_id");
+          .select("spm_id")
+          .in("status", ["diterbitkan", "diuji_bank", "cair"]);
         
         if (sp2dError) {
           console.warn("SP2D fetch restricted or failed; proceeding without exclusion.", sp2dError);
@@ -208,7 +210,7 @@ const Sp2dList = () => {
           .eq("status", "disetujui")
           .order("tanggal_disetujui", { ascending: false, nullsFirst: false });
 
-        // Exclude SPM yang sudah punya SP2D dengan proper NOT IN
+        // Exclude SPM yang sudah punya SP2D dengan status final
         if (usedSpmIds.length > 0) {
           query = query.not("id", "in", `(${usedSpmIds.join(",")})`);
         }
