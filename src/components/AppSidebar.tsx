@@ -15,6 +15,8 @@ import {
   ScrollText,
   BookOpen,
   Building2,
+  Archive,
+  Clock,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
@@ -93,6 +95,18 @@ const menuItems: MenuItem[] = [
     name: "Laporan", 
     icon: BarChart3, 
     path: "/laporan"
+  },
+  { 
+    name: "Arsip", 
+    icon: Archive, 
+    path: "/arsip",
+    roles: ["bendahara_opd", "administrator"]
+  },
+  { 
+    name: "Timeline", 
+    icon: Clock, 
+    path: "/timeline",
+    roles: ["bendahara_opd", "administrator"]
   },
   { 
     name: "Manajemen User", 
