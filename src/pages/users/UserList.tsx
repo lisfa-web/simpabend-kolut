@@ -190,7 +190,7 @@ const UserList = () => {
               Kelola user dan role akses sistem
             </p>
           </div>
-          <Button onClick={() => navigate("/users/create")} disabled={isDemoUser || !isSuperAdminUser}>
+          <Button onClick={() => navigate("/users/create")} disabled={!canWriteData}>
             <Plus className="mr-2 h-4 w-4" />
             Tambah User
           </Button>
