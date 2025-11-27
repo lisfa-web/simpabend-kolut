@@ -12,6 +12,7 @@ serve(async (req) => {
   }
 
   try {
+    // Client for auth check (uses ANON_KEY)
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
@@ -34,8 +35,19 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    // Verify super_admin role
-    const { data: userRole, error: roleError } = await supabase
+    // Admin client for role check (uses SERVICE_ROLE_KEY to bypass RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          persistSession: false,
+        },
+      }
+    );
+
+    // Verify super_admin role using admin client
+    const { data: userRole, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
@@ -43,6 +55,7 @@ serve(async (req) => {
       .maybeSingle();
 
     if (roleError || !userRole) {
+      console.error('Role check error:', roleError);
       throw new Error('Only Super Admin can manage emergency mode');
     }
 
@@ -52,38 +65,38 @@ serve(async (req) => {
       throw new Error('Alasan aktivasi minimal 10 karakter');
     }
 
-    // Update config
+    // Update config using admin client
     const timestamp = enabled ? new Date().toISOString() : '';
     
-    await supabase.from('config_sistem').upsert({ 
+    await supabaseAdmin.from('config_sistem').upsert({ 
       key: 'emergency_mode_enabled', 
       value: enabled ? 'true' : 'false' 
     }, { onConflict: 'key' });
 
-    await supabase.from('config_sistem').upsert({ 
+    await supabaseAdmin.from('config_sistem').upsert({ 
       key: 'emergency_mode_activated_at', 
       value: timestamp 
     }, { onConflict: 'key' });
 
-    await supabase.from('config_sistem').upsert({ 
+    await supabaseAdmin.from('config_sistem').upsert({ 
       key: 'emergency_mode_activated_by', 
       value: enabled ? user.id : '' 
     }, { onConflict: 'key' });
 
-    await supabase.from('config_sistem').upsert({ 
+    await supabaseAdmin.from('config_sistem').upsert({ 
       key: 'emergency_mode_reason', 
       value: enabled ? reason : '' 
     }, { onConflict: 'key' });
 
     // Get user profile for notification
-    const { data: profile } = await supabase
+    const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('full_name, email')
       .eq('id', user.id)
       .single();
 
     // Create audit log
-    await supabase.from('audit_log').insert({
+    await supabaseAdmin.from('audit_log').insert({
       user_id: user.id,
       action: enabled ? 'enable_emergency_mode' : 'disable_emergency_mode',
       resource: 'config_sistem',
@@ -93,8 +106,8 @@ serve(async (req) => {
       emergency_reason: reason,
     });
 
-    // Send notification to all admins
-    const { data: admins } = await supabase
+    // Send notification to all admins using admin client
+    const { data: admins } = await supabaseAdmin
       .from('user_roles')
       .select('user_id, profiles!inner(full_name, email, phone)')
       .in('role', ['super_admin', 'administrator', 'kepala_bkad', 'kuasa_bud']) as { data: Array<{ user_id: string, profiles: { full_name: string, email: string, phone?: string } }> | null };
@@ -112,11 +125,11 @@ serve(async (req) => {
         pesan: notificationMessage,
       }));
 
-      await supabase.from('notifikasi').insert(notifications);
+      await supabaseAdmin.from('notifikasi').insert(notifications);
     }
 
     // Send email notification (async, no await)
-    const { data: emailConfig } = await supabase
+    const { data: emailConfig } = await supabaseAdmin
       .from('email_config')
       .select('*')
       .eq('is_active', true)
@@ -128,7 +141,7 @@ serve(async (req) => {
     }
 
     // Send WhatsApp notification (async, no await)
-    const { data: waConfig } = await supabase
+    const { data: waConfig } = await supabaseAdmin
       .from('wa_gateway')
       .select('*')
       .eq('is_active', true)
