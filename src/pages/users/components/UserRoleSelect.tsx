@@ -8,11 +8,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Plus, Edit2 } from "lucide-react";
+import { X, Plus, Edit2, AlertCircle } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { getRoleDisplayName } from "@/lib/auth";
 import { useOpdList } from "@/hooks/useOpdList";
 import { Label } from "@/components/ui/label";
+import { useRoleValidation, isSingleUserRole, getRoleValidationMessage } from "@/hooks/useRoleValidation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type AppRole = Database["public"]["Enums"]["app_role"] | 'super_admin' | 'demo_admin';
 
@@ -44,6 +46,7 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   
   const { data: opdList } = useOpdList({ is_active: true });
+  const { data: roleValidation } = useRoleValidation();
 
   const availableRoles = isSuperAdmin 
     ? [...AVAILABLE_ROLES, "super_admin" as AppRole, "demo_admin" as AppRole]
@@ -54,6 +57,12 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
 
     // Cek apakah role bendahara_opd dan OPD belum dipilih
     if (selectedRole === "bendahara_opd" && !selectedOpdId) {
+      return;
+    }
+
+    // Cek apakah role tersebut adalah role yang hanya boleh dimiliki satu user
+    if (isSingleUserRole(selectedRole) && roleValidation?.[selectedRole]) {
+      // Jangan izinkan menambahkan role jika sudah ada user lain yang memilikinya
       return;
     }
 
@@ -120,12 +129,25 @@ export const UserRoleSelect = ({ value, onChange, isSuperAdmin = false }: UserRo
           <Button
             type="button"
             onClick={handleAddRole}
-            disabled={!selectedRole || (selectedRole === "bendahara_opd" && !selectedOpdId)}
+            disabled={
+              !selectedRole || 
+              (selectedRole === "bendahara_opd" && !selectedOpdId) ||
+              (isSingleUserRole(selectedRole) && !!roleValidation?.[selectedRole])
+            }
             size="icon"
           >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
+
+        {selectedRole && isSingleUserRole(selectedRole) && roleValidation?.[selectedRole] && (
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {getRoleValidationMessage(selectedRole, { userName: roleValidation[selectedRole].userName })}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {selectedRole === "bendahara_opd" && (
           <Select value={selectedOpdId} onValueChange={setSelectedOpdId}>
