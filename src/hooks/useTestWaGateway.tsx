@@ -23,7 +23,14 @@ export const useTestWaGateway = () => {
     },
     onSuccess: (data) => {
       if (data?.success) {
-        toast.success(data.message || "Test koneksi WhatsApp berhasil! Pesan terkirim.");
+        if (data.pending) {
+          toast.warning(data.message || "Pesan masuk antrian", {
+            description: data.warning,
+            duration: 8000,
+          });
+        } else {
+          toast.success(data.message || "Test koneksi WhatsApp berhasil! Pesan terkirim.");
+        }
       }
     },
     onError: (error: any) => {

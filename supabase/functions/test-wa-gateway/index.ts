@@ -98,7 +98,9 @@ serve(async (req) => {
     console.log("Fonnte API Response:", result);
 
     const isSuccess = result.status === true || response.ok;
+    const isPending = result.process === "pending";
     console.log("Is success:", isSuccess);
+    console.log("Is pending:", isPending);
 
     // Update test status in database
     await supabase
@@ -110,10 +112,26 @@ serve(async (req) => {
       .eq("id", gateway.id);
 
     if (isSuccess) {
+      let message = "";
+      let warningMessage = "";
+      
+      if (isPending) {
+        message = "⏳ Pesan masuk antrian Fonnte dan sedang diproses.";
+        warningMessage = "Jika pesan tidak diterima dalam beberapa menit, periksa:\n" +
+          "1. Nomor Sender ID sudah terverifikasi di Fonnte\n" +
+          "2. Nomor penerima terdaftar di WhatsApp\n" +
+          "3. Format nomor benar (628xxxx)\n" +
+          "4. Quota Fonnte masih tersedia";
+      } else {
+        message = "✅ Test koneksi berhasil! Pesan telah dikirim ke " + cleanPhone;
+      }
+      
       return new Response(
         JSON.stringify({ 
-          success: true, 
-          message: "Test koneksi berhasil! Pesan telah dikirim ke " + cleanPhone,
+          success: true,
+          pending: isPending,
+          message: message,
+          warning: warningMessage || undefined,
           data: result 
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
