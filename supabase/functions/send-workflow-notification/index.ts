@@ -60,9 +60,6 @@ serve(async (req) => {
         .select(`
           *,
           opd:opd_id(nama_opd),
-          program:program_id(nama_program),
-          kegiatan:kegiatan_id(nama_kegiatan),
-          subkegiatan:subkegiatan_id(nama_subkegiatan),
           bendahara:bendahara_id(full_name, phone, email),
           potongan:potongan_pajak_spm(jumlah_pajak)
         `)

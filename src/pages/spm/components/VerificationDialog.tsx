@@ -229,9 +229,15 @@ export const VerificationDialog = ({
                     maxLength={6}
                     required
                   />
-                  <p className="text-xs text-muted-foreground">
-                    PIN akan dikirim via Email & WhatsApp. Berlaku 15 menit.
-                  </p>
+                  <div className="rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 p-3">
+                    <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+                      <strong>📱 Cara Mendapatkan PIN:</strong><br/>
+                      1. Klik tombol <strong>"Minta PIN"</strong> di atas<br/>
+                      2. PIN akan dikirim ke Email & WhatsApp Anda<br/>
+                      3. Masukkan PIN dalam 15 menit sebelum kadaluarsa<br/>
+                      4. Setiap PIN hanya bisa digunakan sekali
+                    </p>
+                  </div>
                 </div>
               )}
 
