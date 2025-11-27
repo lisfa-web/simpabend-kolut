@@ -27,10 +27,11 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Eye, Loader2, FileCheck, Banknote, AlertCircle } from "lucide-react";
+import { Plus, Eye, Loader2, FileCheck, Banknote, AlertCircle, List } from "lucide-react";
 import { useSp2dList } from "@/hooks/useSp2dList";
 import { useSp2dMutation } from "@/hooks/useSp2dMutation";
 import { Sp2dStatusBadge } from "./components/Sp2dStatusBadge";
+import { SpmStatusBadge } from "./components/SpmStatusBadge";
 import { Sp2dFilters } from "./components/Sp2dFilters";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
@@ -62,6 +63,7 @@ const Sp2dList = () => {
   const paginationTerbit = usePagination(10);
   const paginationUjiBank = usePagination(10);
   const paginationCair = usePagination(10);
+  const paginationAllSpm = usePagination(10);
 
   // Prepare filter params for queries
   const filterParams = {
@@ -231,6 +233,64 @@ const Sp2dList = () => {
     },
   });
 
+  // Fetch semua SPM untuk tab "Semua SPM"
+  const { data: allSpm, isLoading: isLoadingAllSpm } = useQuery({
+    queryKey: ["all-spm-with-sp2d", filters.search],
+    queryFn: async () => {
+      try {
+        // Ambil semua SP2D dengan mapping SPM ID
+        const { data: sp2dList } = await supabase
+          .from("sp2d")
+          .select("spm_id, nomor_sp2d, status");
+
+        const sp2dMap = new Map(
+          (sp2dList || []).map((sp2d) => [
+            sp2d.spm_id,
+            { nomor_sp2d: sp2d.nomor_sp2d, status: sp2d.status }
+          ])
+        );
+
+        // Ambil semua SPM
+        let query = supabase
+          .from("spm")
+          .select(`
+            id,
+            nomor_spm,
+            nilai_spm,
+            status,
+            tanggal_ajuan,
+            tanggal_disetujui,
+            opd:opd_id(nama_opd, kode_opd),
+            jenis_spm:jenis_spm_id(nama_jenis)
+          `)
+          .order("created_at", { ascending: false });
+
+        // Apply search filter
+        if (filters.search) {
+          query = query.ilike("nomor_spm", `%${filters.search}%`);
+        }
+
+        const { data, error } = await query;
+        if (error) {
+          console.error("Error fetching all SPM:", error);
+          throw error;
+        }
+
+        // Tambahkan info SP2D ke setiap SPM
+        const spmWithSp2d = (data || []).map((spm) => ({
+          ...spm,
+          sp2d_info: sp2dMap.get(spm.id) || null,
+        }));
+
+        console.log("All SPM fetched:", spmWithSp2d.length, "items");
+        return spmWithSp2d;
+      } catch (err) {
+        console.error("Error fetching all SPM:", err);
+        return [];
+      }
+    },
+  });
+
   // Check if user has permission to view SP2D data
   const canViewSp2d = hasRole("kuasa_bud") || hasRole("kepala_bkad") || 
                       hasRole("administrator") || hasRole("super_admin") ||
@@ -273,7 +333,7 @@ const Sp2dList = () => {
         />
 
         <Tabs defaultValue="ready" className="w-full">
-          <TabsList className="grid w-full max-w-2xl grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="ready" className="gap-2">
               <FileCheck className="h-4 w-4" />
               SPM Siap Diproses
@@ -300,6 +360,13 @@ const Sp2dList = () => {
               SP2D Cair
               {sp2dCair && sp2dCair.length > 0 && (
                 <Badge variant="secondary" className="ml-1">{sp2dCair.length}</Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="all" className="gap-2">
+              <List className="h-4 w-4" />
+              Semua SPM
+              {allSpm && allSpm.length > 0 && (
+                <Badge variant="secondary" className="ml-1">{allSpm.length}</Badge>
               )}
             </TabsTrigger>
           </TabsList>
@@ -732,6 +799,141 @@ const Sp2dList = () => {
                     totalItems={sp2dCair.length}
                     onPageChange={paginationCair.goToPage}
                     onPageSizeChange={paginationCair.setPageSize}
+                  />
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="all" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Semua SPM</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Riwayat lengkap semua SPM yang sudah dan belum diproses
+                </p>
+              </CardHeader>
+              <CardContent className="p-0">
+                {isLoadingAllSpm ? (
+                  <div className="flex justify-center items-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader className="sticky top-0 z-10">
+                      <TableRow className="bg-gradient-to-r from-primary/90 via-primary/80 to-primary/90 hover:from-primary hover:via-primary/90 hover:to-primary border-b-2 border-primary">
+                        <TableHead className="text-primary-foreground font-bold">Nomor SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">OPD</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Jenis SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Nilai SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Status SPM</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Status SP2D</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Tanggal</TableHead>
+                        <TableHead className="text-primary-foreground font-bold">Aksi</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {allSpm?.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={8} className="text-center py-8">
+                            <div className="flex flex-col items-center gap-2">
+                              <FileCheck className="h-12 w-12 text-muted-foreground/50" />
+                              <p className="text-muted-foreground">
+                                Tidak ada data SPM
+                              </p>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        paginationAllSpm.paginateData(allSpm)?.map((spm: any, index) => {
+                          const colors = [
+                            "bg-blue-50 hover:bg-blue-100",
+                            "bg-green-50 hover:bg-green-100", 
+                            "bg-purple-50 hover:bg-purple-100",
+                            "bg-pink-50 hover:bg-pink-100",
+                            "bg-amber-50 hover:bg-amber-100",
+                            "bg-cyan-50 hover:bg-cyan-100",
+                            "bg-rose-50 hover:bg-rose-100",
+                            "bg-indigo-50 hover:bg-indigo-100",
+                          ];
+                          const hasSp2d = spm.sp2d_info !== null;
+                          return (
+                          <TableRow 
+                            key={spm.id}
+                            className={`${colors[index % colors.length]} transition-colors duration-200`}
+                          >
+                            <TableCell className="font-medium">
+                              {spm.nomor_spm || "-"}
+                            </TableCell>
+                            <TableCell>{spm.opd?.nama_opd || "-"}</TableCell>
+                            <TableCell>{spm.jenis_spm?.nama_jenis || "-"}</TableCell>
+                            <TableCell>{formatCurrency(spm.nilai_spm)}</TableCell>
+                            <TableCell>
+                              <SpmStatusBadge status={spm.status} />
+                            </TableCell>
+                            <TableCell>
+                              {hasSp2d ? (
+                                <div className="flex flex-col gap-1">
+                                  <Badge variant="default" className="w-fit">
+                                    Ada SP2D
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    {spm.sp2d_info.nomor_sp2d}
+                                  </span>
+                                </div>
+                              ) : (
+                                <Badge variant="outline" className="w-fit">
+                                  Belum Ada SP2D
+                                </Badge>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {spm.tanggal_disetujui
+                                ? format(new Date(spm.tanggal_disetujui), "dd MMM yyyy HH:mm", {
+                                    locale: localeId,
+                                  })
+                                : spm.tanggal_ajuan
+                                ? format(new Date(spm.tanggal_ajuan), "dd MMM yyyy HH:mm", {
+                                    locale: localeId,
+                                  })
+                                : "-"}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => navigate(`/input-spm/detail/${spm.id}`)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                {spm.status === "disetujui" && !hasSp2d && (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => navigate("/sp2d/buat", { state: { spmId: spm.id } })}
+                                  >
+                                    <Plus className="h-4 w-4 mr-1" />
+                                    Terbit SP2D
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          );
+                        })
+                      )}
+                    </TableBody>
+                  </Table>
+                )}
+                {allSpm && allSpm.length > 0 && (
+                  <DataTablePagination
+                    pageIndex={paginationAllSpm.pagination.pageIndex}
+                    pageSize={paginationAllSpm.pagination.pageSize}
+                    pageCount={paginationAllSpm.getPageCount(allSpm.length)}
+                    totalItems={allSpm.length}
+                    onPageChange={paginationAllSpm.goToPage}
+                    onPageSizeChange={paginationAllSpm.setPageSize}
                   />
                 )}
               </CardContent>
