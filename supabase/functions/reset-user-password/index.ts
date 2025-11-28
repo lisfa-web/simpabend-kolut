@@ -23,6 +23,78 @@ serve(async (req: Request) => {
     // Create admin client with service role
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
+    // Parse request body
+    const { userId, newPassword, isPublicReset, email } = await req.json();
+
+    if (!userId || !newPassword) {
+      return new Response(
+        JSON.stringify({ error: "Missing userId or newPassword" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Handle public reset (forgot password flow)
+    if (isPublicReset) {
+      console.log("Processing public password reset for userId:", userId);
+
+      // Verify that user has a valid used OTP (recently verified)
+      // Check that there's a recent used OTP within the last 30 minutes
+      const thirtyMinutesAgo = new Date();
+      thirtyMinutesAgo.setMinutes(thirtyMinutesAgo.getMinutes() - 30);
+
+      const { data: otpData, error: otpError } = await admin
+        .from("pin_otp")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("jenis", "reset_password")
+        .eq("is_used", true)
+        .gte("created_at", thirtyMinutesAgo.toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (otpError || !otpData) {
+        console.error("No valid OTP found:", otpError);
+        return new Response(
+          JSON.stringify({ error: "Verifikasi OTP tidak valid atau sudah kadaluarsa" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Reset password using admin API
+      const { error: resetError } = await admin.auth.admin.updateUserById(userId, {
+        password: newPassword,
+      });
+
+      if (resetError) {
+        console.error("Password reset error:", resetError);
+        throw resetError;
+      }
+
+      // Try to send WhatsApp notification (don't fail if this errors)
+      try {
+        await admin.functions.invoke("send-password-reset-notification", {
+          body: { userId },
+        });
+      } catch (notifError) {
+        console.error("Error sending notification:", notifError);
+      }
+
+      console.log("Public password reset successful for userId:", userId);
+
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          message: "Password reset successfully"
+        }),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, "Content-Type": "application/json" } 
+        }
+      );
+    }
+
+    // === Admin Reset Flow (existing logic) ===
     // Verify the calling user is authenticated and is an admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -64,16 +136,6 @@ serve(async (req: Request) => {
       return new Response(
         JSON.stringify({ error: "Unauthorized: Admin access required" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Parse request body
-    const { userId, newPassword } = await req.json();
-
-    if (!userId || !newPassword) {
-      return new Response(
-        JSON.stringify({ error: "Missing userId or newPassword" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
