@@ -92,21 +92,28 @@ const ForgotPasswordDialog = () => {
     setError("");
 
     try {
-      // Cari user berdasarkan email
+      // Cari user berdasarkan email (case-insensitive)
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("id, phone, full_name")
-        .eq("email", data.email)
+        .select("id, phone, full_name, email")
+        .ilike("email", data.email.trim())
         .maybeSingle();
 
-      if (profileError || !profile) {
+      if (profileError) {
+        console.error("Profile query error:", profileError);
+        setError("Terjadi kesalahan saat mencari email");
+        setLoading(false);
+        return;
+      }
+
+      if (!profile) {
         setError("Email tidak terdaftar dalam sistem");
         setLoading(false);
         return;
       }
 
       // Kirim OTP via edge function
-      const { error: otpError } = await supabase.functions.invoke("send-pin", {
+      const { data: otpData, error: otpError } = await supabase.functions.invoke("send-pin", {
         body: {
           userId: profile.id,
           jenis: "reset_password",
@@ -114,15 +121,34 @@ const ForgotPasswordDialog = () => {
       });
 
       if (otpError) {
+        console.error("OTP send error:", otpError);
         setError("Gagal mengirim kode verifikasi. Silakan coba lagi.");
         setLoading(false);
         return;
       }
 
-      setEmail(data.email);
+      // Cek hasil pengiriman
+      if (otpData && !otpData.success) {
+        setError(otpData.message || "Gagal mengirim kode verifikasi");
+        setLoading(false);
+        return;
+      }
+
+      setEmail(profile.email); // Gunakan email dari database
       setStep("otp");
-      toast.success("Kode verifikasi telah dikirim");
+      
+      // Info ke user tentang channel pengiriman
+      const channels = [];
+      if (otpData?.notifications?.whatsapp === "success") channels.push("WhatsApp");
+      if (otpData?.notifications?.email === "success") channels.push("Email");
+      
+      if (channels.length > 0) {
+        toast.success(`Kode verifikasi telah dikirim via ${channels.join(" dan ")}`);
+      } else {
+        toast.success("Kode verifikasi telah dibuat. Hubungi admin jika tidak menerima.");
+      }
     } catch (err: any) {
+      console.error("handleSendOtp error:", err);
       setError(err.message || "Terjadi kesalahan");
     } finally {
       setLoading(false);
@@ -139,7 +165,7 @@ const ForgotPasswordDialog = () => {
       const { data: profile } = await supabase
         .from("profiles")
         .select("id")
-        .eq("email", email)
+        .ilike("email", email.trim())
         .single();
 
       if (!profile) {
@@ -148,12 +174,13 @@ const ForgotPasswordDialog = () => {
         return;
       }
 
-      // Verifikasi OTP
+      // Verifikasi OTP - cek kode yang cocok
       const { data: pinData, error: pinError } = await supabase
         .from("pin_otp")
         .select("*")
         .eq("user_id", profile.id)
         .eq("jenis", "reset_password")
+        .eq("kode_hash", data.otp) // Cocokkan dengan input user
         .eq("is_used", false)
         .gte("expires_at", new Date().toISOString())
         .order("created_at", { ascending: false })
@@ -165,10 +192,6 @@ const ForgotPasswordDialog = () => {
         setLoading(false);
         return;
       }
-
-      // Simple hash check (dalam produksi harus pakai proper hashing)
-      // Note: Ini perlu di-handle di backend dengan proper hash comparison
-      // Untuk sekarang kita asumsikan OTP valid jika ada record yang belum digunakan
 
       // Mark OTP as used
       await supabase
@@ -194,7 +217,7 @@ const ForgotPasswordDialog = () => {
       const { data: profile } = await supabase
         .from("profiles")
         .select("id")
-        .eq("email", email)
+        .ilike("email", email.trim())
         .single();
 
       if (!profile) {
@@ -203,21 +226,25 @@ const ForgotPasswordDialog = () => {
         return;
       }
 
-      // Reset password via edge function
-      const { data: session } = await supabase.auth.getSession();
-      
-      // Untuk user yang tidak login, gunakan edge function khusus
-      const { error: resetError } = await supabase.functions.invoke("reset-user-password", {
+      // Reset password via edge function - public reset tanpa auth
+      const { data: resetData, error: resetError } = await supabase.functions.invoke("reset-user-password", {
         body: {
           userId: profile.id,
           newPassword: data.password,
-          isPublicReset: true, // Flag untuk reset tanpa auth
+          isPublicReset: true,
           email: email,
         },
       });
 
       if (resetError) {
+        console.error("Reset password error:", resetError);
         setError("Gagal mengubah password. Silakan coba lagi.");
+        setLoading(false);
+        return;
+      }
+
+      if (resetData && !resetData.success) {
+        setError(resetData.error || "Gagal mengubah password");
         setLoading(false);
         return;
       }

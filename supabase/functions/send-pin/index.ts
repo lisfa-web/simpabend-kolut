@@ -13,8 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, spmId } = await req.json();
-    console.log("Send PIN - User ID:", userId, "SPM ID:", spmId);
+    const { userId, spmId, jenis = "approval_pin" } = await req.json();
+    console.log("Send PIN - User ID:", userId, "SPM ID:", spmId, "Jenis:", jenis);
 
     if (!userId) {
       return new Response(
@@ -22,6 +22,10 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Validate jenis
+    const validJenis = ["approval_pin", "reset_password", "verification"];
+    const pinJenis = validJenis.includes(jenis) ? jenis : "approval_pin";
 
     // Get Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -56,8 +60,8 @@ serve(async (req) => {
       .from("pin_otp")
       .insert({
         user_id: userId,
-        spm_id: spmId,
-        jenis: "approval_pin",
+        spm_id: spmId || null,
+        jenis: pinJenis,
         kode_hash: pin, // In production, should hash this
         expires_at: expiresAt.toISOString(),
         is_used: false,
@@ -91,6 +95,12 @@ serve(async (req) => {
           ? `${emailConfig.from_name} <${emailConfig.smtp_user}>`
           : `${emailConfig.from_name} <${emailConfig.from_email}>`;
 
+        // Dynamic content based on jenis
+        const isResetPassword = pinJenis === "reset_password";
+        const emailTitle = isResetPassword ? "🔑 Kode Reset Password" : "🔐 PIN Approval SPM";
+        const emailPurpose = isResetPassword ? "reset password akun Anda" : "approval SPM";
+        const emailAction = isResetPassword ? "Gunakan kode ini untuk reset password di sistem." : "Gunakan PIN ini untuk menyetujui SPM di sistem.";
+
         const emailHtml = `
           <!DOCTYPE html>
           <html>
@@ -110,22 +120,22 @@ serve(async (req) => {
           <body>
             <div class="container">
               <div class="header">
-                <h1>🔐 PIN Approval SPM</h1>
+                <h1>${emailTitle}</h1>
               </div>
               <div class="content">
-                <p>Yth. ${profile.full_name || "Kepala BKAD"},</p>
-                <p>Berikut adalah PIN untuk approval SPM:</p>
+                <p>Yth. ${profile.full_name || "Pengguna"},</p>
+                <p>Berikut adalah kode verifikasi untuk ${emailPurpose}:</p>
                 <div class="pin-box">
                   <div class="pin-code">${pin}</div>
                 </div>
                 <div class="info">
                   <strong>⚠️ Penting:</strong><br>
-                  • PIN ini berlaku selama 15 menit<br>
-                  • Jangan bagikan PIN kepada siapapun<br>
-                  • PIN hanya dapat digunakan sekali<br>
+                  • Kode ini berlaku selama 15 menit<br>
+                  • Jangan bagikan kode kepada siapapun<br>
+                  • Kode hanya dapat digunakan sekali<br>
                   • Waktu dikirim: ${new Date().toLocaleString("id-ID")}
                 </div>
-                <p>Gunakan PIN ini untuk menyetujui SPM di sistem.</p>
+                <p>${emailAction}</p>
               </div>
               <div class="footer">
                 <p>Sistem Manajemen SPM BKAD</p>
@@ -156,11 +166,13 @@ serve(async (req) => {
           },
         });
 
+        const emailSubject = isResetPassword ? `🔑 Kode Reset Password - ${pin}` : `🔐 PIN Approval SPM - ${pin}`;
+        
         try {
           await client.send({
             from: fromHeader,
             to: profile.email,
-            subject: `🔐 PIN Approval SPM - ${pin}`,
+            subject: emailSubject,
             content: "auto",
             html: emailHtml,
           });
@@ -194,21 +206,27 @@ serve(async (req) => {
       if (waConfig && profile.phone) {
         console.log("WA Gateway config found, sending PIN WhatsApp...");
         
-        const waMessage = `🔐 *PIN Approval SPM*
+        // Dynamic content based on jenis
+        const isResetPassword = pinJenis === "reset_password";
+        const waTitle = isResetPassword ? "🔑 *Kode Reset Password*" : "🔐 *PIN Approval SPM*";
+        const waPurpose = isResetPassword ? "reset password akun Anda" : "approval SPM";
+        const waAction = isResetPassword ? "Gunakan kode ini untuk reset password di sistem." : "Gunakan PIN ini untuk menyetujui SPM di sistem.";
+        
+        const waMessage = `${waTitle}
 
-Yth. ${profile.full_name || "Kepala BKAD"},
+Yth. ${profile.full_name || "Pengguna"},
 
-Berikut adalah PIN untuk approval SPM:
+Berikut adalah kode verifikasi untuk ${waPurpose}:
 
 *${pin}*
 
 ⚠️ *Penting:*
-• PIN berlaku selama 15 menit
-• Jangan bagikan PIN kepada siapapun
-• PIN hanya dapat digunakan sekali
+• Kode berlaku selama 15 menit
+• Jangan bagikan kode kepada siapapun
+• Kode hanya dapat digunakan sekali
 • Waktu: ${new Date().toLocaleString("id-ID")}
 
-Gunakan PIN ini untuk menyetujui SPM di sistem.
+${waAction}
 
 ---
 Sistem Manajemen SPM BKAD`;
