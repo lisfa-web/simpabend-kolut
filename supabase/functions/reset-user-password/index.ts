@@ -26,16 +26,39 @@ serve(async (req: Request) => {
     // Parse request body
     const { userId, newPassword, isPublicReset, email } = await req.json();
 
-    if (!userId || !newPassword) {
+    if (!newPassword) {
       return new Response(
-        JSON.stringify({ error: "Missing userId or newPassword" }),
+        JSON.stringify({ error: "Missing newPassword" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     // Handle public reset (forgot password flow)
     if (isPublicReset) {
-      console.log("Processing public password reset for userId:", userId);
+      if (!email) {
+        return new Response(
+          JSON.stringify({ error: "Email diperlukan untuk reset password" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Get user profile by email
+      const { data: profile, error: profileError } = await admin
+        .from("profiles")
+        .select("id")
+        .ilike("email", email.trim())
+        .maybeSingle();
+
+      if (profileError || !profile) {
+        console.error("Profile not found:", profileError);
+        return new Response(
+          JSON.stringify({ error: "User tidak ditemukan" }),
+          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const targetUserId = profile.id;
+      console.log("Processing public password reset for userId:", targetUserId);
 
       // Verify that user has a valid used OTP (recently verified)
       // Check that there's a recent used OTP within the last 30 minutes
@@ -45,7 +68,7 @@ serve(async (req: Request) => {
       const { data: otpData, error: otpError } = await admin
         .from("pin_otp")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", targetUserId)
         .eq("jenis", "reset_password")
         .eq("is_used", true)
         .gte("created_at", thirtyMinutesAgo.toISOString())
@@ -62,7 +85,7 @@ serve(async (req: Request) => {
       }
 
       // Reset password using admin API
-      const { error: resetError } = await admin.auth.admin.updateUserById(userId, {
+      const { error: resetError } = await admin.auth.admin.updateUserById(targetUserId, {
         password: newPassword,
       });
 
@@ -74,13 +97,13 @@ serve(async (req: Request) => {
       // Try to send WhatsApp notification (don't fail if this errors)
       try {
         await admin.functions.invoke("send-password-reset-notification", {
-          body: { userId },
+          body: { userId: targetUserId },
         });
       } catch (notifError) {
         console.error("Error sending notification:", notifError);
       }
 
-      console.log("Public password reset successful for userId:", userId);
+      console.log("Public password reset successful for userId:", targetUserId);
 
       return new Response(
         JSON.stringify({ 
@@ -95,6 +118,13 @@ serve(async (req: Request) => {
     }
 
     // === Admin Reset Flow (existing logic) ===
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "Missing userId" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Verify the calling user is authenticated and is an admin
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
