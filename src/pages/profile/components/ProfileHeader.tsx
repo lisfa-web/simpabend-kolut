@@ -10,6 +10,7 @@ import { Mail, Phone, Calendar, Building2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import EditProfileDialog from "./EditProfileDialog";
 
 const getRoleDisplayName = (role: string): string => {
   const roleMap: Record<string, string> = {
@@ -82,15 +83,18 @@ const ProfileHeader = () => {
         </Avatar>
 
         <div className="flex-1 space-y-4">
-          <div>
-            <h2 className="text-2xl font-bold">{profile?.full_name}</h2>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {roles.map((roleObj, index) => (
-                <Badge key={`${roleObj.role}-${roleObj.opd_id || index}`} variant="secondary">
-                  {getRoleDisplayName(roleObj.role)}
-                </Badge>
-              ))}
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-2xl font-bold">{profile?.full_name}</h2>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {roles.map((roleObj, index) => (
+                  <Badge key={`${roleObj.role}-${roleObj.opd_id || index}`} variant="secondary">
+                    {getRoleDisplayName(roleObj.role)}
+                  </Badge>
+                ))}
+              </div>
             </div>
+            <EditProfileDialog />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
