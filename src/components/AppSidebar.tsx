@@ -177,6 +177,12 @@ export function AppSidebar() {
   const canAccessMenu = (menuRoles?: AppRole[]) => {
     if (!menuRoles || menuRoles.length === 0) return true;
     
+    // Super admin has access to ALL menus
+    const hasSuperAdmin = roles.some((role) => role === 'super_admin');
+    if (hasSuperAdmin) {
+      return true;
+    }
+    
     // Demo admin gets same menu access as regular administrator
     const hasDemoAdmin = roles.some((role) => role === 'demo_admin');
     if (hasDemoAdmin && menuRoles.includes('administrator')) {

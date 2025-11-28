@@ -21,6 +21,12 @@ interface UpdateUserData {
   roles: { role: AppRole; opd_id?: string }[];
 }
 
+interface RoleChangeAudit {
+  added: { role: string; opd_id?: string | null }[];
+  removed: { role: string; opd_id?: string | null }[];
+  unchanged: { role: string; opd_id?: string | null }[];
+}
+
 export const useUserMutation = () => {
   const queryClient = useQueryClient();
 
@@ -36,7 +42,46 @@ export const useUserMutation = () => {
       });
     } catch (error) {
       console.error('Failed to log audit:', error);
-      // Don't fail the main operation if audit logging fails
+    }
+  };
+
+  // Helper: Log specific role changes with detailed diff
+  const logRoleChanges = async (
+    userId: string, 
+    oldRoles: { role: string; opd_id?: string | null }[], 
+    newRoles: { role: string; opd_id?: string | null }[]
+  ) => {
+    try {
+      // Calculate role changes
+      const oldRoleKeys = new Set(oldRoles.map(r => `${r.role}:${r.opd_id || ''}`));
+      const newRoleKeys = new Set(newRoles.map(r => `${r.role}:${r.opd_id || ''}`));
+      
+      const roleChanges: RoleChangeAudit = {
+        added: newRoles.filter(r => !oldRoleKeys.has(`${r.role}:${r.opd_id || ''}`)),
+        removed: oldRoles.filter(r => !newRoleKeys.has(`${r.role}:${r.opd_id || ''}`)),
+        unchanged: newRoles.filter(r => oldRoleKeys.has(`${r.role}:${r.opd_id || ''}`)),
+      };
+
+      // Only log if there are actual changes
+      if (roleChanges.added.length > 0 || roleChanges.removed.length > 0) {
+        await supabase.from('audit_log').insert([{
+          action: 'role_change',
+          resource: 'user_roles',
+          resource_id: userId,
+          old_data: { roles: oldRoles } as any,
+          new_data: { 
+            roles: newRoles,
+            changes: {
+              added: roleChanges.added,
+              removed: roleChanges.removed,
+              unchanged: roleChanges.unchanged,
+            },
+          } as any,
+        }]);
+        console.log('[Audit] Role changes logged:', roleChanges);
+      }
+    } catch (error) {
+      console.error('Failed to log role changes audit:', error);
     }
   };
 
@@ -59,10 +104,12 @@ export const useUserMutation = () => {
       'Tidak dapat menghapus akun sendiri': 'Anda tidak dapat menghapus akun sendiri',
       'Hanya super admin yang dapat menghapus user super admin': 'Hanya super admin yang dapat menghapus user super admin',
       'Missing authorization header': 'Sesi Anda telah berakhir. Silakan login kembali.',
+      'row-level security': 'Anda tidak memiliki izin untuk melakukan operasi ini. Hubungi administrator.',
+      'violates row-level security policy': 'Gagal menyimpan role. Anda tidak memiliki izin yang cukup.',
     };
 
     for (const [key, value] of Object.entries(errorMap)) {
-      if (errorMessage.includes(key)) {
+      if (errorMessage.toLowerCase().includes(key.toLowerCase())) {
         return value;
       }
     }
@@ -72,7 +119,6 @@ export const useUserMutation = () => {
 
   const createUser = useMutation({
     mutationFn: async (data: CreateUserData) => {
-      // Call edge function to create user with service role
       const { data: result, error } = await supabase.functions.invoke("create-user", {
         body: {
           email: data.email,
@@ -87,12 +133,18 @@ export const useUserMutation = () => {
       if (result?.error) throw new Error(result.error);
       if (!result?.success) throw new Error("User creation failed");
 
-      // Log audit trail: User creation
+      // Log audit trail
       await logAudit('create', result.user.id, null, {
         email: data.email,
         full_name: data.full_name,
         roles: data.roles,
       });
+
+      // Log role assignment for new user
+      await logRoleChanges(result.user.id, [], data.roles.map(r => ({ 
+        role: r.role, 
+        opd_id: r.opd_id || null 
+      })));
 
       return result.user;
     },
@@ -107,20 +159,35 @@ export const useUserMutation = () => {
 
   const updateUser = useMutation({
     mutationFn: async (data: UpdateUserData) => {
-      // Get old data for audit trail before update
-      const { data: oldProfile } = await supabase
+      console.log("[UserUpdate] Starting update for user:", data.id);
+      
+      // Get old data for audit trail and potential rollback
+      const { data: oldProfile, error: fetchProfileError } = await supabase
         .from("profiles")
         .select("full_name, phone, is_active")
         .eq("id", data.id)
         .single();
 
-      const { data: oldRoles } = await supabase
+      if (fetchProfileError) {
+        console.error("[UserUpdate] Failed to fetch old profile:", fetchProfileError);
+        throw new Error("Gagal mengambil data user yang akan diupdate");
+      }
+
+      const { data: oldRoles, error: fetchRolesError } = await supabase
         .from("user_roles")
         .select("role, opd_id")
         .eq("user_id", data.id);
 
-      // Update profile
-      console.log("[UserUpdate] Starting update", data);
+      if (fetchRolesError) {
+        console.error("[UserUpdate] Failed to fetch old roles:", fetchRolesError);
+        throw new Error("Gagal mengambil role user yang akan diupdate");
+      }
+
+      // Store backup for rollback
+      const backupRoles = oldRoles?.map(r => ({ ...r })) || [];
+      console.log("[UserUpdate] Backup roles:", backupRoles);
+
+      // Step 1: Update profile
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -131,20 +198,30 @@ export const useUserMutation = () => {
         .eq("id", data.id);
 
       if (profileError) {
-        console.error("[UserUpdate] Profile update error", profileError);
-        throw profileError;
+        console.error("[UserUpdate] Profile update error:", profileError);
+        throw new Error(`Gagal update profil: ${profileError.message}`);
       }
-      console.log("[UserUpdate] Profile updated");
+      console.log("[UserUpdate] Profile updated successfully");
 
-      // Delete existing roles
+      // Step 2: Delete existing roles
       const { error: deleteRolesError } = await supabase
         .from("user_roles")
         .delete()
         .eq("user_id", data.id);
 
-      if (deleteRolesError) throw deleteRolesError;
+      if (deleteRolesError) {
+        console.error("[UserUpdate] Delete roles error:", deleteRolesError);
+        // Rollback profile changes
+        await supabase.from("profiles").update({
+          full_name: oldProfile?.full_name,
+          phone: oldProfile?.phone,
+          is_active: oldProfile?.is_active,
+        }).eq("id", data.id);
+        throw new Error(`Gagal menghapus role lama: ${deleteRolesError.message}`);
+      }
+      console.log("[UserUpdate] Old roles deleted");
 
-      // Insert new roles
+      // Step 3: Insert new roles with validation and rollback
       if (data.roles.length > 0) {
         const rolesData = data.roles.map((r) => ({
           user_id: data.id,
@@ -152,19 +229,76 @@ export const useUserMutation = () => {
           opd_id: r.opd_id || null,
         }));
 
+        console.log("[UserUpdate] Inserting new roles:", rolesData);
+
         const { error: rolesError } = await supabase
           .from("user_roles")
           .insert(rolesData);
 
-        if (rolesError) throw rolesError;
+        if (rolesError) {
+          console.error("[UserUpdate] Insert roles error:", rolesError);
+          
+          // ROLLBACK: Restore old roles
+          console.log("[UserUpdate] Rolling back - restoring old roles:", backupRoles);
+          if (backupRoles.length > 0) {
+            const rollbackRoles = backupRoles.map(r => ({
+              user_id: data.id,
+              role: r.role,
+              opd_id: r.opd_id || null,
+            }));
+            
+            const { error: rollbackError } = await supabase
+              .from("user_roles")
+              .insert(rollbackRoles);
+            
+            if (rollbackError) {
+              console.error("[UserUpdate] Rollback failed:", rollbackError);
+              // Log critical failure
+              await logAudit('rollback_failed', data.id, { 
+                attempted_roles: rolesData,
+                backup_roles: backupRoles,
+                error: rollbackError.message 
+              }, null);
+            } else {
+              console.log("[UserUpdate] Rollback successful");
+            }
+          }
 
-        // Log audit trail: User profile and roles update
+          // Rollback profile changes
+          await supabase.from("profiles").update({
+            full_name: oldProfile?.full_name,
+            phone: oldProfile?.phone,
+            is_active: oldProfile?.is_active,
+          }).eq("id", data.id);
+
+          throw new Error(`Gagal menyimpan role baru: ${getErrorMessage(rolesError)}`);
+        }
+
+        console.log("[UserUpdate] New roles inserted successfully");
+
+        // Log detailed role changes
+        await logRoleChanges(
+          data.id, 
+          backupRoles.map(r => ({ role: r.role as string, opd_id: r.opd_id })), 
+          rolesData.map(r => ({ role: r.role as string, opd_id: r.opd_id }))
+        );
+
+        // Log general audit trail
         await logAudit('update', data.id, {
           profile: oldProfile,
-          roles: oldRoles,
+          roles: backupRoles,
         }, {
           profile: { full_name: data.full_name, phone: data.phone, is_active: data.is_active },
           roles: rolesData,
+        });
+      } else {
+        // No roles to insert, just log the profile update
+        await logAudit('update', data.id, {
+          profile: oldProfile,
+          roles: backupRoles,
+        }, {
+          profile: { full_name: data.full_name, phone: data.phone, is_active: data.is_active },
+          roles: [],
         });
       }
 
@@ -174,17 +308,18 @@ export const useUserMutation = () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
       if (variables?.id) {
         queryClient.invalidateQueries({ queryKey: ["user", variables.id] });
+        queryClient.invalidateQueries({ queryKey: ["userRoles", variables.id] });
       }
       toast.success("User berhasil diupdate");
     },
     onError: (error: any) => {
+      console.error("[UserUpdate] Final error:", error);
       toast.error(getErrorMessage(error));
     },
   });
 
   const resetPassword = useMutation({
     mutationFn: async ({ userId, newPassword }: { userId: string; newPassword: string }) => {
-      // Call edge function to reset password with service role
       const { data: result, error } = await supabase.functions.invoke("reset-user-password", {
         body: { userId, newPassword },
       });
@@ -193,7 +328,6 @@ export const useUserMutation = () => {
       if (result?.error) throw new Error(result.error);
       if (!result?.success) throw new Error("Password reset failed");
 
-      // Log audit trail: Password reset
       await logAudit('update', userId, null, {
         action: 'password_reset',
         timestamp: new Date().toISOString(),
@@ -211,7 +345,6 @@ export const useUserMutation = () => {
 
   const toggleUserStatus = useMutation({
     mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
-      // Get old status for audit trail
       const { data: oldProfile } = await supabase
         .from("profiles")
         .select("is_active")
@@ -225,7 +358,6 @@ export const useUserMutation = () => {
 
       if (error) throw error;
 
-      // Log audit trail: Status toggle (activate/deactivate user)
       await logAudit('update', userId, {
         is_active: oldProfile?.is_active,
       }, {
@@ -243,14 +375,12 @@ export const useUserMutation = () => {
 
   const updateEmail = useMutation({
     mutationFn: async ({ userId, newEmail }: { userId: string; newEmail: string }) => {
-      // Get old email for audit trail
       const { data: oldProfile } = await supabase
         .from("profiles")
         .select("email")
         .eq("id", userId)
         .single();
 
-      // Call edge function to update email with service role
       const { data: result, error } = await supabase.functions.invoke("update-user-email", {
         body: { userId, newEmail },
       });
@@ -259,7 +389,6 @@ export const useUserMutation = () => {
       if (result?.error) throw new Error(result.error);
       if (!result?.success) throw new Error("Email update failed");
 
-      // Log audit trail: Email update (critical security event)
       await logAudit('update', userId, {
         email: oldProfile?.email,
       }, {
@@ -280,7 +409,6 @@ export const useUserMutation = () => {
 
   const deleteUser = useMutation({
     mutationFn: async (userId: string) => {
-      // Get user data for audit trail before deletion
       const { data: profile } = await supabase
         .from("profiles")
         .select("email, full_name")
@@ -292,7 +420,6 @@ export const useUserMutation = () => {
         .select("role, opd_id")
         .eq("user_id", userId);
 
-      // Call edge function to delete user with service role
       const { data: result, error } = await supabase.functions.invoke("delete-user", {
         body: { userId },
       });
@@ -301,7 +428,6 @@ export const useUserMutation = () => {
       if (result?.error) throw new Error(result.error);
       if (!result?.success) throw new Error("User deletion failed");
 
-      // Log audit trail: User deletion (critical security event)
       await logAudit('delete', userId, {
         profile,
         roles,
