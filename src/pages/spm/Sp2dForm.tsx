@@ -33,6 +33,7 @@ import { JENIS_PAJAK_OPTIONS, getSuggestedTaxes } from "@/hooks/usePajakPotongan
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CurrencyInput } from "./components/CurrencyInput";
 import { toast } from "sonner";
+import { useConfigSistem, getFileSizeInMB } from "@/hooks/useConfigSistem";
 
 interface PajakFormData {
   jenis_pajak: string;
@@ -59,6 +60,10 @@ const Sp2dForm = () => {
   const { user } = useAuth();
   const [selectedSpm, setSelectedSpm] = useState<any>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  
+  // Get file size config from sistem
+  const { data: configs } = useConfigSistem();
+  const maxFileSizeMB = getFileSizeInMB(configs);
 
   // Get SPM ID from route state
   const routeSpmId = location.state?.spmId;
@@ -317,8 +322,9 @@ const Sp2dForm = () => {
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          if (file.size > 10 * 1024 * 1024) {
-                            toast.error("Ukuran file maksimal 10MB");
+                          const maxSizeBytes = maxFileSizeMB * 1024 * 1024;
+                          if (file.size > maxSizeBytes) {
+                            toast.error(`Ukuran file maksimal ${maxFileSizeMB}MB`);
                             e.target.value = "";
                             return;
                           }
@@ -335,7 +341,7 @@ const Sp2dForm = () => {
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Upload dokumen SP2D yang sudah discan dengan tanda tangan dan cap basah (PDF/JPG/PNG, maks. 10MB)
+                    Upload dokumen SP2D yang sudah discan dengan tanda tangan dan cap basah (PDF/JPG/PNG, maks. {maxFileSizeMB}MB)
                   </p>
                 </div>
               </CardContent>
