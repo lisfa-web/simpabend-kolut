@@ -53,7 +53,7 @@ serve(async (req: Request) => {
       console.log("Email not found:", email);
       return new Response(
         JSON.stringify({ success: false, error: "Email tidak terdaftar dalam sistem" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
