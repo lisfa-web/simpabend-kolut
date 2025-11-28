@@ -8,11 +8,13 @@ import { useSpmList } from "@/hooks/useSpmList";
 import { useSp2dList } from "@/hooks/useSp2dList";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { Search, Clock } from "lucide-react";
-import { ExportButton } from "@/pages/laporan/components/ExportButton";
-import { Badge } from "@/components/ui/badge";
+import { Search, Clock, FileSpreadsheet } from "lucide-react";
 import { SpmStatusBadge } from "@/pages/spm/components/SpmStatusBadge";
 import { Sp2dStatusBadge } from "@/pages/spm/components/Sp2dStatusBadge";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/pages/laporan/components/TablePagination";
+import { exportToExcel, timelineSpmColumns, timelineSp2dColumns } from "@/lib/excelExport";
+import { toast } from "sonner";
 
 const TimelineIndex = () => {
   const [startDate, setStartDate] = useState("");
@@ -31,10 +33,36 @@ const TimelineIndex = () => {
     search,
   });
 
+  const spmPagination = usePagination(10);
+  const sp2dPagination = usePagination(10);
+  
+  const paginatedSpm = spmPagination.paginateData(spmList);
+  const paginatedSp2d = sp2dPagination.paginateData(sp2dList);
+
   const handleReset = () => {
     setStartDate("");
     setEndDate("");
     setSearch("");
+    spmPagination.goToPage(0);
+    sp2dPagination.goToPage(0);
+  };
+
+  const handleExportSpm = () => {
+    if (!spmList || spmList.length === 0) {
+      toast.error("Tidak ada data SPM untuk diekspor");
+      return;
+    }
+    exportToExcel(spmList, "timeline-spm", timelineSpmColumns);
+    toast.success("Data Timeline SPM berhasil diekspor");
+  };
+
+  const handleExportSp2d = () => {
+    if (!sp2dList || sp2dList.length === 0) {
+      toast.error("Tidak ada data SP2D untuk diekspor");
+      return;
+    }
+    exportToExcel(sp2dList, "timeline-sp2d", timelineSp2dColumns);
+    toast.success("Data Timeline SP2D berhasil diekspor");
   };
 
   return (
@@ -62,20 +90,32 @@ const TimelineIndex = () => {
                 type="date"
                 placeholder="Tanggal Mulai"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => { 
+                  setStartDate(e.target.value); 
+                  spmPagination.goToPage(0);
+                  sp2dPagination.goToPage(0);
+                }}
               />
               <Input
                 type="date"
                 placeholder="Tanggal Akhir"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={(e) => { 
+                  setEndDate(e.target.value); 
+                  spmPagination.goToPage(0);
+                  sp2dPagination.goToPage(0);
+                }}
               />
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Cari nomor dokumen..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => { 
+                    setSearch(e.target.value); 
+                    spmPagination.goToPage(0);
+                    sp2dPagination.goToPage(0);
+                  }}
                   className="pl-10"
                 />
               </div>
@@ -88,21 +128,25 @@ const TimelineIndex = () => {
 
         <Tabs defaultValue="spm" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="spm">Timeline SPM</TabsTrigger>
-            <TabsTrigger value="sp2d">Timeline SP2D</TabsTrigger>
+            <TabsTrigger value="spm">Timeline SPM ({spmList?.length || 0})</TabsTrigger>
+            <TabsTrigger value="sp2d">Timeline SP2D ({sp2dList?.length || 0})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="spm">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Timeline SPM</CardTitle>
-                <ExportButton data={spmList || []} filename="timeline-spm" />
+                <Button onClick={handleExportSpm} variant="outline" size="sm">
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export Excel
+                </Button>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="border-b bg-muted/50">
                       <tr>
+                        <th className="px-4 py-3 text-left text-sm font-semibold">No</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold">Nomor SPM</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold">Tanggal Ajuan</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
@@ -112,20 +156,21 @@ const TimelineIndex = () => {
                     <tbody>
                       {spmLoading ? (
                         <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                          <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                             Memuat data...
                           </td>
                         </tr>
-                      ) : spmList?.length === 0 ? (
+                      ) : paginatedSpm?.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                          <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                             Tidak ada data timeline
                           </td>
                         </tr>
                       ) : (
-                        spmList?.map((spm) => (
+                        paginatedSpm?.map((spm, index) => (
                           <tr key={spm.id} className="border-b hover:bg-muted/50">
-                            <td className="px-4 py-3 text-sm font-medium">{spm.nomor_spm}</td>
+                            <td className="px-4 py-3 text-sm">{spmPagination.pagination.pageIndex * spmPagination.pagination.pageSize + index + 1}</td>
+                            <td className="px-4 py-3 text-sm font-medium">{spm.nomor_spm || "-"}</td>
                             <td className="px-4 py-3 text-sm">
                               {spm.tanggal_ajuan && format(new Date(spm.tanggal_ajuan), "dd MMM yyyy", { locale: id })}
                             </td>
@@ -167,6 +212,17 @@ const TimelineIndex = () => {
                     </tbody>
                   </table>
                 </div>
+                {(spmList?.length || 0) > 0 && (
+                  <div className="p-4 border-t">
+                    <TablePagination
+                      currentPage={spmPagination.pagination.pageIndex}
+                      pageSize={spmPagination.pagination.pageSize}
+                      totalItems={spmList?.length || 0}
+                      onPageChange={spmPagination.goToPage}
+                      onPageSizeChange={spmPagination.setPageSize}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -175,13 +231,17 @@ const TimelineIndex = () => {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Timeline SP2D</CardTitle>
-                <ExportButton data={sp2dList || []} filename="timeline-sp2d" />
+                <Button onClick={handleExportSp2d} variant="outline" size="sm">
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export Excel
+                </Button>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead className="border-b bg-muted/50">
                       <tr>
+                        <th className="px-4 py-3 text-left text-sm font-semibold">No</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold">Nomor SP2D</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold">Tanggal Terbit</th>
                         <th className="px-4 py-3 text-left text-sm font-semibold">Status</th>
@@ -191,19 +251,20 @@ const TimelineIndex = () => {
                     <tbody>
                       {sp2dLoading ? (
                         <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                          <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                             Memuat data...
                           </td>
                         </tr>
-                      ) : sp2dList?.length === 0 ? (
+                      ) : paginatedSp2d?.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                          <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
                             Tidak ada data timeline
                           </td>
                         </tr>
                       ) : (
-                        sp2dList?.map((sp2d) => (
+                        paginatedSp2d?.map((sp2d, index) => (
                           <tr key={sp2d.id} className="border-b hover:bg-muted/50">
+                            <td className="px-4 py-3 text-sm">{sp2dPagination.pagination.pageIndex * sp2dPagination.pagination.pageSize + index + 1}</td>
                             <td className="px-4 py-3 text-sm font-medium">{sp2d.nomor_sp2d}</td>
                             <td className="px-4 py-3 text-sm">
                               {sp2d.tanggal_sp2d && format(new Date(sp2d.tanggal_sp2d), "dd MMM yyyy", { locale: id })}
@@ -241,6 +302,17 @@ const TimelineIndex = () => {
                     </tbody>
                   </table>
                 </div>
+                {(sp2dList?.length || 0) > 0 && (
+                  <div className="p-4 border-t">
+                    <TablePagination
+                      currentPage={sp2dPagination.pagination.pageIndex}
+                      pageSize={sp2dPagination.pagination.pageSize}
+                      totalItems={sp2dList?.length || 0}
+                      onPageChange={sp2dPagination.goToPage}
+                      onPageSizeChange={sp2dPagination.setPageSize}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

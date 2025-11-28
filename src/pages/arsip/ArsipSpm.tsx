@@ -7,9 +7,12 @@ import { useArsipSpmList } from "@/hooks/useArsipSpmList";
 import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { Search, Download } from "lucide-react";
-import { ExportButton } from "@/pages/laporan/components/ExportButton";
+import { Search, FileSpreadsheet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/pages/laporan/components/TablePagination";
+import { exportToExcel, arsipSpmColumns } from "@/lib/excelExport";
+import { toast } from "sonner";
 
 const ArsipSpm = () => {
   const [startDate, setStartDate] = useState("");
@@ -22,10 +25,24 @@ const ArsipSpm = () => {
     search,
   });
 
+  const { pagination, paginateData, setPageSize, goToPage } = usePagination(10);
+  const paginatedData = paginateData(arsipList);
+  const totalItems = arsipList?.length || 0;
+
   const handleReset = () => {
     setStartDate("");
     setEndDate("");
     setSearch("");
+    goToPage(0);
+  };
+
+  const handleExport = () => {
+    if (!arsipList || arsipList.length === 0) {
+      toast.error("Tidak ada data untuk diekspor");
+      return;
+    }
+    exportToExcel(arsipList, "arsip-spm", arsipSpmColumns);
+    toast.success("Data berhasil diekspor");
   };
 
   return (
@@ -38,7 +55,10 @@ const ArsipSpm = () => {
               Daftar arsip dokumen SPM yang telah disetujui
             </p>
           </div>
-          <ExportButton data={arsipList || []} filename="arsip-spm" />
+          <Button onClick={handleExport} variant="outline">
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            Export Excel
+          </Button>
         </div>
 
         <Card>
@@ -51,20 +71,20 @@ const ArsipSpm = () => {
                 type="date"
                 placeholder="Tanggal Mulai"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => { setStartDate(e.target.value); goToPage(0); }}
               />
               <Input
                 type="date"
                 placeholder="Tanggal Akhir"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={(e) => { setEndDate(e.target.value); goToPage(0); }}
               />
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Cari nomor/penerima..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => { setSearch(e.target.value); goToPage(0); }}
                   className="pl-10"
                 />
               </div>
@@ -81,6 +101,7 @@ const ArsipSpm = () => {
               <table className="w-full">
                 <thead className="border-b bg-muted/50">
                   <tr>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">No</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">Nomor SPM</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">Tanggal</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">OPD</th>
@@ -93,20 +114,21 @@ const ArsipSpm = () => {
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                         Memuat data...
                       </td>
                     </tr>
-                  ) : arsipList?.length === 0 ? (
+                  ) : paginatedData?.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
                         Tidak ada data arsip
                       </td>
                     </tr>
                   ) : (
-                    arsipList?.map((item) => (
+                    paginatedData?.map((item, index) => (
                       <tr key={item.id} className="border-b hover:bg-muted/50">
-                        <td className="px-4 py-3 text-sm">{item.nomor_spm}</td>
+                        <td className="px-4 py-3 text-sm">{pagination.pageIndex * pagination.pageSize + index + 1}</td>
+                        <td className="px-4 py-3 text-sm font-medium">{item.nomor_spm}</td>
                         <td className="px-4 py-3 text-sm">
                           {format(new Date(item.tanggal_spm), "dd MMM yyyy", { locale: id })}
                         </td>
@@ -123,6 +145,17 @@ const ArsipSpm = () => {
                 </tbody>
               </table>
             </div>
+            {totalItems > 0 && (
+              <div className="p-4 border-t">
+                <TablePagination
+                  currentPage={pagination.pageIndex}
+                  pageSize={pagination.pageSize}
+                  totalItems={totalItems}
+                  onPageChange={goToPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

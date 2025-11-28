@@ -7,9 +7,12 @@ import { useArsipSp2dList } from "@/hooks/useArsipSp2dList";
 import { formatCurrency } from "@/lib/currency";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
-import { Search } from "lucide-react";
-import { ExportButton } from "@/pages/laporan/components/ExportButton";
+import { Search, FileSpreadsheet } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { usePagination } from "@/hooks/usePagination";
+import { TablePagination } from "@/pages/laporan/components/TablePagination";
+import { exportToExcel, arsipSp2dColumns } from "@/lib/excelExport";
+import { toast } from "sonner";
 
 const ArsipSp2d = () => {
   const [startDate, setStartDate] = useState("");
@@ -22,10 +25,24 @@ const ArsipSp2d = () => {
     search,
   });
 
+  const { pagination, paginateData, setPageSize, goToPage } = usePagination(10);
+  const paginatedData = paginateData(arsipList);
+  const totalItems = arsipList?.length || 0;
+
   const handleReset = () => {
     setStartDate("");
     setEndDate("");
     setSearch("");
+    goToPage(0);
+  };
+
+  const handleExport = () => {
+    if (!arsipList || arsipList.length === 0) {
+      toast.error("Tidak ada data untuk diekspor");
+      return;
+    }
+    exportToExcel(arsipList, "arsip-sp2d", arsipSp2dColumns);
+    toast.success("Data berhasil diekspor");
   };
 
   return (
@@ -38,7 +55,10 @@ const ArsipSp2d = () => {
               Daftar arsip dokumen SP2D yang telah diterbitkan
             </p>
           </div>
-          <ExportButton data={arsipList || []} filename="arsip-sp2d" />
+          <Button onClick={handleExport} variant="outline">
+            <FileSpreadsheet className="h-4 w-4 mr-2" />
+            Export Excel
+          </Button>
         </div>
 
         <Card>
@@ -51,20 +71,20 @@ const ArsipSp2d = () => {
                 type="date"
                 placeholder="Tanggal Mulai"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                onChange={(e) => { setStartDate(e.target.value); goToPage(0); }}
               />
               <Input
                 type="date"
                 placeholder="Tanggal Akhir"
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                onChange={(e) => { setEndDate(e.target.value); goToPage(0); }}
               />
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Cari nomor SP2D..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={(e) => { setSearch(e.target.value); goToPage(0); }}
                   className="pl-10"
                 />
               </div>
@@ -81,6 +101,7 @@ const ArsipSp2d = () => {
               <table className="w-full">
                 <thead className="border-b bg-muted/50">
                   <tr>
+                    <th className="px-4 py-3 text-left text-sm font-semibold">No</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">Nomor SP2D</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">Tanggal</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold">OPD</th>
@@ -92,20 +113,21 @@ const ArsipSp2d = () => {
                 <tbody>
                   {isLoading ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                         Memuat data...
                       </td>
                     </tr>
-                  ) : arsipList?.length === 0 ? (
+                  ) : paginatedData?.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                      <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
                         Tidak ada data arsip
                       </td>
                     </tr>
                   ) : (
-                    arsipList?.map((item) => (
+                    paginatedData?.map((item, index) => (
                       <tr key={item.id} className="border-b hover:bg-muted/50">
-                        <td className="px-4 py-3 text-sm">{item.nomor_sp2d}</td>
+                        <td className="px-4 py-3 text-sm">{pagination.pageIndex * pagination.pageSize + index + 1}</td>
+                        <td className="px-4 py-3 text-sm font-medium">{item.nomor_sp2d}</td>
                         <td className="px-4 py-3 text-sm">
                           {format(new Date(item.tanggal_sp2d), "dd MMM yyyy", { locale: id })}
                         </td>
@@ -121,6 +143,17 @@ const ArsipSp2d = () => {
                 </tbody>
               </table>
             </div>
+            {totalItems > 0 && (
+              <div className="p-4 border-t">
+                <TablePagination
+                  currentPage={pagination.pageIndex}
+                  pageSize={pagination.pageSize}
+                  totalItems={totalItems}
+                  onPageChange={goToPage}
+                  onPageSizeChange={setPageSize}
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
