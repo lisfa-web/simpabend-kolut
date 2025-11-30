@@ -1,239 +1,362 @@
 import { useState } from "react";
-import { Download, Database, Loader2, CheckCircle2, Info, FileText } from "lucide-react";
+import { Download, Database, Loader2, CheckCircle2, Info, FileText, Shield, Users, Code, HardDrive } from "lucide-react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
+type ExportType = 'complete' | 'rls' | 'users' | 'data' | 'edge-functions';
+
 const DatabaseBackup = () => {
   const { isSuperAdmin } = useAuth();
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloading, setDownloading] = useState<ExportType | null>(null);
 
-  // Only super admins can access
   if (!isSuperAdmin()) {
     return <Navigate to="/unauthorized" replace />;
   }
 
-  const handleDownloadBackup = async () => {
+  const handleDownload = async (type: ExportType, filename: string) => {
     try {
-      setIsDownloading(true);
-      toast.info("Generating backup dari database...");
+      setDownloading(type);
+      toast.info("Mempersiapkan export...");
 
-      // Call edge function to generate fresh SQL backup
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/generate-database-backup`, {
+      const response = await fetch(`${supabaseUrl}/functions/v1/export-backup`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
       });
       
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Gagal generate backup');
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'Gagal export data');
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `database-backup-${new Date().toISOString().split('T')[0]}.sql`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
 
-      toast.success("Backup database berhasil didownload!");
+      toast.success("Export berhasil!");
     } catch (error) {
-      console.error('Error downloading backup:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error(`Gagal mendownload backup: ${errorMessage}`);
+      console.error('Export error:', error);
+      toast.error(error instanceof Error ? error.message : 'Gagal export');
     } finally {
-      setIsDownloading(false);
+      setDownloading(null);
     }
   };
 
+  const dateStr = new Date().toISOString().split('T')[0];
+
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-4xl">
+      <div className="space-y-6 max-w-5xl">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
             <Database className="h-8 w-8" />
-            Database Backup
+            Database Backup & Export
           </h1>
           <p className="text-muted-foreground mt-2">
-            Download complete SQL schema untuk backup atau migrasi database
+            Export database untuk backup, migrasi ke server lokal/VPS, atau dokumentasi
           </p>
         </div>
 
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            File SQL ini di-<strong>generate real-time</strong> langsung dari database saat ini. 
-            Setiap kali download, Anda akan mendapat backup <strong>terbaru</strong> yang mencerminkan 
-            semua perubahan/migration yang sudah dilakukan. Cocok untuk backup, dokumentasi, 
-            atau setup database di hosting baru.
+            Semua export di-<strong>generate real-time</strong> dari database saat ini.
+            Cocok untuk migrasi ke <strong>server lokal</strong>, <strong>VPS</strong>, atau <strong>Supabase project baru</strong>.
           </AlertDescription>
         </Alert>
 
+        {/* Complete Backup */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Complete Database Schema
+              <FileText className="h-5 w-5 text-primary" />
+              Complete SQL Schema
             </CardTitle>
             <CardDescription>
-              Backup lengkap struktur database (real-time dari database saat ini)
+              Backup lengkap struktur database (ENUM, Tables, Functions, Triggers, RLS, Indexes)
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Schema Info */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">ENUM Types</p>
-                <p className="text-2xl font-bold text-foreground">6</p>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="space-y-1 text-center p-3 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold">6</p>
+                <p className="text-xs text-muted-foreground">ENUM Types</p>
               </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Tables</p>
-                <p className="text-2xl font-bold text-foreground">28</p>
+              <div className="space-y-1 text-center p-3 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold">28</p>
+                <p className="text-xs text-muted-foreground">Tables</p>
               </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Functions</p>
-                <p className="text-2xl font-bold text-foreground">17</p>
+              <div className="space-y-1 text-center p-3 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold">17</p>
+                <p className="text-xs text-muted-foreground">Functions</p>
               </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">RLS Policies</p>
-                <p className="text-2xl font-bold text-foreground">70+</p>
+              <div className="space-y-1 text-center p-3 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold">70+</p>
+                <p className="text-xs text-muted-foreground">RLS Policies</p>
               </div>
-            </div>
-
-            {/* What's Included */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-foreground">Isi File SQL:</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-sm">ENUM Types</p>
-                    <p className="text-xs text-muted-foreground">app_role, status_spm, status_sp2d, dll</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-sm">All Tables</p>
-                    <p className="text-xs text-muted-foreground">Struktur lengkap + constraints</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-sm">Database Functions</p>
-                    <p className="text-xs text-muted-foreground">has_role, generate_document_number, dll</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-sm">Triggers</p>
-                    <p className="text-xs text-muted-foreground">Auto-assign nomor, audit logs, dll</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-sm">RLS Policies</p>
-                    <p className="text-xs text-muted-foreground">Semua security policies per table</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-sm">Indexes</p>
-                    <p className="text-xs text-muted-foreground">Performance optimization</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-sm">Initial Data</p>
-                    <p className="text-xs text-muted-foreground">Config sistem, format nomor</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="font-medium text-sm">Storage Docs</p>
-                    <p className="text-xs text-muted-foreground">Dokumentasi bucket configuration</p>
-                  </div>
-                </div>
+              <div className="space-y-1 text-center p-3 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold">20</p>
+                <p className="text-xs text-muted-foreground">Edge Functions</p>
               </div>
             </div>
 
-            {/* Use Cases */}
-            <div className="space-y-2">
-              <h3 className="font-semibold text-foreground">Kegunaan:</h3>
-              <div className="space-y-1.5">
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Backup</Badge>
-                  <span className="text-sm text-muted-foreground">Complete database backup untuk disaster recovery</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Dokumentasi</Badge>
-                  <span className="text-sm text-muted-foreground">Technical documentation untuk tim developer</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Migrasi</Badge>
-                  <span className="text-sm text-muted-foreground">Setup database di server/hosting baru</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline">Analisis</Badge>
-                  <span className="text-sm text-muted-foreground">Review struktur database dan security policies</span>
-                </div>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline">ENUMs</Badge>
+              <Badge variant="outline">Tables + Constraints</Badge>
+              <Badge variant="outline">Functions</Badge>
+              <Badge variant="outline">Triggers</Badge>
+              <Badge variant="outline">RLS Policies</Badge>
+              <Badge variant="outline">Indexes</Badge>
             </div>
 
-            {/* Download Button */}
-            <div className="pt-4 border-t">
+            <Button 
+              onClick={() => handleDownload('complete', `complete-backup-${dateStr}.sql`)}
+              disabled={downloading === 'complete'}
+              className="w-full"
+              size="lg"
+            >
+              {downloading === 'complete' ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+              ) : (
+                <><Download className="mr-2 h-4 w-4" /> Download Complete SQL Backup</>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* RLS Policies */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Shield className="h-5 w-5 text-green-600" />
+                RLS Policies
+              </CardTitle>
+              <CardDescription>
+                Semua Row Level Security policies untuk proteksi data
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>Enable RLS statements</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>CREATE POLICY untuk semua table</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>USING & WITH CHECK expressions</span>
+                </div>
+              </div>
               <Button 
-                onClick={handleDownloadBackup} 
-                disabled={isDownloading}
-                size="lg"
+                onClick={() => handleDownload('rls', `rls-policies-${dateStr}.sql`)}
+                disabled={downloading === 'rls'}
+                variant="outline"
                 className="w-full"
               >
-                {isDownloading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Mempersiapkan backup...
-                  </>
+                {downloading === 'rls' ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
                 ) : (
-                  <>
-                    <Download className="mr-2 h-5 w-5" />
-                    Download Complete SQL Backup
-                  </>
+                  <><Download className="mr-2 h-4 w-4" /> Download RLS Policies</>
                 )}
               </Button>
-              <p className="text-xs text-muted-foreground text-center mt-2">
-                File: database-backup-{new Date().toISOString().split('T')[0]}.sql (~1300+ lines)
-              </p>
+            </CardContent>
+          </Card>
+
+          {/* User Auth */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Users className="h-5 w-5 text-blue-600" />
+                User & Auth Data
+              </CardTitle>
+              <CardDescription>
+                Profiles dan role assignments untuk semua user
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>INSERT profiles dengan ON CONFLICT</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>INSERT user_roles lengkap</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>Instruksi restore auth</span>
+                </div>
+              </div>
+              <Button 
+                onClick={() => handleDownload('users', `users-auth-${dateStr}.sql`)}
+                disabled={downloading === 'users'}
+                variant="outline"
+                className="w-full"
+              >
+                {downloading === 'users' ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+                ) : (
+                  <><Download className="mr-2 h-4 w-4" /> Download Users & Auth</>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Master Data */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <HardDrive className="h-5 w-5 text-orange-600" />
+                Master Data & Config
+              </CardTitle>
+              <CardDescription>
+                Data konfigurasi, master OPD, bank, pajak, vendor, dll
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>config_sistem, format_nomor</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>jenis_spm, master_bank, master_pajak</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>opd, pejabat, vendor, pihak_ketiga</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>template_surat, panduan_manual</span>
+                </div>
+              </div>
+              <Button 
+                onClick={() => handleDownload('data', `data-backup-${dateStr}.sql`)}
+                disabled={downloading === 'data'}
+                variant="outline"
+                className="w-full"
+              >
+                {downloading === 'data' ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+                ) : (
+                  <><Download className="mr-2 h-4 w-4" /> Download Master Data</>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Edge Functions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Code className="h-5 w-5 text-purple-600" />
+                Edge Functions Documentation
+              </CardTitle>
+              <CardDescription>
+                Dokumentasi lengkap 20 edge functions untuk deployment
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>Daftar semua functions</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>Environment variables required</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>config.toml template</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <span>Deployment instructions</span>
+                </div>
+              </div>
+              <Button 
+                onClick={() => handleDownload('edge-functions', `edge-functions-${dateStr}.md`)}
+                disabled={downloading === 'edge-functions'}
+                variant="outline"
+                className="w-full"
+              >
+                {downloading === 'edge-functions' ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
+                ) : (
+                  <><Download className="mr-2 h-4 w-4" /> Download Edge Functions Doc</>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Separator />
+
+        {/* Migration Guide */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Panduan Migrasi ke Server Lokal / VPS
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h4 className="font-semibold">Opsi 1: PostgreSQL + Supabase Self-Hosted</h4>
+                <ol className="list-decimal list-inside text-sm space-y-1 text-muted-foreground">
+                  <li>Install Docker & Supabase CLI</li>
+                  <li>Run: <code className="bg-muted px-1 rounded">supabase init</code></li>
+                  <li>Run: <code className="bg-muted px-1 rounded">supabase start</code></li>
+                  <li>Import complete-backup.sql</li>
+                  <li>Import data-backup.sql</li>
+                  <li>Import users-auth.sql</li>
+                  <li>Copy edge functions ke supabase/functions</li>
+                  <li>Deploy: <code className="bg-muted px-1 rounded">supabase functions deploy</code></li>
+                </ol>
+              </div>
+              
+              <div className="space-y-3">
+                <h4 className="font-semibold">Opsi 2: Pure PostgreSQL (tanpa Supabase)</h4>
+                <ol className="list-decimal list-inside text-sm space-y-1 text-muted-foreground">
+                  <li>Install PostgreSQL 15+</li>
+                  <li>Create database: <code className="bg-muted px-1 rounded">createdb spm_sp2d</code></li>
+                  <li>Run: <code className="bg-muted px-1 rounded">psql -d spm_sp2d -f complete-backup.sql</code></li>
+                  <li>Run: <code className="bg-muted px-1 rounded">psql -d spm_sp2d -f data-backup.sql</code></li>
+                  <li>Run: <code className="bg-muted px-1 rounded">psql -d spm_sp2d -f users-auth.sql</code></li>
+                  <li>Setup auth schema manually atau pakai alternatif</li>
+                  <li>Deploy edge functions dengan Deno</li>
+                </ol>
+              </div>
             </div>
 
-            {/* Instructions */}
             <Alert>
               <Info className="h-4 w-4" />
-              <AlertDescription className="space-y-2">
-                <p className="font-semibold">Cara Restore Database:</p>
-                <ol className="list-decimal list-inside space-y-1 text-sm">
-                  <li>Buat PostgreSQL/Supabase database baru</li>
-                  <li>Jalankan: <code className="bg-muted px-1 py-0.5 rounded text-xs">psql -f database-backup.sql</code></li>
-                  <li>Setup storage buckets di Supabase Dashboard</li>
-                  <li>Konfigurasi auth trigger untuk handle_new_user</li>
-                  <li>Buat super_admin user pertama</li>
-                </ol>
+              <AlertDescription>
+                <strong>Catatan Penting:</strong> File SQL tidak termasuk data transaksi (SPM, SP2D).
+                Untuk backup lengkap termasuk transaksi, gunakan <code>pg_dump</code> langsung dari PostgreSQL.
               </AlertDescription>
             </Alert>
           </CardContent>
