@@ -39,6 +39,10 @@ Deno.serve(async (req) => {
         content = await generateDataBackup(supabase);
         filename = `data-backup-${getDateStr()}.sql`;
         break;
+      case 'transactions':
+        content = await generateTransactionsBackup(supabase);
+        filename = `transactions-backup-${getDateStr()}.sql`;
+        break;
       case 'edge-functions':
         content = await generateEdgeFunctionsDoc();
         filename = `edge-functions-${getDateStr()}.md`;
@@ -460,6 +464,407 @@ function generateInsertStatements(tableName: string, data: any[], columns: strin
 
 function escapeSql(str: string): string {
   return str?.replace(/'/g, "''") || '';
+}
+
+// ============================================================================
+// TRANSACTIONS BACKUP (SPM, SP2D, and related data)
+// ============================================================================
+async function generateTransactionsBackup(supabase: any): Promise<string> {
+  const timestamp = new Date().toISOString();
+  
+  let sql = `-- ============================================================================
+-- TRANSACTION DATA BACKUP (SPM, SP2D, dan data terkait)
+-- Generated: ${timestamp}
+-- ============================================================================
+-- 
+-- IMPORTANT: Jalankan SETELAH import schema dan master data
+-- Pastikan semua foreign key references tersedia (opd, profiles, jenis_spm, dll)
+-- ============================================================================\n\n`;
+
+  // SPM
+  const { data: spm } = await supabase.from('spm').select('*').order('created_at', { ascending: true });
+  sql += `-- ============================================\n`;
+  sql += `-- SPM (${spm?.length || 0} records)\n`;
+  sql += `-- ============================================\n\n`;
+  
+  if (spm?.length > 0) {
+    for (const row of spm) {
+      sql += generateSpmInsert(row);
+    }
+  }
+
+  // Lampiran SPM
+  const { data: lampiran } = await supabase.from('lampiran_spm').select('*').order('created_at', { ascending: true });
+  sql += `-- ============================================\n`;
+  sql += `-- LAMPIRAN SPM (${lampiran?.length || 0} records)\n`;
+  sql += `-- ============================================\n\n`;
+  
+  if (lampiran?.length > 0) {
+    for (const row of lampiran) {
+      sql += generateLampiranInsert(row);
+    }
+  }
+
+  // Potongan Pajak SPM
+  const { data: pajakSpm } = await supabase.from('potongan_pajak_spm').select('*').order('created_at', { ascending: true });
+  sql += `-- ============================================\n`;
+  sql += `-- POTONGAN PAJAK SPM (${pajakSpm?.length || 0} records)\n`;
+  sql += `-- ============================================\n\n`;
+  
+  if (pajakSpm?.length > 0) {
+    for (const row of pajakSpm) {
+      sql += generatePajakSpmInsert(row);
+    }
+  }
+
+  // Revisi SPM
+  const { data: revisi } = await supabase.from('revisi_spm').select('*').order('created_at', { ascending: true });
+  sql += `-- ============================================\n`;
+  sql += `-- REVISI SPM (${revisi?.length || 0} records)\n`;
+  sql += `-- ============================================\n\n`;
+  
+  if (revisi?.length > 0) {
+    for (const row of revisi) {
+      sql += generateRevisiInsert(row);
+    }
+  }
+
+  // SP2D
+  const { data: sp2d } = await supabase.from('sp2d').select('*').order('created_at', { ascending: true });
+  sql += `-- ============================================\n`;
+  sql += `-- SP2D (${sp2d?.length || 0} records)\n`;
+  sql += `-- ============================================\n\n`;
+  
+  if (sp2d?.length > 0) {
+    for (const row of sp2d) {
+      sql += generateSp2dInsert(row);
+    }
+  }
+
+  // Potongan Pajak SP2D
+  const { data: pajakSp2d } = await supabase.from('potongan_pajak_sp2d').select('*').order('created_at', { ascending: true });
+  sql += `-- ============================================\n`;
+  sql += `-- POTONGAN PAJAK SP2D (${pajakSp2d?.length || 0} records)\n`;
+  sql += `-- ============================================\n\n`;
+  
+  if (pajakSp2d?.length > 0) {
+    for (const row of pajakSp2d) {
+      sql += generatePajakSp2dInsert(row);
+    }
+  }
+
+  // Notifikasi
+  const { data: notifikasi } = await supabase.from('notifikasi').select('*').order('created_at', { ascending: true });
+  sql += `-- ============================================\n`;
+  sql += `-- NOTIFIKASI (${notifikasi?.length || 0} records)\n`;
+  sql += `-- ============================================\n\n`;
+  
+  if (notifikasi?.length > 0) {
+    for (const row of notifikasi) {
+      sql += generateNotifikasiInsert(row);
+    }
+  }
+
+  // Arsip SPM
+  const { data: arsipSpm } = await supabase.from('arsip_spm').select('*').order('created_at', { ascending: true });
+  sql += `-- ============================================\n`;
+  sql += `-- ARSIP SPM (${arsipSpm?.length || 0} records)\n`;
+  sql += `-- ============================================\n\n`;
+  
+  if (arsipSpm?.length > 0) {
+    for (const row of arsipSpm) {
+      sql += generateArsipSpmInsert(row);
+    }
+  }
+
+  // Arsip SP2D
+  const { data: arsipSp2d } = await supabase.from('arsip_sp2d').select('*').order('created_at', { ascending: true });
+  sql += `-- ============================================\n`;
+  sql += `-- ARSIP SP2D (${arsipSp2d?.length || 0} records)\n`;
+  sql += `-- ============================================\n\n`;
+  
+  if (arsipSp2d?.length > 0) {
+    for (const row of arsipSp2d) {
+      sql += generateArsipSp2dInsert(row);
+    }
+  }
+
+  // Audit Log
+  const { data: auditLog } = await supabase.from('audit_log').select('*').order('created_at', { ascending: true });
+  sql += `-- ============================================\n`;
+  sql += `-- AUDIT LOG (${auditLog?.length || 0} records)\n`;
+  sql += `-- ============================================\n\n`;
+  
+  if (auditLog?.length > 0) {
+    for (const row of auditLog) {
+      sql += generateAuditLogInsert(row);
+    }
+  }
+
+  sql += `-- ============================================================================
+-- RESTORE INSTRUCTIONS
+-- ============================================================================
+-- 
+-- Urutan restore:
+-- 1. complete-backup.sql (schema)
+-- 2. data-backup.sql (master data)
+-- 3. users-auth.sql (profiles & roles)
+-- 4. transactions-backup.sql (file ini)
+-- 
+-- Jika ada error foreign key:
+-- - Pastikan semua master data sudah di-import
+-- - Pastikan user profiles sudah tersedia
+-- - Check constraint violations dan fix manual jika diperlukan
+-- 
+-- ============================================================================\n`;
+
+  return sql;
+}
+
+function generateSpmInsert(row: any): string {
+  const vals = [
+    `'${row.id}'`,
+    `'${row.opd_id}'`,
+    `'${row.bendahara_id}'`,
+    row.jenis_spm_id ? `'${row.jenis_spm_id}'` : 'NULL',
+    row.nomor_spm ? `'${escapeSql(row.nomor_spm)}'` : 'NULL',
+    row.nomor_berkas ? `'${escapeSql(row.nomor_berkas)}'` : 'NULL',
+    row.nomor_antrian ? `'${escapeSql(row.nomor_antrian)}'` : 'NULL',
+    row.nilai_spm?.toString() || '0',
+    row.nilai_bersih?.toString() || 'NULL',
+    row.total_potongan?.toString() || '0',
+    row.status ? `'${row.status}'::status_spm` : 'NULL',
+    row.nama_penerima ? `'${escapeSql(row.nama_penerima)}'` : 'NULL',
+    row.tipe_penerima ? `'${escapeSql(row.tipe_penerima)}'` : 'NULL',
+    row.nama_bank ? `'${escapeSql(row.nama_bank)}'` : 'NULL',
+    row.nomor_rekening ? `'${escapeSql(row.nomor_rekening)}'` : 'NULL',
+    row.nama_rekening ? `'${escapeSql(row.nama_rekening)}'` : 'NULL',
+    row.uraian ? `'${escapeSql(row.uraian)}'` : 'NULL',
+    row.is_aset ? 'true' : 'false',
+    row.tanggal_ajuan ? `'${row.tanggal_ajuan}'` : 'NULL',
+    row.verified_by_resepsionis ? `'${row.verified_by_resepsionis}'` : 'NULL',
+    row.tanggal_resepsionis ? `'${row.tanggal_resepsionis}'` : 'NULL',
+    row.catatan_resepsionis ? `'${escapeSql(row.catatan_resepsionis)}'` : 'NULL',
+    row.verified_by_pbmd ? `'${row.verified_by_pbmd}'` : 'NULL',
+    row.tanggal_pbmd ? `'${row.tanggal_pbmd}'` : 'NULL',
+    row.catatan_pbmd ? `'${escapeSql(row.catatan_pbmd)}'` : 'NULL',
+    row.verified_by_akuntansi ? `'${row.verified_by_akuntansi}'` : 'NULL',
+    row.tanggal_akuntansi ? `'${row.tanggal_akuntansi}'` : 'NULL',
+    row.catatan_akuntansi ? `'${escapeSql(row.catatan_akuntansi)}'` : 'NULL',
+    row.verified_by_perbendaharaan ? `'${row.verified_by_perbendaharaan}'` : 'NULL',
+    row.tanggal_perbendaharaan ? `'${row.tanggal_perbendaharaan}'` : 'NULL',
+    row.catatan_perbendaharaan ? `'${escapeSql(row.catatan_perbendaharaan)}'` : 'NULL',
+    row.verified_by_kepala_bkad ? `'${row.verified_by_kepala_bkad}'` : 'NULL',
+    row.tanggal_kepala_bkad ? `'${row.tanggal_kepala_bkad}'` : 'NULL',
+    row.catatan_kepala_bkad ? `'${escapeSql(row.catatan_kepala_bkad)}'` : 'NULL',
+    row.tanggal_disetujui ? `'${row.tanggal_disetujui}'` : 'NULL',
+    row.pin_verified_at ? `'${row.pin_verified_at}'` : 'NULL',
+    `'${row.created_at}'`,
+    `'${row.updated_at}'`
+  ];
+  
+  let sql = `INSERT INTO public.spm (id, opd_id, bendahara_id, jenis_spm_id, nomor_spm, nomor_berkas, nomor_antrian, nilai_spm, nilai_bersih, total_potongan, status, nama_penerima, tipe_penerima, nama_bank, nomor_rekening, nama_rekening, uraian, is_aset, tanggal_ajuan, verified_by_resepsionis, tanggal_resepsionis, catatan_resepsionis, verified_by_pbmd, tanggal_pbmd, catatan_pbmd, verified_by_akuntansi, tanggal_akuntansi, catatan_akuntansi, verified_by_perbendaharaan, tanggal_perbendaharaan, catatan_perbendaharaan, verified_by_kepala_bkad, tanggal_kepala_bkad, catatan_kepala_bkad, tanggal_disetujui, pin_verified_at, created_at, updated_at)\n`;
+  sql += `VALUES (${vals.join(', ')})\n`;
+  sql += `ON CONFLICT (id) DO NOTHING;\n\n`;
+  return sql;
+}
+
+function generateLampiranInsert(row: any): string {
+  const vals = [
+    `'${row.id}'`,
+    `'${row.spm_id}'`,
+    `'${row.jenis_lampiran}'::jenis_lampiran`,
+    `'${escapeSql(row.nama_file)}'`,
+    `'${escapeSql(row.file_url)}'`,
+    row.file_size?.toString() || 'NULL',
+    row.uploaded_by ? `'${row.uploaded_by}'` : 'NULL',
+    `'${row.created_at}'`
+  ];
+  
+  let sql = `INSERT INTO public.lampiran_spm (id, spm_id, jenis_lampiran, nama_file, file_url, file_size, uploaded_by, created_at)\n`;
+  sql += `VALUES (${vals.join(', ')})\n`;
+  sql += `ON CONFLICT (id) DO NOTHING;\n\n`;
+  return sql;
+}
+
+function generatePajakSpmInsert(row: any): string {
+  const vals = [
+    `'${row.id}'`,
+    `'${row.spm_id}'`,
+    `'${escapeSql(row.jenis_pajak)}'`,
+    `'${escapeSql(row.uraian)}'`,
+    row.tarif?.toString() || '0',
+    row.dasar_pengenaan?.toString() || '0',
+    row.jumlah_pajak?.toString() || '0',
+    row.rekening_pajak ? `'${escapeSql(row.rekening_pajak)}'` : 'NULL',
+    `'${row.created_at}'`,
+    `'${row.updated_at}'`
+  ];
+  
+  let sql = `INSERT INTO public.potongan_pajak_spm (id, spm_id, jenis_pajak, uraian, tarif, dasar_pengenaan, jumlah_pajak, rekening_pajak, created_at, updated_at)\n`;
+  sql += `VALUES (${vals.join(', ')})\n`;
+  sql += `ON CONFLICT (id) DO NOTHING;\n\n`;
+  return sql;
+}
+
+function generateRevisiInsert(row: any): string {
+  const vals = [
+    `'${row.id}'`,
+    `'${row.spm_id}'`,
+    `'${row.revisi_by}'`,
+    `'${escapeSql(row.catatan_revisi)}'`,
+    `'${row.created_at}'`
+  ];
+  
+  let sql = `INSERT INTO public.revisi_spm (id, spm_id, revisi_by, catatan_revisi, created_at)\n`;
+  sql += `VALUES (${vals.join(', ')})\n`;
+  sql += `ON CONFLICT (id) DO NOTHING;\n\n`;
+  return sql;
+}
+
+function generateSp2dInsert(row: any): string {
+  const vals = [
+    `'${row.id}'`,
+    `'${row.spm_id}'`,
+    `'${escapeSql(row.nomor_sp2d)}'`,
+    row.nilai_sp2d?.toString() || '0',
+    row.nilai_diterima?.toString() || 'NULL',
+    row.total_potongan?.toString() || '0',
+    row.status ? `'${row.status}'::status_sp2d` : 'NULL',
+    row.tanggal_sp2d ? `'${row.tanggal_sp2d}'` : 'NULL',
+    row.nomor_penguji ? `'${escapeSql(row.nomor_penguji)}'` : 'NULL',
+    row.kuasa_bud_id ? `'${row.kuasa_bud_id}'` : 'NULL',
+    row.created_by ? `'${row.created_by}'` : 'NULL',
+    row.verified_by ? `'${row.verified_by}'` : 'NULL',
+    row.otp_verified_at ? `'${row.otp_verified_at}'` : 'NULL',
+    row.tanggal_kirim_bank ? `'${row.tanggal_kirim_bank}'` : 'NULL',
+    row.tanggal_konfirmasi_bank ? `'${row.tanggal_konfirmasi_bank}'` : 'NULL',
+    row.tanggal_cair ? `'${row.tanggal_cair}'` : 'NULL',
+    row.nama_bank ? `'${escapeSql(row.nama_bank)}'` : 'NULL',
+    row.nomor_rekening ? `'${escapeSql(row.nomor_rekening)}'` : 'NULL',
+    row.nama_rekening ? `'${escapeSql(row.nama_rekening)}'` : 'NULL',
+    row.nomor_referensi_bank ? `'${escapeSql(row.nomor_referensi_bank)}'` : 'NULL',
+    row.catatan ? `'${escapeSql(row.catatan)}'` : 'NULL',
+    row.dokumen_sp2d_url ? `'${escapeSql(row.dokumen_sp2d_url)}'` : 'NULL',
+    row.ttd_digital_url ? `'${escapeSql(row.ttd_digital_url)}'` : 'NULL',
+    `'${row.created_at}'`,
+    `'${row.updated_at}'`
+  ];
+  
+  let sql = `INSERT INTO public.sp2d (id, spm_id, nomor_sp2d, nilai_sp2d, nilai_diterima, total_potongan, status, tanggal_sp2d, nomor_penguji, kuasa_bud_id, created_by, verified_by, otp_verified_at, tanggal_kirim_bank, tanggal_konfirmasi_bank, tanggal_cair, nama_bank, nomor_rekening, nama_rekening, nomor_referensi_bank, catatan, dokumen_sp2d_url, ttd_digital_url, created_at, updated_at)\n`;
+  sql += `VALUES (${vals.join(', ')})\n`;
+  sql += `ON CONFLICT (id) DO NOTHING;\n\n`;
+  return sql;
+}
+
+function generatePajakSp2dInsert(row: any): string {
+  const vals = [
+    `'${row.id}'`,
+    `'${row.sp2d_id}'`,
+    `'${row.jenis_pajak}'::jenis_pajak`,
+    `'${escapeSql(row.uraian)}'`,
+    row.tarif?.toString() || '0',
+    row.dasar_pengenaan?.toString() || '0',
+    row.jumlah_pajak?.toString() || '0',
+    row.rekening_pajak ? `'${escapeSql(row.rekening_pajak)}'` : 'NULL',
+    `'${row.created_at}'`,
+    `'${row.updated_at}'`
+  ];
+  
+  let sql = `INSERT INTO public.potongan_pajak_sp2d (id, sp2d_id, jenis_pajak, uraian, tarif, dasar_pengenaan, jumlah_pajak, rekening_pajak, created_at, updated_at)\n`;
+  sql += `VALUES (${vals.join(', ')})\n`;
+  sql += `ON CONFLICT (id) DO NOTHING;\n\n`;
+  return sql;
+}
+
+function generateNotifikasiInsert(row: any): string {
+  const vals = [
+    `'${row.id}'`,
+    `'${row.user_id}'`,
+    `'${row.jenis}'::jenis_notifikasi`,
+    `'${escapeSql(row.judul)}'`,
+    `'${escapeSql(row.pesan)}'`,
+    row.spm_id ? `'${row.spm_id}'` : 'NULL',
+    row.is_read ? 'true' : 'false',
+    row.sent_via_wa ? 'true' : 'false',
+    row.wa_sent_at ? `'${row.wa_sent_at}'` : 'NULL',
+    `'${row.created_at}'`
+  ];
+  
+  let sql = `INSERT INTO public.notifikasi (id, user_id, jenis, judul, pesan, spm_id, is_read, sent_via_wa, wa_sent_at, created_at)\n`;
+  sql += `VALUES (${vals.join(', ')})\n`;
+  sql += `ON CONFLICT (id) DO NOTHING;\n\n`;
+  return sql;
+}
+
+function generateArsipSpmInsert(row: any): string {
+  const vals = [
+    `'${row.id}'`,
+    `'${row.spm_id}'`,
+    `'${row.bendahara_id}'`,
+    `'${row.opd_id}'`,
+    `'${escapeSql(row.nomor_spm)}'`,
+    `'${row.tanggal_spm}'`,
+    row.nilai_spm?.toString() || '0',
+    row.nilai_bersih?.toString() || 'NULL',
+    row.nama_penerima ? `'${escapeSql(row.nama_penerima)}'` : 'NULL',
+    `'${row.status}'`,
+    `'${escapeSql(JSON.stringify(row.snapshot_data))}'::jsonb`,
+    row.archived_at ? `'${row.archived_at}'` : 'NULL',
+    row.archived_by ? `'${row.archived_by}'` : 'NULL',
+    `'${row.created_at}'`
+  ];
+  
+  let sql = `INSERT INTO public.arsip_spm (id, spm_id, bendahara_id, opd_id, nomor_spm, tanggal_spm, nilai_spm, nilai_bersih, nama_penerima, status, snapshot_data, archived_at, archived_by, created_at)\n`;
+  sql += `VALUES (${vals.join(', ')})\n`;
+  sql += `ON CONFLICT (id) DO NOTHING;\n\n`;
+  return sql;
+}
+
+function generateArsipSp2dInsert(row: any): string {
+  const vals = [
+    `'${row.id}'`,
+    `'${row.sp2d_id}'`,
+    `'${row.spm_id}'`,
+    `'${row.bendahara_id}'`,
+    `'${row.opd_id}'`,
+    `'${escapeSql(row.nomor_sp2d)}'`,
+    `'${row.tanggal_sp2d}'`,
+    row.nilai_sp2d?.toString() || '0',
+    row.nilai_diterima?.toString() || 'NULL',
+    `'${row.status}'`,
+    `'${escapeSql(JSON.stringify(row.snapshot_data))}'::jsonb`,
+    row.archived_at ? `'${row.archived_at}'` : 'NULL',
+    row.archived_by ? `'${row.archived_by}'` : 'NULL',
+    `'${row.created_at}'`
+  ];
+  
+  let sql = `INSERT INTO public.arsip_sp2d (id, sp2d_id, spm_id, bendahara_id, opd_id, nomor_sp2d, tanggal_sp2d, nilai_sp2d, nilai_diterima, status, snapshot_data, archived_at, archived_by, created_at)\n`;
+  sql += `VALUES (${vals.join(', ')})\n`;
+  sql += `ON CONFLICT (id) DO NOTHING;\n\n`;
+  return sql;
+}
+
+function generateAuditLogInsert(row: any): string {
+  const vals = [
+    `'${row.id}'`,
+    row.user_id ? `'${row.user_id}'` : 'NULL',
+    `'${row.action}'`,
+    `'${row.resource}'`,
+    row.resource_id ? `'${row.resource_id}'` : 'NULL',
+    row.old_data ? `'${escapeSql(JSON.stringify(row.old_data))}'::jsonb` : 'NULL',
+    row.new_data ? `'${escapeSql(JSON.stringify(row.new_data))}'::jsonb` : 'NULL',
+    row.ip_address ? `'${row.ip_address}'::inet` : 'NULL',
+    row.user_agent ? `'${escapeSql(row.user_agent)}'` : 'NULL',
+    row.is_emergency ? 'true' : 'false',
+    row.emergency_reason ? `'${escapeSql(row.emergency_reason)}'` : 'NULL',
+    `'${row.created_at}'`
+  ];
+  
+  let sql = `INSERT INTO public.audit_log (id, user_id, action, resource, resource_id, old_data, new_data, ip_address, user_agent, is_emergency, emergency_reason, created_at)\n`;
+  sql += `VALUES (${vals.join(', ')})\n`;
+  sql += `ON CONFLICT (id) DO NOTHING;\n\n`;
+  return sql;
 }
 
 // ============================================================================
