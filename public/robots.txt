@@ -25,4 +25,4 @@ Disallow: /spm/
 Disallow: /sp2d/
 
 # Sitemap
-Sitemap: https://simpa-bend.lovable.app/sitemap.xml
+Sitemap: https://simpabend.idjaringan.com/sitemap.xml
