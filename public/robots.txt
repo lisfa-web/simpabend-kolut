@@ -1,5 +1,5 @@
 # SIMPA BEND BKADKU - Robots.txt
-# https://simpa-bend.lovable.app
+# https://simpabend.idjaringan.com
 
 User-agent: Googlebot
 Allow: /
