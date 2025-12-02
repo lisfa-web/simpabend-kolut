@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import SEOHead from "@/components/SEOHead";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,18 @@ import { Shield, Zap, Users, BarChart3, FileCheck, Lock, Target, Eye, Lightbulb,
 import { Link } from "react-router-dom";
 const About = () => {
   return <div className="min-h-screen">
+      <SEOHead 
+        title="Tentang Kami"
+        description="Pelajari lebih lanjut tentang SIMPA BEND BKADKU - Sistem Informasi Manajemen Pertanggungjawaban Bendahara Kabupaten Kolaka Utara. Platform digital untuk transparansi keuangan daerah."
+        keywords="SIMPA BEND, BKAD Kolaka Utara, SPM, SP2D, Bendahara, tentang kami"
+        canonicalPath="/tentang"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "Tentang SIMPA BEND BKADKU",
+          "description": "Informasi tentang sistem manajemen pertanggungjawaban bendahara"
+        }}
+      />
       <Header />
       <main>
         {/* Hero Section */}
