@@ -74,6 +74,7 @@ const DatabaseBackup = lazy(() => import("./pages/pengaturan/DatabaseBackup"));
 const SecuritySettings = lazy(() => import("./pages/pengaturan/SecuritySettings"));
 const AccessControl = lazy(() => import("./pages/pengaturan/AccessControl"));
 const FileManager = lazy(() => import("./pages/pengaturan/FileManager"));
+const SeoConfig = lazy(() => import("./pages/pengaturan/SeoConfig"));
 const PanduanManual = lazy(() => import("./pages/panduan/PanduanManual"));
 const PanduanManualAdmin = lazy(() => import("./pages/panduan/PanduanManualAdmin"));
 const ProfilePage = lazy(() => import("./pages/profile/ProfilePage"));
@@ -246,6 +247,8 @@ const App = () => (
               <Route path="/pengaturan/access-control" element={<RoleProtectedRoute allowedRoles={["super_admin"]}><AccessControl /></RoleProtectedRoute>} />
               {/* File Manager - Storage Management */}
               <Route path="/pengaturan/file-manager" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><FileManager /></RoleProtectedRoute>} />
+              {/* SEO Configuration */}
+              <Route path="/pengaturan/seo" element={<RoleProtectedRoute allowedRoles={["administrator", "super_admin"]}><SeoConfig /></RoleProtectedRoute>} />
               
               {/* Panduan Routes */}
               <Route path="/panduan" element={<ProtectedRoute><PanduanManual /></ProtectedRoute>} />

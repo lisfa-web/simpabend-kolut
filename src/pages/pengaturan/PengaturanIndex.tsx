@@ -1,5 +1,5 @@
 import { Link, Navigate } from "react-router-dom";
-import { Settings, FileText, MessageSquare, Shield, Mail, AlertTriangle, Palette, Database, Lock, HardDrive } from "lucide-react";
+import { Settings, FileText, MessageSquare, Shield, Mail, AlertTriangle, Palette, Database, Lock, HardDrive, Search } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -33,6 +33,15 @@ const PengaturanIndex = () => {
       color: "text-cyan-700 dark:text-cyan-400",
       bgColor: "bg-cyan-50 dark:bg-cyan-950/30",
       borderColor: "border-cyan-200 dark:border-cyan-800",
+    },
+    {
+      title: "SEO & Meta Tags",
+      description: "Optimasi website untuk mesin pencari Google, Bing, dan lainnya",
+      icon: Search,
+      href: "/pengaturan/seo",
+      color: "text-green-700 dark:text-green-400",
+      bgColor: "bg-green-50 dark:bg-green-950/30",
+      borderColor: "border-green-200 dark:border-green-800",
     },
     {
       title: "Mode Emergency",
