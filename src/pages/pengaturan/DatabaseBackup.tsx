@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Download, Database, Loader2, CheckCircle2, Info, FileText, Shield, Users, Code, HardDrive, Upload, FileUp, Receipt } from "lucide-react";
+import { Download, Database, Loader2, CheckCircle2, Info, FileText, Shield, Users, Code, HardDrive, Upload, FileUp, Receipt, AlertTriangle, XCircle, CheckCircle } from "lucide-react";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,219 @@ import { Navigate } from "react-router-dom";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type ExportType = 'complete' | 'rls' | 'users' | 'data' | 'transactions' | 'edge-functions';
+
+interface ValidationResult {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  info: string[];
+  stats: {
+    totalStatements: number;
+    createTables: number;
+    insertStatements: number;
+    alterStatements: number;
+    createFunctions: number;
+    createPolicies: number;
+    dropStatements: number;
+  };
+  dependencyOrder: string[];
+  missingDependencies: string[];
+}
+
+// Table dependency order based on foreign keys
+const TABLE_DEPENDENCY_ORDER = [
+  'config_sistem',
+  'format_nomor',
+  'jenis_spm',
+  'master_bank',
+  'master_pajak',
+  'opd',
+  'pejabat',
+  'vendor',
+  'pihak_ketiga',
+  'pajak_per_jenis_spm',
+  'permissions',
+  'template_surat',
+  'panduan_manual',
+  'setting_access_control',
+  'email_config',
+  'wa_gateway',
+  'dashboard_layout',
+  'profiles',
+  'user_roles',
+  'spm',
+  'sp2d',
+  'lampiran_spm',
+  'potongan_pajak_spm',
+  'potongan_pajak_sp2d',
+  'revisi_spm',
+  'notifikasi',
+  'pin_otp',
+  'public_token',
+  'arsip_spm',
+  'arsip_sp2d',
+  'audit_log'
+];
+
+// Foreign key dependencies map
+const FK_DEPENDENCIES: Record<string, string[]> = {
+  'opd': ['master_bank'],
+  'pejabat': ['opd'],
+  'vendor': ['master_bank'],
+  'pihak_ketiga': ['master_bank'],
+  'pajak_per_jenis_spm': ['master_pajak'],
+  'user_roles': ['opd'],
+  'spm': ['opd', 'jenis_spm', 'profiles'],
+  'sp2d': ['spm', 'profiles'],
+  'lampiran_spm': ['spm'],
+  'potongan_pajak_spm': ['spm'],
+  'potongan_pajak_sp2d': ['sp2d'],
+  'revisi_spm': ['spm'],
+  'notifikasi': ['spm'],
+  'pin_otp': ['spm', 'sp2d'],
+  'public_token': ['spm'],
+  'arsip_spm': ['spm', 'opd', 'profiles'],
+  'arsip_sp2d': ['sp2d', 'spm', 'opd', 'profiles'],
+  'audit_log': ['profiles'],
+  'panduan_manual': ['profiles'],
+};
+
+function validateSQL(sqlContent: string): ValidationResult {
+  const result: ValidationResult = {
+    isValid: true,
+    errors: [],
+    warnings: [],
+    info: [],
+    stats: {
+      totalStatements: 0,
+      createTables: 0,
+      insertStatements: 0,
+      alterStatements: 0,
+      createFunctions: 0,
+      createPolicies: 0,
+      dropStatements: 0,
+    },
+    dependencyOrder: [],
+    missingDependencies: [],
+  };
+
+  if (!sqlContent.trim()) {
+    result.isValid = false;
+    result.errors.push('SQL content kosong');
+    return result;
+  }
+
+  // Split into statements
+  const statements = sqlContent
+    .split(/;\s*\n/)
+    .map(s => s.trim())
+    .filter(s => s && !s.startsWith('--'));
+
+  result.stats.totalStatements = statements.length;
+
+  const createdTables: Set<string> = new Set();
+  const referencedTables: Set<string> = new Set();
+  const insertedTables: string[] = [];
+
+  for (const stmt of statements) {
+    const upperStmt = stmt.toUpperCase();
+
+    // Count statement types
+    if (upperStmt.includes('CREATE TABLE')) {
+      result.stats.createTables++;
+      const match = stmt.match(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?(\w+)/i);
+      if (match) createdTables.add(match[1].toLowerCase());
+    }
+    if (upperStmt.includes('INSERT INTO')) {
+      result.stats.insertStatements++;
+      const match = stmt.match(/INSERT\s+INTO\s+(?:public\.)?(\w+)/i);
+      if (match) insertedTables.push(match[1].toLowerCase());
+    }
+    if (upperStmt.includes('ALTER TABLE') || upperStmt.includes('ALTER PUBLICATION')) {
+      result.stats.alterStatements++;
+    }
+    if (upperStmt.includes('CREATE FUNCTION') || upperStmt.includes('CREATE OR REPLACE FUNCTION')) {
+      result.stats.createFunctions++;
+    }
+    if (upperStmt.includes('CREATE POLICY')) {
+      result.stats.createPolicies++;
+    }
+    if (upperStmt.includes('DROP ')) {
+      result.stats.dropStatements++;
+    }
+
+    // Check for REFERENCES (foreign keys)
+    const refMatches = stmt.matchAll(/REFERENCES\s+(?:public\.)?(\w+)/gi);
+    for (const match of refMatches) {
+      referencedTables.add(match[1].toLowerCase());
+    }
+
+    // Basic syntax checks
+    if (upperStmt.includes('CREATE TABLE') && !stmt.includes('(')) {
+      result.errors.push(`Syntax error: CREATE TABLE tanpa definisi kolom`);
+    }
+
+    // Check for common issues
+    if (upperStmt.includes('TRUNCATE') && !upperStmt.includes('CASCADE')) {
+      result.warnings.push('TRUNCATE tanpa CASCADE mungkin gagal jika ada FK');
+    }
+
+    // Check for dangerous operations
+    if (upperStmt.includes('DROP DATABASE')) {
+      result.errors.push('DROP DATABASE tidak diizinkan');
+    }
+    if (upperStmt.includes('DROP SCHEMA') && !upperStmt.includes('IF EXISTS')) {
+      result.warnings.push('DROP SCHEMA tanpa IF EXISTS berisiko error');
+    }
+  }
+
+  // Check foreign key dependencies order for INSERT statements
+  const insertOrder = insertedTables.filter((t, i, arr) => arr.indexOf(t) === i);
+  result.dependencyOrder = insertOrder;
+
+  // Validate INSERT order against dependencies
+  const insertedSet = new Set<string>();
+  for (const table of insertOrder) {
+    const deps = FK_DEPENDENCIES[table] || [];
+    for (const dep of deps) {
+      if (!insertedSet.has(dep) && insertOrder.includes(dep)) {
+        const depIndex = insertOrder.indexOf(dep);
+        const tableIndex = insertOrder.indexOf(table);
+        if (depIndex > tableIndex) {
+          result.warnings.push(`Urutan INSERT mungkin salah: ${table} membutuhkan ${dep} diinsert lebih dulu`);
+        }
+      }
+    }
+    insertedSet.add(table);
+  }
+
+  // Check for missing dependencies
+  for (const ref of referencedTables) {
+    if (!createdTables.has(ref) && !['auth', 'users'].includes(ref)) {
+      result.missingDependencies.push(ref);
+    }
+  }
+
+  if (result.missingDependencies.length > 0) {
+    result.warnings.push(`Tabel referensi yang mungkin belum dibuat: ${result.missingDependencies.join(', ')}`);
+  }
+
+  // Info messages
+  result.info.push(`Total ${result.stats.totalStatements} statements ditemukan`);
+  if (result.stats.createTables > 0) result.info.push(`${result.stats.createTables} CREATE TABLE`);
+  if (result.stats.insertStatements > 0) result.info.push(`${result.stats.insertStatements} INSERT statements`);
+  if (result.stats.createFunctions > 0) result.info.push(`${result.stats.createFunctions} functions`);
+  if (result.stats.createPolicies > 0) result.info.push(`${result.stats.createPolicies} RLS policies`);
+  if (result.stats.dropStatements > 0) result.info.push(`${result.stats.dropStatements} DROP statements (hati-hati!)`);
+
+  // Set overall validity
+  result.isValid = result.errors.length === 0;
+
+  return result;
+}
 
 const DatabaseBackup = () => {
   const { isSuperAdmin } = useAuth();
@@ -21,6 +232,8 @@ const DatabaseBackup = () => {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [sqlContent, setSqlContent] = useState("");
   const [importing, setImporting] = useState(false);
+  const [validating, setValidating] = useState(false);
+  const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isSuperAdmin()) {
@@ -40,9 +253,27 @@ const DatabaseBackup = () => {
     reader.onload = (event) => {
       const content = event.target?.result as string;
       setSqlContent(content);
+      setValidationResult(null);
       toast.success(`File ${file.name} berhasil dimuat (${(file.size / 1024).toFixed(1)} KB)`);
     };
     reader.readAsText(file);
+  };
+
+  const handleValidate = () => {
+    setValidating(true);
+    setTimeout(() => {
+      const result = validateSQL(sqlContent);
+      setValidationResult(result);
+      setValidating(false);
+      
+      if (result.isValid && result.warnings.length === 0) {
+        toast.success("Validasi berhasil! SQL siap untuk di-import.");
+      } else if (result.isValid && result.warnings.length > 0) {
+        toast.warning(`Validasi selesai dengan ${result.warnings.length} warning`);
+      } else {
+        toast.error(`Validasi gagal: ${result.errors.length} error ditemukan`);
+      }
+    }, 500);
   };
 
   const handleImport = async () => {
@@ -51,11 +282,15 @@ const DatabaseBackup = () => {
       return;
     }
 
+    if (!validationResult || !validationResult.isValid) {
+      toast.error("Validasi SQL terlebih dahulu sebelum import");
+      return;
+    }
+
     try {
       setImporting(true);
       toast.info("Menjalankan SQL import...");
 
-      // Split SQL into statements and execute each
       const statements = sqlContent
         .split(/;\s*\n/)
         .map(s => s.trim())
@@ -69,7 +304,6 @@ const DatabaseBackup = () => {
         if (!stmt) continue;
         
         try {
-          // Use RPC to execute SQL - this requires a database function
           const { error } = await supabase.rpc('execute_import_sql' as any, { sql_statement: stmt + ';' });
           
           if (error) {
@@ -89,6 +323,7 @@ const DatabaseBackup = () => {
         toast.success(`Import berhasil! ${successCount} statements dieksekusi.`);
         setImportDialogOpen(false);
         setSqlContent("");
+        setValidationResult(null);
       } else {
         toast.warning(`Import selesai dengan ${errorCount} errors dari ${statements.length} statements`);
         console.error("Import errors:", errors);
@@ -552,20 +787,25 @@ const DatabaseBackup = () => {
         </Card>
 
         {/* Import Dialog */}
-        <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+        <Dialog open={importDialogOpen} onOpenChange={(open) => {
+          setImportDialogOpen(open);
+          if (!open) {
+            setValidationResult(null);
+          }
+        }}>
+          <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <FileUp className="h-5 w-5" />
                 Import SQL File
               </DialogTitle>
               <DialogDescription>
-                Upload file .sql untuk preview sebelum import
+                Upload file .sql, validasi syntax & dependency, lalu import
               </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-4 flex-1 overflow-hidden">
-              <div>
+              <div className="flex gap-2">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -576,46 +816,146 @@ const DatabaseBackup = () => {
                 <Button 
                   variant="outline" 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full"
+                  className="flex-1"
                 >
                   <Upload className="mr-2 h-4 w-4" />
                   Pilih File SQL
                 </Button>
+                {sqlContent && (
+                  <Button 
+                    onClick={handleValidate}
+                    disabled={validating || !sqlContent}
+                    variant="secondary"
+                  >
+                    {validating ? (
+                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Validating...</>
+                    ) : (
+                      <><CheckCircle className="mr-2 h-4 w-4" /> Validasi SQL</>
+                    )}
+                  </Button>
+                )}
               </div>
 
               {sqlContent && (
-                <div className="flex-1 overflow-hidden">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Preview ({(sqlContent.length / 1024).toFixed(1)} KB, ~{sqlContent.split(/;\s*\n/).filter(s => s.trim() && !s.trim().startsWith('--')).length} statements)
-                  </p>
-                  <Textarea
-                    value={sqlContent}
-                    onChange={(e) => setSqlContent(e.target.value)}
-                    className="font-mono text-xs h-64 resize-none"
-                    placeholder="SQL content akan muncul di sini..."
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* SQL Preview */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">
+                      Preview SQL ({(sqlContent.length / 1024).toFixed(1)} KB)
+                    </p>
+                    <Textarea
+                      value={sqlContent}
+                      onChange={(e) => {
+                        setSqlContent(e.target.value);
+                        setValidationResult(null);
+                      }}
+                      className="font-mono text-xs h-48 resize-none"
+                      placeholder="SQL content akan muncul di sini..."
+                    />
+                  </div>
+
+                  {/* Validation Results */}
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Hasil Validasi</p>
+                    <ScrollArea className="h-48 border rounded-md p-3 bg-muted/30">
+                      {!validationResult ? (
+                        <div className="text-sm text-muted-foreground text-center py-8">
+                          <CheckCircle className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                          <p>Klik "Validasi SQL" untuk mengecek</p>
+                          <p className="text-xs mt-1">syntax, foreign key, dan urutan dependency</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3 text-sm">
+                          {/* Stats */}
+                          <div className="flex flex-wrap gap-1">
+                            <Badge variant="outline" className="text-xs">{validationResult.stats.totalStatements} statements</Badge>
+                            {validationResult.stats.createTables > 0 && (
+                              <Badge variant="outline" className="text-xs">{validationResult.stats.createTables} tables</Badge>
+                            )}
+                            {validationResult.stats.insertStatements > 0 && (
+                              <Badge variant="outline" className="text-xs">{validationResult.stats.insertStatements} inserts</Badge>
+                            )}
+                            {validationResult.stats.createFunctions > 0 && (
+                              <Badge variant="outline" className="text-xs">{validationResult.stats.createFunctions} functions</Badge>
+                            )}
+                            {validationResult.stats.createPolicies > 0 && (
+                              <Badge variant="outline" className="text-xs">{validationResult.stats.createPolicies} policies</Badge>
+                            )}
+                          </div>
+
+                          {/* Errors */}
+                          {validationResult.errors.length > 0 && (
+                            <div className="space-y-1">
+                              <p className="font-medium text-destructive flex items-center gap-1">
+                                <XCircle className="h-4 w-4" /> Errors ({validationResult.errors.length})
+                              </p>
+                              {validationResult.errors.map((err, i) => (
+                                <p key={i} className="text-xs text-destructive pl-5">• {err}</p>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Warnings */}
+                          {validationResult.warnings.length > 0 && (
+                            <div className="space-y-1">
+                              <p className="font-medium text-yellow-600 flex items-center gap-1">
+                                <AlertTriangle className="h-4 w-4" /> Warnings ({validationResult.warnings.length})
+                              </p>
+                              {validationResult.warnings.map((warn, i) => (
+                                <p key={i} className="text-xs text-yellow-600 pl-5">• {warn}</p>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Success */}
+                          {validationResult.isValid && validationResult.errors.length === 0 && (
+                            <div className="flex items-center gap-2 text-green-600">
+                              <CheckCircle2 className="h-4 w-4" />
+                              <span className="font-medium">Validasi berhasil!</span>
+                            </div>
+                          )}
+
+                          {/* Dependency Order */}
+                          {validationResult.dependencyOrder.length > 0 && (
+                            <div className="space-y-1">
+                              <p className="text-xs text-muted-foreground">Urutan INSERT:</p>
+                              <p className="text-xs font-mono bg-muted p-1 rounded">
+                                {validationResult.dependencyOrder.slice(0, 10).join(' → ')}
+                                {validationResult.dependencyOrder.length > 10 && '...'}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </div>
                 </div>
               )}
 
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription className="text-xs">
-                  <strong>Catatan:</strong> Fitur import via UI memerlukan database function <code>execute_import_sql</code>. 
-                  Untuk keamanan, disarankan import via <code>psql</code> command line pada server.
+                  <strong>Validasi mencakup:</strong> Pengecekan syntax dasar, urutan foreign key dependency, 
+                  dan deteksi operasi berbahaya. Untuk import yang aman, gunakan <code>psql</code> command line.
                 </AlertDescription>
               </Alert>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex-shrink-0">
               <Button variant="outline" onClick={() => setImportDialogOpen(false)}>
                 Batal
               </Button>
               <Button 
                 onClick={handleImport} 
-                disabled={!sqlContent || importing}
+                disabled={!sqlContent || importing || !validationResult?.isValid}
+                variant={validationResult?.isValid ? "default" : "secondary"}
               >
                 {importing ? (
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Importing...</>
+                ) : !validationResult ? (
+                  <><Database className="mr-2 h-4 w-4" /> Validasi dulu</>
+                ) : !validationResult.isValid ? (
+                  <><XCircle className="mr-2 h-4 w-4" /> Ada Error</>
                 ) : (
                   <><Database className="mr-2 h-4 w-4" /> Execute Import</>
                 )}
