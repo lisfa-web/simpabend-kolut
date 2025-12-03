@@ -29,6 +29,11 @@ import { QuickActions } from "./Dashboard/components/QuickActions";
 import { PeriodFilter } from "./Dashboard/components/PeriodFilter";
 import { SpmSp2dTableWidget } from "./Dashboard/components/SpmSp2dTableWidget";
 import { SpmStatusDistributionWidget } from "./Dashboard/components/SpmStatusDistributionWidget";
+import { DailyBriefingWidget } from "./Dashboard/components/DailyBriefingWidget";
+import { TargetRealizationWidget } from "./Dashboard/components/TargetRealizationWidget";
+import { DeadlineCalendarWidget } from "./Dashboard/components/DeadlineCalendarWidget";
+import { OpdComparisonWidget } from "./Dashboard/components/OpdComparisonWidget";
+import { OpdFilterSelect } from "./Dashboard/components/OpdFilterSelect";
 import { cn } from "@/lib/utils";
 import { Sparkline } from "@/components/Sparkline";
 import { CommandPalette } from "@/components/CommandPalette";
@@ -42,11 +47,20 @@ import { WidgetContainer } from "@/components/dashboard/WidgetContainer";
 import { LayoutSettingsDialog } from "@/components/dashboard/LayoutSettingsDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 const WIDGET_LABELS = [{
+  id: "daily-briefing",
+  label: "Ringkasan Harian"
+}, {
   id: "stats",
   label: "Statistik Utama"
 }, {
   id: "quick-actions",
   label: "Quick Actions & Filters"
+}, {
+  id: "target-realization",
+  label: "Target vs Realisasi"
+}, {
+  id: "deadline-calendar",
+  label: "Kalender Deadline"
 }, {
   id: "performance",
   label: "Performance Metrics"
@@ -71,6 +85,9 @@ const WIDGET_LABELS = [{
 }, {
   id: "opd-breakdown",
   label: "OPD Breakdown"
+}, {
+  id: "opd-comparison",
+  label: "Perbandingan Antar OPD"
 }, {
   id: "vendors",
   label: "Top Vendors"
@@ -117,6 +134,7 @@ const Dashboard = () => {
     isSaving
   } = useDashboardLayout();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [selectedOpdFilter, setSelectedOpdFilter] = useState("all");
 
   // Period filter state
   const [selectedPeriod, setSelectedPeriod] = useState("month");
@@ -233,7 +251,12 @@ const Dashboard = () => {
               <div className="flex items-center justify-between bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-lg p-4 glass">
                 <QuickActions />
                 
-                <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
+                  <OpdFilterSelect 
+                    value={selectedOpdFilter} 
+                    onChange={setSelectedOpdFilter}
+                    className="w-[180px] h-9"
+                  />
                   <div className="text-xs text-muted-foreground flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                     Diperbarui {getTimeSinceRefresh()}
@@ -250,6 +273,15 @@ const Dashboard = () => {
 
         {/* Drag & Drop Grid Layout */}
         <GridLayout className="layout" layout={currentLayout} cols={12} rowHeight={80} width={1200} onLayoutChange={handleLayoutChange} isDraggable={isEditMode} isResizable={isEditMode} compactType="vertical" preventCollision={false}>
+          {/* Daily Briefing Widget - NEW */}
+          {!isWidgetHidden("daily-briefing") && <div key="daily-briefing">
+              <WidgetContainer isEditMode={isEditMode} title="Ringkasan Harian">
+                <div className="p-4 h-full">
+                  <DailyBriefingWidget isLoading={isLoading} />
+                </div>
+              </WidgetContainer>
+            </div>}
+
           {/* Stats Cards Widget */}
           {!isWidgetHidden("stats") && <div key="stats">
               <WidgetContainer isEditMode={isEditMode} title="Statistik Utama">
@@ -440,6 +472,24 @@ const Dashboard = () => {
               </WidgetContainer>
             </div>}
 
+          {/* Target vs Realization Widget - NEW */}
+          {!isWidgetHidden("target-realization") && <div key="target-realization">
+              <WidgetContainer isEditMode={isEditMode} title="Target vs Realisasi">
+                <div className="p-4 h-full">
+                  <TargetRealizationWidget isLoading={isLoading} />
+                </div>
+              </WidgetContainer>
+            </div>}
+
+          {/* Deadline Calendar Widget - NEW */}
+          {!isWidgetHidden("deadline-calendar") && <div key="deadline-calendar">
+              <WidgetContainer isEditMode={isEditMode} title="Kalender Deadline">
+                <div className="p-4 h-full">
+                  <DeadlineCalendarWidget isLoading={isLoading} />
+                </div>
+              </WidgetContainer>
+            </div>}
+
           {/* Charts Widget */}
           {!isWidgetHidden("charts") && <div key="charts">
               <WidgetContainer isEditMode={isEditMode} title="Grafik SPM">
@@ -556,6 +606,15 @@ const Dashboard = () => {
               <WidgetContainer isEditMode={isEditMode} title="OPD Breakdown">
                 <div className="p-4">
                   <OpdBreakdownChart data={stats?.opdBreakdown || []} isLoading={isLoading} />
+                </div>
+              </WidgetContainer>
+            </div>}
+
+          {/* OPD Comparison Widget - NEW */}
+          {!isWidgetHidden("opd-comparison") && <div key="opd-comparison">
+              <WidgetContainer isEditMode={isEditMode} title="Perbandingan Antar OPD">
+                <div className="p-4 h-full">
+                  <OpdComparisonWidget isLoading={isLoading} />
                 </div>
               </WidgetContainer>
             </div>}
