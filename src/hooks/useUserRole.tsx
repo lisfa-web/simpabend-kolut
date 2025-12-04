@@ -29,7 +29,7 @@ export const useUserRole = () => {
   };
 
   const isAdmin = (): boolean => {
-    return hasRole("administrator") || hasRole("kepala_bkad");
+    return hasRole("administrator") || hasRole("kepala_bkad") || hasRole("super_admin");
   };
 
   const isSuperAdmin = (): boolean => {
