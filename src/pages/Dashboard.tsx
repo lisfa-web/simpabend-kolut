@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FileText, CheckCircle, Clock, AlertCircle, TrendingUp, Sparkles, Calendar, RefreshCw, ArrowUpRight, Edit, Save, Settings, Eye } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useDashboardStats } from "@/hooks/useDashboardStats";
@@ -119,7 +120,8 @@ const Dashboard = () => {
     refetch
   } = useDashboardStats();
   const {
-    isAdmin: checkIsAdmin
+    isAdmin: checkIsAdmin,
+    isSuperAdmin
   } = useUserRole();
   const isAdmin = checkIsAdmin();
   const {
@@ -135,6 +137,7 @@ const Dashboard = () => {
   } = useDashboardLayout();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedOpdFilter, setSelectedOpdFilter] = useState("all");
+  const [saveAsDefault, setSaveAsDefault] = useState(false);
 
   // Period filter state
   const [selectedPeriod, setSelectedPeriod] = useState("month");
@@ -226,12 +229,24 @@ const Dashboard = () => {
               })}
               </Badge>
               
-              {isAdmin && <div className="flex gap-2">
+              {isAdmin && <div className="flex items-center gap-2">
                   {isEditMode ? <>
-                      <Button variant="outline" size="sm" onClick={() => setIsEditMode(false)}>
+                      <Button variant="outline" size="sm" onClick={() => { setIsEditMode(false); setSaveAsDefault(false); }}>
                         Batal
                       </Button>
-                      <Button variant="default" size="sm" onClick={handleSaveLayout} disabled={isSaving} className="gap-2">
+                      {isSuperAdmin() && (
+                        <div className="flex items-center gap-2 px-2">
+                          <Checkbox 
+                            id="save-as-default" 
+                            checked={saveAsDefault} 
+                            onCheckedChange={(checked) => setSaveAsDefault(checked === true)}
+                          />
+                          <label htmlFor="save-as-default" className="text-xs text-muted-foreground cursor-pointer">
+                            Simpan sebagai default
+                          </label>
+                        </div>
+                      )}
+                      <Button variant="default" size="sm" onClick={() => handleSaveLayout(saveAsDefault)} disabled={isSaving} className="gap-2">
                         <Save className="h-4 w-4" />
                         {isSaving ? "Menyimpan..." : "Simpan Layout"}
                       </Button>

@@ -101,14 +101,23 @@ export const useDashboardLayout = () => {
 
   // Save layout mutation
   const saveMutation = useMutation({
-    mutationFn: async (config: DashboardLayoutConfig) => {
+    mutationFn: async ({ config, saveAsDefault }: { config: DashboardLayoutConfig; saveAsDefault: boolean }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
+
+      // If saving as default, first reset all other default layouts
+      if (saveAsDefault) {
+        await supabase
+          .from("dashboard_layout")
+          .update({ is_default: false })
+          .eq("is_default", true);
+      }
 
       const payload: Database['public']['Tables']['dashboard_layout']['Insert'] = {
         user_id: user.id,
         layout_config: config as any,
         updated_at: new Date().toISOString(),
+        is_default: saveAsDefault,
       };
 
       const { error } = await supabase
@@ -117,11 +126,13 @@ export const useDashboardLayout = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["dashboard-layout"] });
       toast({
         title: "Layout Tersimpan",
-        description: "Konfigurasi dashboard berhasil disimpan",
+        description: variables.saveAsDefault 
+          ? "Layout disimpan sebagai default untuk semua user"
+          : "Konfigurasi dashboard berhasil disimpan",
       });
       setIsEditMode(false);
     },
@@ -138,10 +149,13 @@ export const useDashboardLayout = () => {
     setCurrentLayout(newLayout);
   };
 
-  const handleSaveLayout = () => {
+  const handleSaveLayout = (saveAsDefault: boolean = false) => {
     saveMutation.mutate({
-      layouts: currentLayout,
-      hiddenWidgets,
+      config: {
+        layouts: currentLayout,
+        hiddenWidgets,
+      },
+      saveAsDefault,
     });
   };
 
