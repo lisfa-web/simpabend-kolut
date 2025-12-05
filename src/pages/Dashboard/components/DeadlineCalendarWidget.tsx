@@ -12,22 +12,29 @@ import { id as localeId } from "date-fns/locale";
 
 interface DeadlineCalendarWidgetProps {
   isLoading?: boolean;
+  opdFilter?: string;
 }
 
 const SLA_DAYS = 4; // SLA target: 4 hari kerja
 
-export const DeadlineCalendarWidget = ({ isLoading: parentLoading }: DeadlineCalendarWidgetProps) => {
+export const DeadlineCalendarWidget = ({ isLoading: parentLoading, opdFilter }: DeadlineCalendarWidgetProps) => {
   const { data: deadlines, isLoading } = useQuery({
-    queryKey: ["deadline-calendar"],
+    queryKey: ["deadline-calendar", opdFilter],
     queryFn: async () => {
       const now = new Date();
       
       // Get SPM that are in progress (not draft, not approved, not revision)
-      const { data: spmData } = await supabase
+      let query = supabase
         .from("spm")
-        .select("id, nomor_spm, status, nilai_spm, updated_at, tanggal_ajuan, opd:opd_id(nama_opd)")
+        .select("id, nomor_spm, status, nilai_spm, updated_at, tanggal_ajuan, opd_id, opd:opd_id(nama_opd)")
         .not("status", "in", '("draft","disetujui","perlu_revisi")')
         .order("updated_at", { ascending: true });
+
+      if (opdFilter && opdFilter !== "all") {
+        query = query.eq("opd_id", opdFilter);
+      }
+
+      const { data: spmData } = await query;
 
       // Calculate deadline for each SPM (SLA 4 days from last update)
       const deadlineItems = (spmData || []).map((spm: any) => {

@@ -18,9 +18,13 @@ interface Sp2dActivityItem {
   nilai_sp2d: number;
 }
 
-export const RecentSp2dActivityWidget = () => {
+interface RecentSp2dActivityWidgetProps {
+  opdFilter?: string;
+}
+
+export const RecentSp2dActivityWidget = ({ opdFilter }: RecentSp2dActivityWidgetProps) => {
   const { data: activities, isLoading } = useQuery({
-    queryKey: ["recent-sp2d-activities"],
+    queryKey: ["recent-sp2d-activities", opdFilter],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sp2d")
@@ -31,15 +35,22 @@ export const RecentSp2dActivityWidget = () => {
           nilai_sp2d,
           updated_at,
           spm:spm_id(
+            opd_id,
             bendahara:profiles!bendahara_id(full_name)
           )
         `)
         .order("updated_at", { ascending: false })
-        .limit(10);
+        .limit(20);
 
       if (error) throw error;
 
-      return data?.map((item: any) => ({
+      // Filter by OPD if specified
+      let filteredData = data;
+      if (opdFilter && opdFilter !== "all") {
+        filteredData = data?.filter((item: any) => item.spm?.opd_id === opdFilter);
+      }
+
+      return filteredData?.slice(0, 10).map((item: any) => ({
         id: item.id,
         type: "sp2d",
         status: item.status,

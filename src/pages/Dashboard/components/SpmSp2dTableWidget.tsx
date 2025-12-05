@@ -25,6 +25,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
+interface SpmSp2dTableWidgetProps {
+  opdFilter?: string;
+}
+
 const VerificationBadge = ({ isVerified }: { isVerified: boolean | null }) => {
   if (isVerified === null) {
     return (
@@ -65,9 +69,12 @@ const Sp2dStatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-const SpmSp2dTableWidget = memo(() => {
+const SpmSp2dTableWidget = memo(({ opdFilter }: SpmSp2dTableWidgetProps) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Reset page when filter changes
+  const effectiveOpdFilter = opdFilter;
 
   // Palette warna dengan kontras tinggi untuk alternating rows
   const rowColorClasses = [
@@ -80,12 +87,12 @@ const SpmSp2dTableWidget = memo(() => {
   ];
 
   const { data, isLoading } = useQuery({
-    queryKey: ["spm-sp2d-table", page, pageSize],
+    queryKey: ["spm-sp2d-table", page, pageSize, effectiveOpdFilter],
     queryFn: async () => {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
-      const { data, error, count } = await supabase
+      let query = supabase
         .from("spm")
         .select(`
           id,
@@ -97,6 +104,7 @@ const SpmSp2dTableWidget = memo(() => {
           verified_by_akuntansi,
           verified_by_perbendaharaan,
           status,
+          opd_id,
           opd:opd_id(nama_opd),
           sp2d(
             id,
@@ -107,8 +115,13 @@ const SpmSp2dTableWidget = memo(() => {
           )
         `, { count: 'exact' })
         .not("status", "eq", "draft")
-        .order("tanggal_ajuan", { ascending: false })
-        .range(from, to);
+        .order("tanggal_ajuan", { ascending: false });
+
+      if (effectiveOpdFilter && effectiveOpdFilter !== "all") {
+        query = query.eq("opd_id", effectiveOpdFilter);
+      }
+
+      const { data, error, count } = await query.range(from, to);
 
       if (error) throw error;
       return { data: data || [], count: count || 0 };

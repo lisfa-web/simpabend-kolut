@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface SpmStatusDistributionWidgetProps {
   isLoading?: boolean;
+  opdFilter?: string;
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -29,15 +30,21 @@ const COLORS = [
   'hsl(199, 89%, 48%)',  // resepsionis_verifikasi - cyan
 ];
 
-export const SpmStatusDistributionWidget = ({ isLoading: parentLoading }: SpmStatusDistributionWidgetProps) => {
+export const SpmStatusDistributionWidget = ({ isLoading: parentLoading, opdFilter }: SpmStatusDistributionWidgetProps) => {
   // Fetch SPM status distribution
   const { data: statusData, isLoading } = useQuery({
-    queryKey: ["spm-status-distribution"],
+    queryKey: ["spm-status-distribution", opdFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("spm")
-        .select("status")
+        .select("status, opd_id")
         .order("created_at", { ascending: false });
+
+      if (opdFilter && opdFilter !== "all") {
+        query = query.eq("opd_id", opdFilter);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
