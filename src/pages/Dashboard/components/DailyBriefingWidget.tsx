@@ -20,58 +20,90 @@ import { id as localeId } from "date-fns/locale";
 
 interface DailyBriefingWidgetProps {
   isLoading?: boolean;
+  opdFilter?: string;
 }
 
-export const DailyBriefingWidget = ({ isLoading: parentLoading }: DailyBriefingWidgetProps) => {
+export const DailyBriefingWidget = ({ isLoading: parentLoading, opdFilter }: DailyBriefingWidgetProps) => {
   const { user } = useAuth();
   const { hasRole, isAdmin } = useUserRole();
 
   const { data: briefingData, isLoading } = useQuery({
-    queryKey: ["daily-briefing", user?.id],
+    queryKey: ["daily-briefing", user?.id, opdFilter],
     queryFn: async () => {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todayISO = today.toISOString();
 
       // SPM yang perlu ditindaklanjuti hari ini
-      const { data: pendingSpm } = await supabase
+      let pendingSpmQuery = supabase
         .from("spm")
-        .select("id, nomor_spm, status, nilai_spm, updated_at, opd:opd_id(nama_opd)")
+        .select("id, nomor_spm, status, nilai_spm, updated_at, opd_id, opd:opd_id(nama_opd)")
         .neq("status", "draft")
         .neq("status", "disetujui")
         .order("updated_at", { ascending: true })
         .limit(5);
 
+      if (opdFilter && opdFilter !== "all") {
+        pendingSpmQuery = pendingSpmQuery.eq("opd_id", opdFilter);
+      }
+
+      const { data: pendingSpm } = await pendingSpmQuery;
+
       // SPM baru hari ini
-      const { data: newSpmToday, count: newSpmCount } = await supabase
+      let newSpmQuery = supabase
         .from("spm")
         .select("*", { count: "exact" })
         .gte("created_at", todayISO)
         .neq("status", "draft");
 
+      if (opdFilter && opdFilter !== "all") {
+        newSpmQuery = newSpmQuery.eq("opd_id", opdFilter);
+      }
+
+      const { data: newSpmToday, count: newSpmCount } = await newSpmQuery;
+
       // SPM disetujui hari ini
-      const { data: approvedToday, count: approvedCount } = await supabase
+      let approvedQuery = supabase
         .from("spm")
         .select("*", { count: "exact" })
         .eq("status", "disetujui")
         .gte("tanggal_disetujui", todayISO);
 
-      // SP2D yang perlu tindakan
-      const { data: pendingSp2d, count: pendingSp2dCount } = await supabase
+      if (opdFilter && opdFilter !== "all") {
+        approvedQuery = approvedQuery.eq("opd_id", opdFilter);
+      }
+
+      const { data: approvedToday, count: approvedCount } = await approvedQuery;
+
+      // SP2D yang perlu tindakan - need to filter via SPM join
+      const { data: pendingSp2dRaw } = await supabase
         .from("sp2d")
-        .select("*", { count: "exact" })
+        .select("*, spm:spm_id(opd_id)")
         .in("status", ["diterbitkan", "diuji_bank"]);
+
+      const pendingSp2dFiltered = opdFilter && opdFilter !== "all"
+        ? pendingSp2dRaw?.filter((sp2d: any) => sp2d.spm?.opd_id === opdFilter)
+        : pendingSp2dRaw;
+      
+      const pendingSp2dCount = pendingSp2dFiltered?.length || 0;
 
       // SPM stuck lebih dari 3 hari
       const threeDaysAgo = new Date();
       threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-      const { data: stuckSpm, count: stuckCount } = await supabase
+      
+      let stuckSpmQuery = supabase
         .from("spm")
         .select("*", { count: "exact" })
         .neq("status", "draft")
         .neq("status", "disetujui")
         .neq("status", "perlu_revisi")
         .lt("updated_at", threeDaysAgo.toISOString());
+
+      if (opdFilter && opdFilter !== "all") {
+        stuckSpmQuery = stuckSpmQuery.eq("opd_id", opdFilter);
+      }
+
+      const { data: stuckSpm, count: stuckCount } = await stuckSpmQuery;
 
       // Total nilai SPM dalam proses
       const totalPendingValue = pendingSpm?.reduce((sum, spm) => sum + Number(spm.nilai_spm || 0), 0) || 0;

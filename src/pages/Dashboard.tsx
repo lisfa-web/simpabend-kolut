@@ -114,11 +114,12 @@ const Dashboard = () => {
     data: profile
   } = useUserProfile();
   const { isDemoAdmin } = useAuth();
+  const [selectedOpdFilter, setSelectedOpdFilter] = useState("all");
   const {
     data: stats,
     isLoading,
     refetch
-  } = useDashboardStats();
+  } = useDashboardStats(selectedOpdFilter);
   const {
     isAdmin: checkIsAdmin,
     isSuperAdmin
@@ -136,7 +137,6 @@ const Dashboard = () => {
     isSaving
   } = useDashboardLayout();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [selectedOpdFilter, setSelectedOpdFilter] = useState("all");
   const [saveAsDefault, setSaveAsDefault] = useState(false);
 
   // Period filter state
@@ -292,7 +292,7 @@ const Dashboard = () => {
           {!isWidgetHidden("daily-briefing") && <div key="daily-briefing">
               <WidgetContainer isEditMode={isEditMode} title="Ringkasan Harian">
                 <div className="p-4 h-full">
-                  <DailyBriefingWidget isLoading={isLoading} />
+                  <DailyBriefingWidget isLoading={isLoading} opdFilter={selectedOpdFilter} />
                 </div>
               </WidgetContainer>
             </div>}
@@ -500,7 +500,7 @@ const Dashboard = () => {
           {!isWidgetHidden("deadline-calendar") && <div key="deadline-calendar">
               <WidgetContainer isEditMode={isEditMode} title="Kalender Deadline">
                 <div className="p-4 h-full">
-                  <DeadlineCalendarWidget isLoading={isLoading} />
+                  <DeadlineCalendarWidget isLoading={isLoading} opdFilter={selectedOpdFilter} />
                 </div>
               </WidgetContainer>
             </div>}
@@ -593,7 +593,7 @@ const Dashboard = () => {
           {!isWidgetHidden("activity") && <div key="activity" className="h-full">
               <WidgetContainer isEditMode={isEditMode} title="Recent Activity">
                 <div className="p-4 h-full">
-                  <RecentActivityWidget />
+                  <RecentActivityWidget opdFilter={selectedOpdFilter} />
                 </div>
               </WidgetContainer>
             </div>}
@@ -602,7 +602,7 @@ const Dashboard = () => {
           {!isWidgetHidden("sp2d-activity") && <div key="sp2d-activity" className="h-full">
               <WidgetContainer isEditMode={isEditMode} title="Aktivitas SP2D Terbaru">
                 <div className="p-4 h-full">
-                  <RecentSp2dActivityWidget />
+                  <RecentSp2dActivityWidget opdFilter={selectedOpdFilter} />
                 </div>
               </WidgetContainer>
             </div>}
@@ -664,7 +664,7 @@ const Dashboard = () => {
           {/* SPM & SP2D Table Widget */}
           {!isWidgetHidden("spm-sp2d-table") && <div key="spm-sp2d-table">
               <WidgetContainer isEditMode={isEditMode} title="Tabel SPM & SP2D">
-                <SpmSp2dTableWidget />
+                <SpmSp2dTableWidget opdFilter={selectedOpdFilter} />
               </WidgetContainer>
             </div>}
 
@@ -672,7 +672,7 @@ const Dashboard = () => {
           {!isWidgetHidden("spm-status-distribution") && <div key="spm-status-distribution">
               <WidgetContainer isEditMode={isEditMode} title="Distribusi Status SPM">
                 <div className="p-4">
-                  <SpmStatusDistributionWidget isLoading={isLoading} />
+                  <SpmStatusDistributionWidget isLoading={isLoading} opdFilter={selectedOpdFilter} />
                 </div>
               </WidgetContainer>
             </div>}

@@ -126,12 +126,12 @@ interface DashboardStats {
   };
 }
 
-export const useDashboardStats = () => {
+export const useDashboardStats = (opdFilter?: string) => {
   const { user } = useAuth();
   const { roles, hasRole, isAdmin } = useUserRole();
 
   return useQuery({
-    queryKey: ["dashboardStats", user?.id, roles],
+    queryKey: ["dashboardStats", user?.id, roles, opdFilter],
     queryFn: async (): Promise<DashboardStats> => {
       if (!user) throw new Error("User not authenticated");
 
@@ -140,12 +140,17 @@ export const useDashboardStats = () => {
         .from("spm")
         .select("*, jenis_spm:jenis_spm_id(id, nama_jenis)", { count: "exact" });
 
+      // Apply OPD filter if specified and not "all"
+      if (opdFilter && opdFilter !== "all") {
+        spmQuery = spmQuery.eq("opd_id", opdFilter);
+      }
+
       // Role-based filtering
       if (hasRole("bendahara_opd")) {
         const userOpdId = roles.find((r) => r.role === "bendahara_opd")?.opd_id;
-        if (userOpdId) {
+        if (userOpdId && (!opdFilter || opdFilter === "all")) {
           spmQuery = spmQuery.eq("opd_id", userOpdId);
-        } else {
+        } else if (!opdFilter || opdFilter === "all") {
           spmQuery = spmQuery.eq("bendahara_id", user.id);
         }
       } else if (hasRole("resepsionis")) {
@@ -230,8 +235,15 @@ export const useDashboardStats = () => {
       });
 
       // SP2D Stats - Updated untuk workflow baru tanpa OTP
-      const { data: sp2dData, error: sp2dError } = await supabase.from("sp2d").select("*");
+      let sp2dQuery = supabase.from("sp2d").select("*, spm:spm_id(opd_id)");
+      
+      const { data: sp2dRawData, error: sp2dError } = await sp2dQuery;
       if (sp2dError) throw sp2dError;
+      
+      // Filter SP2D by OPD if filter is applied
+      const sp2dData = opdFilter && opdFilter !== "all"
+        ? sp2dRawData?.filter((sp2d: any) => sp2d.spm?.opd_id === opdFilter)
+        : sp2dRawData;
 
       const totalSp2d = sp2dData?.length || 0;
       const totalSp2dValue = sp2dData?.reduce((sum, sp2d) => sum + Number(sp2d.nilai_sp2d || 0), 0) || 0;
@@ -257,11 +269,16 @@ export const useDashboardStats = () => {
       const failedSp2d = sp2dData?.filter((s) => s.status === "gagal").length || 0;
 
       // OPD Breakdown
-      const { data: opdData, error: opdError } = await supabase
+      let opdBreakdownQuery = supabase
         .from("spm")
         .select("opd_id, nilai_spm, opd:opd_id(nama_opd)")
         .neq("status", "draft");
 
+      if (opdFilter && opdFilter !== "all") {
+        opdBreakdownQuery = opdBreakdownQuery.eq("opd_id", opdFilter);
+      }
+
+      const { data: opdData, error: opdError } = await opdBreakdownQuery;
       if (opdError) throw opdError;
 
       const opdMap = new Map<string, { nama_opd: string; total_spm: number; total_nilai: number }>();

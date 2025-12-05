@@ -18,11 +18,15 @@ interface ActivityItem {
   nilai_spm: number;
 }
 
-export const RecentActivityWidget = () => {
+interface RecentActivityWidgetProps {
+  opdFilter?: string;
+}
+
+export const RecentActivityWidget = ({ opdFilter }: RecentActivityWidgetProps) => {
   const { data: activities, isLoading } = useQuery({
-    queryKey: ["recent-activities"],
+    queryKey: ["recent-activities", opdFilter],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("spm")
         .select(`
           id,
@@ -30,10 +34,17 @@ export const RecentActivityWidget = () => {
           status,
           nilai_spm,
           updated_at,
+          opd_id,
           bendahara:profiles!bendahara_id(full_name)
         `)
         .order("updated_at", { ascending: false })
         .limit(10);
+
+      if (opdFilter && opdFilter !== "all") {
+        query = query.eq("opd_id", opdFilter);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
