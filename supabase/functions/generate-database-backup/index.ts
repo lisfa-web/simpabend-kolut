@@ -6,7 +6,6 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -14,34 +13,42 @@ Deno.serve(async (req) => {
   try {
     console.log('[generate-database-backup] Starting backup generation');
 
-    // Create Supabase client with service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Call database function to get schema
+    // Ambil schema
     console.log('[generate-database-backup] Fetching database schema...');
     const { data: schemaData, error } = await supabase.rpc('get_database_schema');
+    if (error) throw error;
 
-    if (error) {
-      console.error('[generate-database-backup] Error fetching schema:', error);
-      throw error;
+    // Ambil data master
+    console.log('[generate-database-backup] Fetching master data...');
+    const masterDataTables = [
+      'opd', 'master_bank', 'master_pajak', 'jenis_spm', 
+      'vendor', 'pihak_ketiga', 'pajak_per_jenis_spm',
+      'format_nomor', 'config_sistem', 'permissions',
+      'setting_access_control', 'pejabat', 'template_surat',
+      'seo_config', 'panduan_manual'
+    ];
+
+    const masterData: Record<string, any[]> = {};
+    for (const table of masterDataTables) {
+      const { data, error: tableError } = await supabase
+        .from(table)
+        .select('*')
+        .limit(10000);
+      if (!tableError && data && data.length > 0) {
+        masterData[table] = data;
+      }
     }
 
-    console.log('[generate-database-backup] Schema fetched successfully');
-    console.log('[generate-database-backup] Enums:', schemaData.enums?.length || 0);
-    console.log('[generate-database-backup] Tables:', schemaData.tables?.length || 0);
-    console.log('[generate-database-backup] Functions:', schemaData.functions?.length || 0);
-    console.log('[generate-database-backup] Policies:', schemaData.policies?.length || 0);
-    console.log('[generate-database-backup] Triggers:', schemaData.triggers?.length || 0);
+    console.log('[generate-database-backup] Master data fetched:', Object.keys(masterData).length, 'tables');
 
-    // Generate SQL file content
-    const sqlContent = generateSQLBackup(schemaData);
+    // Generate SQL
+    const sqlContent = generateSQLBackup(schemaData, masterData);
+    console.log('[generate-database-backup] SQL generated, length:', sqlContent.length);
 
-    console.log('[generate-database-backup] SQL generated, total length:', sqlContent.length);
-
-    // Return SQL file
     return new Response(sqlContent, {
       headers: {
         ...corsHeaders,
@@ -52,167 +59,308 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[generate-database-backup] Error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
-      JSON.stringify({ 
-        error: errorMessage,
-        details: 'Failed to generate database backup'
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
 
-function generateSQLBackup(schema: any): string {
+// Escape string untuk SQL
+function escapeSql(value: any): string {
+  if (value === null || value === undefined) return 'NULL';
+  if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'object') return `'${JSON.stringify(value).replace(/'/g, "''")}'::jsonb`;
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+// Mapping tipe data dari information_schema ke SQL yang valid
+function mapDataType(col: any): string {
+  const dt = col.data_type;
+  
+  // Enum types yang dikenal
+  const knownEnums = [
+    'app_role', 'jenis_lampiran', 'jenis_notifikasi', 
+    'jenis_pajak', 'status_sp2d', 'status_spm'
+  ];
+  if (knownEnums.includes(dt)) return `public.${dt}`;
+  
+  // Mapping standar
+  switch (dt) {
+    case 'uuid': return 'uuid';
+    case 'boolean': return 'boolean';
+    case 'integer': return 'integer';
+    case 'bigint': return 'bigint';
+    case 'smallint': return 'smallint';
+    case 'numeric': return 'numeric';
+    case 'real': return 'real';
+    case 'double precision': return 'double precision';
+    case 'text': return 'text';
+    case 'jsonb': return 'jsonb';
+    case 'json': return 'json';
+    case 'inet': return 'inet';
+    case 'timestamp with time zone': return 'timestamptz';
+    case 'timestamp without time zone': return 'timestamp';
+    case 'date': return 'date';
+    case 'time with time zone': return 'timetz';
+    case 'time without time zone': return 'time';
+    case 'character varying':
+      return col.character_maximum_length 
+        ? `varchar(${col.character_maximum_length})` 
+        : 'varchar';
+    case 'character':
+      return col.character_maximum_length 
+        ? `char(${col.character_maximum_length})` 
+        : 'char';
+    default:
+      // Coba cek apakah ini enum yang belum dikenal
+      if (!dt.includes(' ') && dt.length < 50) return `public.${dt}`;
+      return 'text';
+  }
+}
+
+function generateSQLBackup(schema: any, masterData: Record<string, any[]>): string {
   const timestamp = new Date().toISOString();
   let sql = `-- ============================================================================
--- COMPLETE DATABASE SCHEMA BACKUP
+-- COMPLETE DATABASE BACKUP (SCHEMA + DATA)
 -- Generated: ${timestamp}
--- System: Sistem Informasi Manajemen SPM & SP2D
+-- System: SIMPA BEND BKADKU - Sistem Informasi Manajemen SPM & SP2D
 -- 
--- This file was automatically generated from the current database state.
--- It contains the complete database schema including:
--- - ENUM Types
--- - Tables with all columns and constraints  
--- - Database Functions
--- - Row Level Security (RLS) Policies
--- - Indexes
--- ============================================================================\n\n`;
+-- Berisi:
+-- 1. ENUM Types
+-- 2. Tables dengan PRIMARY KEY, FOREIGN KEY, UNIQUE constraints
+-- 3. Database Functions
+-- 4. Triggers
+-- 5. Row Level Security (RLS) Policies
+-- 6. Indexes
+-- 7. Master Data (INSERT statements)
+-- 8. Storage Buckets
+-- ============================================================================
 
-  // Section 1: ENUM Types
-  sql += `-- ============================================================================
--- SECTION 1: ENUM TYPES
--- ============================================================================\n\n`;
+-- Persiapan: Aktifkan ekstensi yang diperlukan
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-  if (schema.enums && schema.enums.length > 0) {
+`;
+
+  // ========== SECTION 1: ENUM TYPES ==========
+  sql += sectionHeader('1', 'ENUM TYPES');
+  if (schema.enums?.length > 0) {
     for (const enumType of schema.enums) {
-      sql += `-- Drop existing enum if exists\n`;
-      sql += `DROP TYPE IF EXISTS public.${enumType.name} CASCADE;\n\n`;
-      sql += `-- Create ${enumType.name} enum\n`;
-      sql += `CREATE TYPE public.${enumType.name} AS ENUM (\n`;
-      sql += enumType.values.map((v: string) => `  '${v}'`).join(',\n');
-      sql += `\n);\n\n`;
+      sql += `DO $$ BEGIN\n`;
+      sql += `  CREATE TYPE public.${enumType.name} AS ENUM (\n`;
+      sql += enumType.values.map((v: string) => `    '${v}'`).join(',\n');
+      sql += `\n  );\nEXCEPTION WHEN duplicate_object THEN NULL;\nEND $$;\n\n`;
     }
   }
 
-  // Section 2: Tables
-  sql += `-- ============================================================================
--- SECTION 2: TABLES
--- ============================================================================\n\n`;
+  // ========== SECTION 2: TABLES ==========
+  sql += sectionHeader('2', 'TABLES');
 
-  if (schema.tables && schema.tables.length > 0) {
-    for (const table of schema.tables) {
+  // Kelompokkan constraints per tabel
+  const constraintsByTable: Record<string, any[]> = {};
+  if (schema.constraints?.length > 0) {
+    for (const c of schema.constraints) {
+      if (!constraintsByTable[c.table_name]) constraintsByTable[c.table_name] = [];
+      constraintsByTable[c.table_name].push(c);
+    }
+  }
+
+  // Urutan tabel untuk menghindari masalah foreign key
+  const tableOrder = [
+    'master_bank', 'opd', 'jenis_spm', 'master_pajak', 'profiles',
+    'config_sistem', 'email_config', 'wa_gateway', 'seo_config',
+    'format_nomor', 'permissions', 'setting_access_control',
+    'template_surat', 'panduan_manual', 'dashboard_layout',
+    'user_roles', 'pejabat', 'vendor', 'pihak_ketiga',
+    'spm', 'sp2d', 'lampiran_spm', 'revisi_spm',
+    'potongan_pajak_spm', 'potongan_pajak_sp2d',
+    'notifikasi', 'pin_otp', 'public_token',
+    'audit_log', 'arsip_spm', 'arsip_sp2d',
+    'pajak_per_jenis_spm'
+  ];
+
+  if (schema.tables?.length > 0) {
+    // Urutkan tabel
+    const sortedTables = [...schema.tables].sort((a: any, b: any) => {
+      const ia = tableOrder.indexOf(a.table_name);
+      const ib = tableOrder.indexOf(b.table_name);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+
+    for (const table of sortedTables) {
+      const constraints = constraintsByTable[table.table_name] || [];
+      const pkConstraint = constraints.find((c: any) => c.constraint_type === 'PRIMARY KEY');
+      const uniqueConstraints = constraints.filter((c: any) => c.constraint_type === 'UNIQUE');
+
       sql += `-- Table: ${table.table_name}\n`;
       sql += `CREATE TABLE IF NOT EXISTS public.${table.table_name} (\n`;
-      
-      const columns = table.columns.map((col: any) => {
-        let colDef = `  ${col.column_name} ${col.data_type}`;
-        if (col.is_nullable === 'NO') colDef += ' NOT NULL';
-        if (col.column_default) colDef += ` DEFAULT ${col.column_default}`;
-        return colDef;
-      });
-      
-      sql += columns.join(',\n');
+
+      const colDefs: string[] = [];
+      for (const col of table.columns) {
+        let def = `  ${col.column_name} ${mapDataType(col)}`;
+        if (col.is_nullable === 'NO') def += ' NOT NULL';
+        if (col.column_default) def += ` DEFAULT ${col.column_default}`;
+        colDefs.push(def);
+      }
+
+      // Primary key
+      if (pkConstraint && pkConstraint.column_names) {
+        colDefs.push(`  CONSTRAINT ${pkConstraint.constraint_name} PRIMARY KEY (${pkConstraint.column_names.join(', ')})`);
+      }
+
+      // Unique constraints
+      for (const uc of uniqueConstraints) {
+        if (uc.column_names) {
+          colDefs.push(`  CONSTRAINT ${uc.constraint_name} UNIQUE (${uc.column_names.join(', ')})`);
+        }
+      }
+
+      sql += colDefs.join(',\n');
       sql += `\n);\n\n`;
     }
+
+    // Foreign keys (terpisah agar tidak masalah urutan)
+    sql += `-- Foreign Key Constraints\n`;
+    for (const table of sortedTables) {
+      const constraints = constraintsByTable[table.table_name] || [];
+      const fkConstraints = constraints.filter((c: any) => c.constraint_type === 'FOREIGN KEY');
+      
+      for (const fk of fkConstraints) {
+        if (fk.column_names && fk.foreign_table && fk.foreign_columns) {
+          sql += `ALTER TABLE public.${table.table_name} ADD CONSTRAINT ${fk.constraint_name}\n`;
+          sql += `  FOREIGN KEY (${fk.column_names.join(', ')}) REFERENCES public.${fk.foreign_table}(${fk.foreign_columns.join(', ')});\n`;
+        }
+      }
+    }
+    sql += '\n';
   }
 
-  // Section 3: Database Functions
-  sql += `-- ============================================================================
--- SECTION 3: DATABASE FUNCTIONS
--- ============================================================================\n\n`;
-
-  if (schema.functions && schema.functions.length > 0) {
+  // ========== SECTION 3: FUNCTIONS ==========
+  sql += sectionHeader('3', 'DATABASE FUNCTIONS');
+  if (schema.functions?.length > 0) {
     for (const func of schema.functions) {
       sql += `-- Function: ${func.function_name}\n`;
-      sql += `${func.function_definition}\n\n`;
+      sql += `${func.function_definition};\n\n`;
     }
   }
 
-  // Section 4: Triggers
-  sql += `-- ============================================================================
--- SECTION 4: TRIGGERS
--- ============================================================================\n\n`;
-
-  if (schema.triggers && schema.triggers.length > 0) {
+  // ========== SECTION 4: TRIGGERS ==========
+  sql += sectionHeader('4', 'TRIGGERS');
+  if (schema.triggers?.length > 0) {
     for (const trigger of schema.triggers) {
       sql += `-- Trigger: ${trigger.trigger_name} on ${trigger.table_name}\n`;
+      sql += `DROP TRIGGER IF EXISTS ${trigger.trigger_name} ON public.${trigger.table_name};\n`;
       sql += `${trigger.trigger_definition};\n\n`;
     }
   }
 
-  // Section 5: RLS Policies
-  sql += `-- ============================================================================
--- SECTION 4: ROW LEVEL SECURITY (RLS) POLICIES
--- ============================================================================\n\n`;
-
-  if (schema.policies && schema.policies.length > 0) {
-    // Group policies by table
+  // ========== SECTION 5: RLS ==========
+  sql += sectionHeader('5', 'ROW LEVEL SECURITY (RLS) POLICIES');
+  if (schema.policies?.length > 0) {
     const policiesByTable: Record<string, any[]> = {};
     for (const policy of schema.policies) {
-      const tableName = policy.table_name;
-      if (!policiesByTable[tableName]) {
-        policiesByTable[tableName] = [];
-      }
-      policiesByTable[tableName].push(policy);
+      if (!policiesByTable[policy.table_name]) policiesByTable[policy.table_name] = [];
+      policiesByTable[policy.table_name].push(policy);
     }
 
-    // Generate enable RLS statements
-    sql += `-- Enable RLS on all tables\n`;
+    // Enable RLS
+    sql += `-- Enable RLS\n`;
     for (const tableName of Object.keys(policiesByTable)) {
       sql += `ALTER TABLE ${tableName} ENABLE ROW LEVEL SECURITY;\n`;
     }
-    sql += `\n`;
+    sql += '\n';
 
-    // Generate policies
+    // Create policies
     for (const [tableName, policies] of Object.entries(policiesByTable)) {
-      sql += `-- Policies for ${tableName}\n`;
+      sql += `-- Policies untuk ${tableName}\n`;
       for (const policy of policies) {
-        sql += `CREATE POLICY "${policy.policy_name}" ON ${tableName}\n`;
-        const cmd = policy.policy_cmd || 'ALL';
-        sql += `  FOR ${cmd}\n`;
-        
-        if (policy.policy_qual) {
-          sql += `  USING (${policy.policy_qual})\n`;
-        }
-        if (policy.policy_with_check) {
-          sql += `  WITH CHECK (${policy.policy_with_check})\n`;
-        }
+        const permissive = policy.permissive === 'PERMISSIVE' ? '' : ' AS RESTRICTIVE';
+        sql += `CREATE POLICY "${policy.policy_name}" ON ${tableName}${permissive}\n`;
+        sql += `  FOR ${policy.policy_cmd || 'ALL'}\n`;
+        sql += `  TO public\n`;
+        if (policy.policy_qual) sql += `  USING (${policy.policy_qual})\n`;
+        if (policy.policy_with_check) sql += `  WITH CHECK (${policy.policy_with_check})\n`;
         sql += `;\n\n`;
       }
     }
   }
 
-  // Section 6: Indexes
-  sql += `-- ============================================================================
--- SECTION 5: INDEXES
--- ============================================================================\n\n`;
-
-  if (schema.indexes && schema.indexes.length > 0) {
+  // ========== SECTION 6: INDEXES ==========
+  sql += sectionHeader('6', 'INDEXES');
+  if (schema.indexes?.length > 0) {
     for (const index of schema.indexes) {
-      sql += `-- Index: ${index.index_name} on ${index.table_name}\n`;
-      sql += `${index.index_definition};\n\n`;
+      sql += `-- Index: ${index.index_name}\n`;
+      // Gunakan IF NOT EXISTS
+      const indexDef = index.index_definition.replace('CREATE INDEX', 'CREATE INDEX IF NOT EXISTS')
+        .replace('CREATE UNIQUE INDEX', 'CREATE UNIQUE INDEX IF NOT EXISTS');
+      sql += `${indexDef};\n\n`;
     }
   }
 
-  // Footer
-  sql += `-- ============================================================================
--- END OF BACKUP FILE
--- ============================================================================\n\n`;
+  // ========== SECTION 7: MASTER DATA ==========
+  sql += sectionHeader('7', 'MASTER DATA');
 
-  sql += `-- RESTORE INSTRUCTIONS:
--- 1. Create a new Supabase project or PostgreSQL database
--- 2. Run this SQL file completely
--- 3. Configure storage buckets manually via Supabase Dashboard
--- 4. Set up authentication triggers (auth.users trigger)
--- 5. Create first super_admin user and assign role manually
--- 6. Test all RLS policies and permissions
+  // Urutan insert sesuai dependensi
+  const insertOrder = [
+    'config_sistem', 'seo_config', 'setting_access_control',
+    'master_bank', 'opd', 'jenis_spm', 'master_pajak',
+    'format_nomor', 'permissions', 'template_surat',
+    'pejabat', 'vendor', 'pihak_ketiga',
+    'pajak_per_jenis_spm', 'panduan_manual'
+  ];
+
+  for (const tableName of insertOrder) {
+    const rows = masterData[tableName];
+    if (!rows || rows.length === 0) continue;
+
+    sql += `-- Data: ${tableName} (${rows.length} rows)\n`;
+    
+    const columns = Object.keys(rows[0]);
+    sql += `INSERT INTO public.${tableName} (${columns.join(', ')})\nVALUES\n`;
+
+    const valueSets: string[] = [];
+    for (const row of rows) {
+      const values = columns.map(col => escapeSql(row[col]));
+      valueSets.push(`  (${values.join(', ')})`);
+    }
+    sql += valueSets.join(',\n');
+    sql += `\nON CONFLICT (id) DO NOTHING;\n\n`;
+  }
+
+  // ========== SECTION 8: STORAGE BUCKETS ==========
+  sql += sectionHeader('8', 'STORAGE BUCKETS');
+  sql += `-- Buat storage buckets
+INSERT INTO storage.buckets (id, name, public) VALUES ('ttd-pejabat', 'ttd-pejabat', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('system-logos', 'system-logos', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('kop-surat', 'kop-surat', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO storage.buckets (id, name, public) VALUES ('spm-documents', 'spm-documents', true) ON CONFLICT (id) DO NOTHING;
+
+`;
+
+  // ========== FOOTER ==========
+  sql += `-- ============================================================================
+-- END OF BACKUP
+-- ============================================================================
+
+-- INSTRUKSI RESTORE:
+-- 1. Buat project baru atau database PostgreSQL baru
+-- 2. Jalankan file SQL ini secara lengkap
+-- 3. Buat trigger handle_new_user pada auth.users (via Supabase Dashboard)
+-- 4. Buat user super_admin pertama dan assign role secara manual
+-- 5. Upload file/asset ke storage buckets yang sudah dibuat
+-- 6. Test semua RLS policies dan permissions
+-- 7. Deploy edge functions
 -- 
--- Generated at: ${timestamp}
+-- Generated: ${timestamp}
 -- ============================================================================\n`;
 
   return sql;
+}
+
+function sectionHeader(num: string, title: string): string {
+  return `-- ============================================================================
+-- SECTION ${num}: ${title}
+-- ============================================================================\n\n`;
 }
