@@ -81,133 +81,298 @@ async function generateCompleteBackup(supabase: any): Promise<string> {
   if (error) throw error;
 
   const timestamp = new Date().toISOString();
+
+  // ===== Fetch semua data =====
+  const fetchAll = async (table: string) => {
+    const { data } = await supabase.from(table).select('*').order('created_at', { ascending: true }).limit(50000);
+    return data || [];
+  };
+
+  // Master data
+  const masterTables = ['config_sistem','seo_config','setting_access_control','master_bank','opd','jenis_spm','master_pajak','format_nomor','permissions','template_surat','pejabat','vendor','pihak_ketiga','pajak_per_jenis_spm','panduan_manual','email_config','wa_gateway','dashboard_layout'];
+  const masterData: Record<string, any[]> = {};
+  for (const t of masterTables) {
+    masterData[t] = await fetchAll(t);
+  }
+
+  // User data
+  const profiles = await fetchAll('profiles');
+  const userRoles = await fetchAll('user_roles');
+
+  // Transaction data
+  const spmData = await fetchAll('spm');
+  const sp2dData = await fetchAll('sp2d');
+  const lampiranData = await fetchAll('lampiran_spm');
+  const revisiData = await fetchAll('revisi_spm');
+  const pajakSpmData = await fetchAll('potongan_pajak_spm');
+  const pajakSp2dData = await fetchAll('potongan_pajak_sp2d');
+  const pinOtpData = await fetchAll('pin_otp');
+  const publicTokenData = await fetchAll('public_token');
+
+  // Operational data
+  const notifikasiData = await fetchAll('notifikasi');
+  const auditLogData = await fetchAll('audit_log');
+  const arsipSpmData = await fetchAll('arsip_spm');
+  const arsipSp2dData = await fetchAll('arsip_sp2d');
+
+  // Hitung total rows
+  const totalMaster = Object.values(masterData).reduce((s, a) => s + a.length, 0);
+  const totalUser = profiles.length + userRoles.length;
+  const totalTx = spmData.length + sp2dData.length + lampiranData.length + revisiData.length + pajakSpmData.length + pajakSp2dData.length + pinOtpData.length + publicTokenData.length;
+  const totalOps = notifikasiData.length + auditLogData.length + arsipSpmData.length + arsipSp2dData.length;
+  const totalRows = totalMaster + totalUser + totalTx + totalOps;
+
   let sql = `-- ============================================================================
--- COMPLETE DATABASE SCHEMA BACKUP
+-- COMPLETE DATABASE BACKUP (SCHEMA + ALL DATA)
 -- Generated: ${timestamp}
--- System: Sistem Informasi Manajemen SPM & SP2D
+-- System: SIMPA BEND BKADKU - Sistem Informasi Manajemen SPM & SP2D
+-- Total Data: ${totalRows} rows
+-- 
+-- Berisi:
+-- 1. ENUM Types
+-- 2. Tables dengan PRIMARY KEY, FOREIGN KEY, UNIQUE constraints
+-- 3. Database Functions
+-- 4. Triggers
+-- 5. Row Level Security (RLS) Policies
+-- 6. Indexes
+-- 7. Master Data & Konfigurasi (${totalMaster} rows)
+-- 8. Data User & Roles (${totalUser} rows)
+-- 9. Data Transaksi - SPM, SP2D, Pajak, Lampiran (${totalTx} rows)
+-- 10. Data Operasional - Notifikasi, Audit, Arsip (${totalOps} rows)
+-- 11. Storage Buckets
 -- ============================================================================
 
 -- IMPORTANT: Run this script on a fresh PostgreSQL/Supabase database
--- Order of execution: ENUMs -> Tables -> Functions -> Triggers -> RLS -> Indexes
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 `;
 
-  // ENUMS
-  sql += `-- ============================================================================
--- SECTION 1: ENUM TYPES
--- ============================================================================\n\n`;
-
+  // ===== SECTION 1: ENUM TYPES =====
+  sql += sectionHdr('1', 'ENUM TYPES');
   if (schema.enums?.length > 0) {
     for (const e of schema.enums) {
-      sql += `DROP TYPE IF EXISTS public.${e.name} CASCADE;\n`;
-      sql += `CREATE TYPE public.${e.name} AS ENUM (\n`;
-      sql += e.values.map((v: string) => `  '${v}'`).join(',\n');
-      sql += `\n);\n\n`;
+      sql += `DO $$ BEGIN\n  CREATE TYPE public.${e.name} AS ENUM (\n`;
+      sql += e.values.map((v: string) => `    '${v}'`).join(',\n');
+      sql += `\n  );\nEXCEPTION WHEN duplicate_object THEN NULL;\nEND $$;\n\n`;
     }
   }
 
-  // TABLES
-  sql += `-- ============================================================================
--- SECTION 2: TABLES
--- ============================================================================\n\n`;
+  // ===== SECTION 2: TABLES =====
+  sql += sectionHdr('2', 'TABLES');
+
+  // Kelompokkan constraints
+  const constraintsByTable: Record<string, any[]> = {};
+  if (schema.constraints?.length > 0) {
+    for (const c of schema.constraints) {
+      if (!constraintsByTable[c.table_name]) constraintsByTable[c.table_name] = [];
+      constraintsByTable[c.table_name].push(c);
+    }
+  }
+
+  const tableOrder = [
+    'master_bank','opd','jenis_spm','master_pajak','profiles',
+    'config_sistem','email_config','wa_gateway','seo_config',
+    'format_nomor','permissions','setting_access_control',
+    'template_surat','panduan_manual','dashboard_layout',
+    'user_roles','pejabat','vendor','pihak_ketiga',
+    'spm','sp2d','lampiran_spm','revisi_spm',
+    'potongan_pajak_spm','potongan_pajak_sp2d',
+    'notifikasi','pin_otp','public_token',
+    'audit_log','arsip_spm','arsip_sp2d','pajak_per_jenis_spm'
+  ];
 
   if (schema.tables?.length > 0) {
-    for (const t of schema.tables) {
-      sql += `-- Table: ${t.table_name}\n`;
-      sql += `CREATE TABLE IF NOT EXISTS public.${t.table_name} (\n`;
-      const cols = t.columns.map((c: any) => {
-        let def = `  ${c.column_name} ${c.data_type}`;
+    const sorted = [...schema.tables].sort((a: any, b: any) => {
+      const ia = tableOrder.indexOf(a.table_name);
+      const ib = tableOrder.indexOf(b.table_name);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    });
+
+    for (const t of sorted) {
+      const cons = constraintsByTable[t.table_name] || [];
+      const pk = cons.find((c: any) => c.constraint_type === 'PRIMARY KEY');
+      const uqs = cons.filter((c: any) => c.constraint_type === 'UNIQUE');
+
+      sql += `-- Table: ${t.table_name}\nCREATE TABLE IF NOT EXISTS public.${t.table_name} (\n`;
+      const colDefs: string[] = [];
+      for (const c of t.columns) {
+        const dt = c.data_type === 'USER-DEFINED' ? c.udt_name || c.data_type : c.data_type;
+        let def = `  ${c.column_name} ${mapColType(c, dt)}`;
         if (c.is_nullable === 'NO') def += ' NOT NULL';
         if (c.column_default) def += ` DEFAULT ${c.column_default}`;
-        return def;
-      });
-      sql += cols.join(',\n') + `\n);\n\n`;
+        colDefs.push(def);
+      }
+      if (pk?.column_names) colDefs.push(`  CONSTRAINT ${pk.constraint_name} PRIMARY KEY (${pk.column_names.join(', ')})`);
+      for (const u of uqs) { if (u.column_names) colDefs.push(`  CONSTRAINT ${u.constraint_name} UNIQUE (${u.column_names.join(', ')})`); }
+      sql += colDefs.join(',\n') + `\n);\n\n`;
     }
+
+    // Foreign keys
+    sql += `-- Foreign Key Constraints\n`;
+    for (const t of sorted) {
+      const fks = (constraintsByTable[t.table_name] || []).filter((c: any) => c.constraint_type === 'FOREIGN KEY');
+      for (const fk of fks) {
+        if (fk.column_names && fk.foreign_table && fk.foreign_columns) {
+          sql += `ALTER TABLE public.${t.table_name} ADD CONSTRAINT ${fk.constraint_name}\n  FOREIGN KEY (${fk.column_names.join(', ')}) REFERENCES public.${fk.foreign_table}(${fk.foreign_columns.join(', ')});\n`;
+        }
+      }
+    }
+    sql += '\n';
   }
 
-  // FUNCTIONS
-  sql += `-- ============================================================================
--- SECTION 3: DATABASE FUNCTIONS
--- ============================================================================\n\n`;
-
+  // ===== SECTION 3: FUNCTIONS =====
+  sql += sectionHdr('3', 'DATABASE FUNCTIONS');
   if (schema.functions?.length > 0) {
     for (const f of schema.functions) {
-      sql += `-- Function: ${f.function_name}\n`;
-      sql += `${f.function_definition}\n\n`;
+      sql += `-- Function: ${f.function_name}\n${f.function_definition};\n\n`;
     }
   }
 
-  // TRIGGERS
-  sql += `-- ============================================================================
--- SECTION 4: TRIGGERS
--- ============================================================================\n\n`;
-
+  // ===== SECTION 4: TRIGGERS =====
+  sql += sectionHdr('4', 'TRIGGERS');
   if (schema.triggers?.length > 0) {
     for (const t of schema.triggers) {
-      sql += `-- Trigger: ${t.trigger_name} on ${t.table_name}\n`;
-      sql += `${t.trigger_definition};\n\n`;
+      sql += `DROP TRIGGER IF EXISTS ${t.trigger_name} ON public.${t.table_name};\n${t.trigger_definition};\n\n`;
     }
   }
 
-  // RLS
-  sql += await generateRLSSection(schema);
+  // ===== SECTION 5: RLS =====
+  sql += generateRLSSection(schema);
 
-  // INDEXES
-  sql += `-- ============================================================================
--- SECTION 6: INDEXES
--- ============================================================================\n\n`;
-
+  // ===== SECTION 6: INDEXES =====
+  sql += sectionHdr('6', 'INDEXES');
   if (schema.indexes?.length > 0) {
     for (const i of schema.indexes) {
-      sql += `-- Index: ${i.index_name}\n${i.index_definition};\n\n`;
+      const def = i.index_definition.replace('CREATE INDEX', 'CREATE INDEX IF NOT EXISTS').replace('CREATE UNIQUE INDEX', 'CREATE UNIQUE INDEX IF NOT EXISTS');
+      sql += `${def};\n\n`;
     }
   }
 
-  // STORAGE BUCKETS
-  sql += `-- ============================================================================
--- SECTION 7: STORAGE BUCKETS (Manual Setup Required)
--- ============================================================================
--- Create these buckets in Supabase Dashboard → Storage:
--- 
--- 1. ttd-pejabat (public)
--- 2. system-logos (public)
--- 3. kop-surat (public)
--- 4. spm-documents (public)
---
--- Storage policies need to be configured manually via Dashboard.
--- ============================================================================\n\n`;
+  // ===== SECTION 7: MASTER DATA =====
+  sql += sectionHdr('7', 'MASTER DATA & KONFIGURASI');
+  for (const t of masterTables) {
+    const rows = masterData[t];
+    if (rows?.length > 0) sql += bulkInsert(t, rows);
+  }
 
-  // RESTORE INSTRUCTIONS
+  // ===== SECTION 8: USER DATA =====
+  sql += sectionHdr('8', 'DATA USER & ROLES');
+  if (profiles.length > 0) sql += bulkInsert('profiles', profiles);
+  if (userRoles.length > 0) sql += bulkInsert('user_roles', userRoles);
+
+  // ===== SECTION 9: TRANSACTION DATA =====
+  sql += sectionHdr('9', 'DATA TRANSAKSI (SPM, SP2D)');
+  if (spmData.length > 0) sql += bulkInsert('spm', spmData);
+  if (sp2dData.length > 0) sql += bulkInsert('sp2d', sp2dData);
+  if (lampiranData.length > 0) sql += bulkInsert('lampiran_spm', lampiranData);
+  if (revisiData.length > 0) sql += bulkInsert('revisi_spm', revisiData);
+  if (pajakSpmData.length > 0) sql += bulkInsert('potongan_pajak_spm', pajakSpmData);
+  if (pajakSp2dData.length > 0) sql += bulkInsert('potongan_pajak_sp2d', pajakSp2dData);
+  if (pinOtpData.length > 0) sql += bulkInsert('pin_otp', pinOtpData);
+  if (publicTokenData.length > 0) sql += bulkInsert('public_token', publicTokenData);
+
+  // ===== SECTION 10: OPERATIONAL DATA =====
+  sql += sectionHdr('10', 'DATA OPERASIONAL');
+  if (notifikasiData.length > 0) sql += bulkInsert('notifikasi', notifikasiData);
+  if (auditLogData.length > 0) sql += bulkInsert('audit_log', auditLogData);
+  if (arsipSpmData.length > 0) sql += bulkInsert('arsip_spm', arsipSpmData);
+  if (arsipSp2dData.length > 0) sql += bulkInsert('arsip_sp2d', arsipSp2dData);
+
+  // ===== SECTION 11: STORAGE BUCKETS =====
+  sql += sectionHdr('11', 'STORAGE BUCKETS');
+  sql += `INSERT INTO storage.buckets (id, name, public) VALUES ('ttd-pejabat', 'ttd-pejabat', true) ON CONFLICT (id) DO NOTHING;\n`;
+  sql += `INSERT INTO storage.buckets (id, name, public) VALUES ('system-logos', 'system-logos', true) ON CONFLICT (id) DO NOTHING;\n`;
+  sql += `INSERT INTO storage.buckets (id, name, public) VALUES ('kop-surat', 'kop-surat', true) ON CONFLICT (id) DO NOTHING;\n`;
+  sql += `INSERT INTO storage.buckets (id, name, public) VALUES ('spm-documents', 'spm-documents', true) ON CONFLICT (id) DO NOTHING;\n\n`;
+
+  // ===== FOOTER =====
   sql += `-- ============================================================================
--- RESTORE INSTRUCTIONS
+-- END OF BACKUP
 -- ============================================================================
 -- 
--- For LOCAL PostgreSQL:
--- 1. Create database: CREATE DATABASE spm_sp2d;
--- 2. Run: psql -d spm_sp2d -f complete-backup.sql
--- 
--- For VPS with Supabase Self-Hosted:
--- 1. Set up Supabase using docker-compose
--- 2. Connect to PostgreSQL and run this SQL
--- 3. Configure storage buckets
--- 4. Set up Edge Functions (see edge-functions export)
--- 
--- For New Supabase Cloud Project:
--- 1. Go to SQL Editor in Dashboard
--- 2. Run this script section by section
--- 3. Configure storage & auth via Dashboard
--- 
--- POST-RESTORE STEPS:
--- 1. Create auth trigger: CREATE TRIGGER on_auth_user_created
+-- INSTRUKSI RESTORE:
+-- 1. Buat project/database PostgreSQL baru
+-- 2. Jalankan file SQL ini secara lengkap
+-- 3. Buat trigger: CREATE TRIGGER on_auth_user_created
 --    AFTER INSERT ON auth.users FOR EACH ROW
 --    EXECUTE FUNCTION public.handle_new_user();
--- 2. Create first super_admin user manually
--- 3. Test all RLS policies
+-- 4. Buat user super_admin pertama dan assign role
+-- 5. Upload file/asset ke storage buckets
+-- 6. Test semua RLS policies dan permissions
+-- 7. Deploy edge functions dari codebase
+-- 
+-- CATATAN:
+-- - Data user (profiles) di-backup TANPA password
+-- - Edge functions tidak termasuk (ada di codebase)
+-- - File storage tidak termasuk (hanya struktur bucket)
 -- 
 -- Generated: ${timestamp}
 -- ============================================================================\n`;
 
   return sql;
+}
+
+// Helper: mapping tipe kolom
+function mapColType(col: any, dt: string): string {
+  const knownEnums = ['app_role','jenis_lampiran','jenis_notifikasi','jenis_pajak','status_sp2d','status_spm'];
+  if (knownEnums.includes(dt)) return `public.${dt}`;
+  switch (dt) {
+    case 'uuid': return 'uuid';
+    case 'boolean': return 'boolean';
+    case 'integer': return 'integer';
+    case 'bigint': return 'bigint';
+    case 'smallint': return 'smallint';
+    case 'numeric': return 'numeric';
+    case 'real': return 'real';
+    case 'double precision': return 'double precision';
+    case 'text': return 'text';
+    case 'jsonb': return 'jsonb';
+    case 'json': return 'json';
+    case 'inet': return 'inet';
+    case 'timestamp with time zone': return 'timestamptz';
+    case 'timestamp without time zone': return 'timestamp';
+    case 'date': return 'date';
+    case 'character varying':
+      return col.character_maximum_length ? `varchar(${col.character_maximum_length})` : 'varchar';
+    case 'character':
+      return col.character_maximum_length ? `char(${col.character_maximum_length})` : 'char';
+    default:
+      if (!dt.includes(' ') && dt.length < 50) return `public.${dt}`;
+      return 'text';
+  }
+}
+
+// Helper: bulk INSERT
+function bulkInsert(tableName: string, rows: any[]): string {
+  if (!rows?.length) return '';
+  const columns = Object.keys(rows[0]);
+  let sql = `-- Data: ${tableName} (${rows.length} rows)\n`;
+  
+  const batchSize = 500;
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batch = rows.slice(i, i + batchSize);
+    sql += `INSERT INTO public.${tableName} (${columns.join(', ')})\nVALUES\n`;
+    const sets: string[] = [];
+    for (const row of batch) {
+      const vals = columns.map(col => escVal(row[col]));
+      sets.push(`  (${vals.join(', ')})`);
+    }
+    sql += sets.join(',\n') + `\nON CONFLICT (id) DO NOTHING;\n\n`;
+  }
+  return sql;
+}
+
+function escVal(value: any): string {
+  if (value === null || value === undefined) return 'NULL';
+  if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
+  if (typeof value === 'number') return String(value);
+  if (typeof value === 'object') return `'${JSON.stringify(value).replace(/'/g, "''")}'::jsonb`;
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function sectionHdr(num: string, title: string): string {
+  return `-- ============================================================================\n-- SECTION ${num}: ${title}\n-- ============================================================================\n\n`;
 }
 
 // ============================================================================
