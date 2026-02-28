@@ -24,29 +24,62 @@ Deno.serve(async (req) => {
 
     // Ambil data master
     console.log('[generate-database-backup] Fetching master data...');
+    // Tabel master data
     const masterDataTables = [
       'opd', 'master_bank', 'master_pajak', 'jenis_spm', 
       'vendor', 'pihak_ketiga', 'pajak_per_jenis_spm',
       'format_nomor', 'config_sistem', 'permissions',
       'setting_access_control', 'pejabat', 'template_surat',
-      'seo_config', 'panduan_manual'
+      'seo_config', 'panduan_manual', 'email_config', 'wa_gateway',
+      'dashboard_layout'
     ];
 
-    const masterData: Record<string, any[]> = {};
-    for (const table of masterDataTables) {
-      const { data, error: tableError } = await supabase
-        .from(table)
-        .select('*')
-        .limit(10000);
-      if (!tableError && data && data.length > 0) {
-        masterData[table] = data;
-      }
-    }
+    // Tabel user & roles
+    const userDataTables = [
+      'profiles', 'user_roles'
+    ];
 
+    // Tabel transaksi
+    const transactionTables = [
+      'spm', 'sp2d', 'lampiran_spm', 'revisi_spm',
+      'potongan_pajak_spm', 'potongan_pajak_sp2d',
+      'public_token', 'pin_otp'
+    ];
+
+    // Tabel operasional
+    const operationalTables = [
+      'notifikasi', 'audit_log', 'arsip_spm', 'arsip_sp2d'
+    ];
+
+    // Fungsi helper untuk fetch data dari tabel
+    const fetchTableData = async (tables: string[]): Promise<Record<string, any[]>> => {
+      const result: Record<string, any[]> = {};
+      for (const table of tables) {
+        const { data, error: tableError } = await supabase
+          .from(table)
+          .select('*')
+          .limit(50000);
+        if (!tableError && data && data.length > 0) {
+          result[table] = data;
+        }
+      }
+      return result;
+    };
+
+    const masterData = await fetchTableData(masterDataTables);
     console.log('[generate-database-backup] Master data fetched:', Object.keys(masterData).length, 'tables');
 
+    const userData = await fetchTableData(userDataTables);
+    console.log('[generate-database-backup] User data fetched:', Object.keys(userData).length, 'tables');
+
+    const transactionData = await fetchTableData(transactionTables);
+    console.log('[generate-database-backup] Transaction data fetched:', Object.keys(transactionData).length, 'tables');
+
+    const operationalData = await fetchTableData(operationalTables);
+    console.log('[generate-database-backup] Operational data fetched:', Object.keys(operationalData).length, 'tables');
+
     // Generate SQL
-    const sqlContent = generateSQLBackup(schemaData, masterData);
+    const sqlContent = generateSQLBackup(schemaData, masterData, userData, transactionData, operationalData);
     console.log('[generate-database-backup] SQL generated, length:', sqlContent.length);
 
     return new Response(sqlContent, {
@@ -120,12 +153,55 @@ function mapDataType(col: any): string {
   }
 }
 
-function generateSQLBackup(schema: any, masterData: Record<string, any[]>): string {
+// Helper: generate INSERT statements untuk sebuah dataset
+function generateInsertStatements(data: Record<string, any[]>, insertOrder: string[], sectionNum: string, sectionTitle: string): string {
+  let sql = sectionHeader(sectionNum, sectionTitle);
+  
+  for (const tableName of insertOrder) {
+    const rows = data[tableName];
+    if (!rows || rows.length === 0) continue;
+
+    sql += `-- Data: ${tableName} (${rows.length} rows)\n`;
+    
+    const columns = Object.keys(rows[0]);
+    
+    // Batch insert per 500 rows untuk menghindari SQL terlalu besar
+    const batchSize = 500;
+    for (let i = 0; i < rows.length; i += batchSize) {
+      const batch = rows.slice(i, i + batchSize);
+      sql += `INSERT INTO public.${tableName} (${columns.join(', ')})\nVALUES\n`;
+
+      const valueSets: string[] = [];
+      for (const row of batch) {
+        const values = columns.map(col => escapeSql(row[col]));
+        valueSets.push(`  (${values.join(', ')})`);
+      }
+      sql += valueSets.join(',\n');
+      sql += `\nON CONFLICT (id) DO NOTHING;\n\n`;
+    }
+  }
+  
+  return sql;
+}
+
+function generateSQLBackup(
+  schema: any, 
+  masterData: Record<string, any[]>,
+  userData: Record<string, any[]>,
+  transactionData: Record<string, any[]>,
+  operationalData: Record<string, any[]>
+): string {
   const timestamp = new Date().toISOString();
+  
+  // Hitung total rows
+  const countRows = (d: Record<string, any[]>) => Object.values(d).reduce((sum, arr) => sum + arr.length, 0);
+  const totalRows = countRows(masterData) + countRows(userData) + countRows(transactionData) + countRows(operationalData);
+  
   let sql = `-- ============================================================================
--- COMPLETE DATABASE BACKUP (SCHEMA + DATA)
+-- COMPLETE DATABASE BACKUP (SCHEMA + ALL DATA)
 -- Generated: ${timestamp}
 -- System: SIMPA BEND BKADKU - Sistem Informasi Manajemen SPM & SP2D
+-- Total Data: ${totalRows} rows
 -- 
 -- Berisi:
 -- 1. ENUM Types
@@ -134,8 +210,11 @@ function generateSQLBackup(schema: any, masterData: Record<string, any[]>): stri
 -- 4. Triggers
 -- 5. Row Level Security (RLS) Policies
 -- 6. Indexes
--- 7. Master Data (INSERT statements)
--- 8. Storage Buckets
+-- 7. Master Data & Konfigurasi
+-- 8. Data User & Roles
+-- 9. Data Transaksi (SPM, SP2D, Potongan Pajak, Lampiran)
+-- 10. Data Operasional (Notifikasi, Audit Log, Arsip)
+-- 11. Storage Buckets
 -- ============================================================================
 
 -- Persiapan: Aktifkan ekstensi yang diperlukan
@@ -158,7 +237,6 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
   // ========== SECTION 2: TABLES ==========
   sql += sectionHeader('2', 'TABLES');
 
-  // Kelompokkan constraints per tabel
   const constraintsByTable: Record<string, any[]> = {};
   if (schema.constraints?.length > 0) {
     for (const c of schema.constraints) {
@@ -167,7 +245,6 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
     }
   }
 
-  // Urutan tabel untuk menghindari masalah foreign key
   const tableOrder = [
     'master_bank', 'opd', 'jenis_spm', 'master_pajak', 'profiles',
     'config_sistem', 'email_config', 'wa_gateway', 'seo_config',
@@ -182,7 +259,6 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
   ];
 
   if (schema.tables?.length > 0) {
-    // Urutkan tabel
     const sortedTables = [...schema.tables].sort((a: any, b: any) => {
       const ia = tableOrder.indexOf(a.table_name);
       const ib = tableOrder.indexOf(b.table_name);
@@ -205,12 +281,10 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
         colDefs.push(def);
       }
 
-      // Primary key
       if (pkConstraint && pkConstraint.column_names) {
         colDefs.push(`  CONSTRAINT ${pkConstraint.constraint_name} PRIMARY KEY (${pkConstraint.column_names.join(', ')})`);
       }
 
-      // Unique constraints
       for (const uc of uniqueConstraints) {
         if (uc.column_names) {
           colDefs.push(`  CONSTRAINT ${uc.constraint_name} UNIQUE (${uc.column_names.join(', ')})`);
@@ -221,7 +295,6 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
       sql += `\n);\n\n`;
     }
 
-    // Foreign keys (terpisah agar tidak masalah urutan)
     sql += `-- Foreign Key Constraints\n`;
     for (const table of sortedTables) {
       const constraints = constraintsByTable[table.table_name] || [];
@@ -265,14 +338,12 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
       policiesByTable[policy.table_name].push(policy);
     }
 
-    // Enable RLS
     sql += `-- Enable RLS\n`;
     for (const tableName of Object.keys(policiesByTable)) {
       sql += `ALTER TABLE ${tableName} ENABLE ROW LEVEL SECURITY;\n`;
     }
     sql += '\n';
 
-    // Create policies
     for (const [tableName, policies] of Object.entries(policiesByTable)) {
       sql += `-- Policies untuk ${tableName}\n`;
       for (const policy of policies) {
@@ -292,7 +363,6 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
   if (schema.indexes?.length > 0) {
     for (const index of schema.indexes) {
       sql += `-- Index: ${index.index_name}\n`;
-      // Gunakan IF NOT EXISTS
       const indexDef = index.index_definition.replace('CREATE INDEX', 'CREATE INDEX IF NOT EXISTS')
         .replace('CREATE UNIQUE INDEX', 'CREATE UNIQUE INDEX IF NOT EXISTS');
       sql += `${indexDef};\n\n`;
@@ -300,37 +370,36 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
   }
 
   // ========== SECTION 7: MASTER DATA ==========
-  sql += sectionHeader('7', 'MASTER DATA');
-
-  // Urutan insert sesuai dependensi
-  const insertOrder = [
+  const masterInsertOrder = [
     'config_sistem', 'seo_config', 'setting_access_control',
     'master_bank', 'opd', 'jenis_spm', 'master_pajak',
     'format_nomor', 'permissions', 'template_surat',
     'pejabat', 'vendor', 'pihak_ketiga',
-    'pajak_per_jenis_spm', 'panduan_manual'
+    'pajak_per_jenis_spm', 'panduan_manual',
+    'email_config', 'wa_gateway', 'dashboard_layout'
   ];
+  sql += generateInsertStatements(masterData, masterInsertOrder, '7', 'MASTER DATA & KONFIGURASI');
 
-  for (const tableName of insertOrder) {
-    const rows = masterData[tableName];
-    if (!rows || rows.length === 0) continue;
+  // ========== SECTION 8: USER DATA ==========
+  const userInsertOrder = ['profiles', 'user_roles'];
+  sql += generateInsertStatements(userData, userInsertOrder, '8', 'DATA USER & ROLES');
 
-    sql += `-- Data: ${tableName} (${rows.length} rows)\n`;
-    
-    const columns = Object.keys(rows[0]);
-    sql += `INSERT INTO public.${tableName} (${columns.join(', ')})\nVALUES\n`;
+  // ========== SECTION 9: TRANSACTION DATA ==========
+  const transactionInsertOrder = [
+    'spm', 'sp2d', 'lampiran_spm', 'revisi_spm',
+    'potongan_pajak_spm', 'potongan_pajak_sp2d',
+    'public_token', 'pin_otp'
+  ];
+  sql += generateInsertStatements(transactionData, transactionInsertOrder, '9', 'DATA TRANSAKSI (SPM, SP2D)');
 
-    const valueSets: string[] = [];
-    for (const row of rows) {
-      const values = columns.map(col => escapeSql(row[col]));
-      valueSets.push(`  (${values.join(', ')})`);
-    }
-    sql += valueSets.join(',\n');
-    sql += `\nON CONFLICT (id) DO NOTHING;\n\n`;
-  }
+  // ========== SECTION 10: OPERATIONAL DATA ==========
+  const operationalInsertOrder = [
+    'notifikasi', 'audit_log', 'arsip_spm', 'arsip_sp2d'
+  ];
+  sql += generateInsertStatements(operationalData, operationalInsertOrder, '10', 'DATA OPERASIONAL');
 
-  // ========== SECTION 8: STORAGE BUCKETS ==========
-  sql += sectionHeader('8', 'STORAGE BUCKETS');
+  // ========== SECTION 11: STORAGE BUCKETS ==========
+  sql += sectionHeader('11', 'STORAGE BUCKETS');
   sql += `-- Buat storage buckets
 INSERT INTO storage.buckets (id, name, public) VALUES ('ttd-pejabat', 'ttd-pejabat', true) ON CONFLICT (id) DO NOTHING;
 INSERT INTO storage.buckets (id, name, public) VALUES ('system-logos', 'system-logos', true) ON CONFLICT (id) DO NOTHING;
@@ -347,11 +416,16 @@ INSERT INTO storage.buckets (id, name, public) VALUES ('spm-documents', 'spm-doc
 -- INSTRUKSI RESTORE:
 -- 1. Buat project baru atau database PostgreSQL baru
 -- 2. Jalankan file SQL ini secara lengkap
--- 3. Buat trigger handle_new_user pada auth.users (via Supabase Dashboard)
+-- 3. Buat trigger handle_new_user pada auth.users (via Dashboard)
 -- 4. Buat user super_admin pertama dan assign role secara manual
 -- 5. Upload file/asset ke storage buckets yang sudah dibuat
 -- 6. Test semua RLS policies dan permissions
--- 7. Deploy edge functions
+-- 7. Deploy edge functions dari codebase
+-- 
+-- CATATAN:
+-- - Data user (profiles) di-backup TANPA password (dikelola oleh auth system)
+-- - Edge functions tidak termasuk dalam backup SQL (ada di codebase/repository)
+-- - File di storage buckets tidak termasuk (hanya struktur bucket)
 -- 
 -- Generated: ${timestamp}
 -- ============================================================================\n`;
