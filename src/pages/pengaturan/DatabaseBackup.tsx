@@ -396,18 +396,21 @@ const DatabaseBackup = () => {
         </Alert>
 
         {/* Complete Backup */}
-        <Card>
+        <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              Complete SQL Schema
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Complete SQL Backup
+              </CardTitle>
+              <Badge className="bg-primary/10 text-primary border-primary/20">~1.3 MB</Badge>
+            </div>
             <CardDescription>
-              Backup lengkap struktur database (ENUM, Tables, Functions, Triggers, RLS, Indexes)
+              Backup lengkap seluruh database: Schema, Master Data, User & Roles, Transaksi SPM/SP2D, dan Data Operasional
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
               <div className="space-y-1 text-center p-3 bg-muted/50 rounded-lg">
                 <p className="text-2xl font-bold">6</p>
                 <p className="text-xs text-muted-foreground">ENUM Types</p>
@@ -425,18 +428,33 @@ const DatabaseBackup = () => {
                 <p className="text-xs text-muted-foreground">RLS Policies</p>
               </div>
               <div className="space-y-1 text-center p-3 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold">1,231</p>
+                <p className="text-xs text-muted-foreground">Data Rows</p>
+              </div>
+              <div className="space-y-1 text-center p-3 bg-muted/50 rounded-lg">
                 <p className="text-2xl font-bold">20</p>
                 <p className="text-xs text-muted-foreground">Edge Functions</p>
+              </div>
+              <div className="space-y-1 text-center p-3 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold">4</p>
+                <p className="text-xs text-muted-foreground">Storage Buckets</p>
+              </div>
+              <div className="space-y-1 text-center p-3 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold">11</p>
+                <p className="text-xs text-muted-foreground">Sections</p>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline">ENUMs</Badge>
               <Badge variant="outline">Tables + Constraints</Badge>
-              <Badge variant="outline">Functions</Badge>
-              <Badge variant="outline">Triggers</Badge>
-              <Badge variant="outline">RLS Policies</Badge>
-              <Badge variant="outline">Indexes</Badge>
+              <Badge variant="outline">Functions & Triggers</Badge>
+              <Badge variant="outline">RLS Policies & Indexes</Badge>
+              <Badge variant="outline">Master Data & Config</Badge>
+              <Badge variant="outline">Users & Roles</Badge>
+              <Badge variant="outline">SPM & SP2D</Badge>
+              <Badge variant="outline">Audit Log & Arsip</Badge>
+              <Badge variant="outline">Storage Buckets</Badge>
             </div>
 
             <Button 
@@ -448,7 +466,7 @@ const DatabaseBackup = () => {
               {downloading === 'complete' ? (
                 <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Generating...</>
               ) : (
-                <><Download className="mr-2 h-4 w-4" /> Download Complete SQL Backup</>
+                <><Download className="mr-2 h-4 w-4" /> Download Complete SQL Backup (~1.3 MB)</>
               )}
             </Button>
           </CardContent>
